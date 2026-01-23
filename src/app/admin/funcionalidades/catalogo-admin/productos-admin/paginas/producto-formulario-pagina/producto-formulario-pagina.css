@@ -1,0 +1,544 @@
+/*
+╔════════════════════════════════════════════════════════════╗
+║                    MAPA DE NAVEGACIÓN                      ║
+╠════════════════════════════════════════════════════════════╣
+║ 1. CONTENEDOR BASE ......................... línea 20 ║
+║ 2. SECCIÓN TÍTULO .......................... línea 35 ║
+║ 3. SECCIÓN BASE ............................ línea 50 ║
+║ 4. FORMULARIO CAMPOS ....................... línea 90 ║
+║ 5. FORMULARIO IMÁGENES ...................... línea 180 ║
+║ 6. FORMULARIO CATEGORÍAS .................... línea 230 ║
+║ 7. FORMULARIO CAMPOS ADICIONALES ............. línea 350 ║
+║ 8. SECCIÓN PRECIOS ......................... línea 450 ║
+║ 9. FORMULARIO ESTADO ....................... línea 650 ║
+║ 10. COMPONENTES REUTILIZABLES ............... línea 700 ║
+║ 11. MODALES ............................... línea 850 ║
+║ 12. MEDIA QUERIES .......................... línea 950 ║
+╚════════════════════════════════════════════════════════════╝
+*/
+
+/* ═══════════════════════════════════════════════════════
+   1. CONTENEDOR BASE
+   ═══════════════════════════════════════════════════════ */
+
+.contenedor-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.contenedor-base {
+  width: 100%;
+  padding: var(--espaciado-md) 0;
+  color: var(--color-texto-primario);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-md);
+}
+
+/* ═══════════════════════════════════════════════════════
+       2. SECCIÓN TÍTULO
+       ═══════════════════════════════════════════════════════ */
+
+.seccion-titulo {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  padding: 0 var(--espaciado-md);
+  color: var(--color-fondo-base);
+}
+
+.titulo-contenedor {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  gap: var(--espaciado-xs);
+  text-align: center;
+}
+
+.titulo-contenedor__descripcion {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+  margin: 0;
+  font-weight: var(--peso-normal);
+}
+
+.opciones-contenedor {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: end;
+  gap: var(--espaciado-xs);
+}
+
+/* ═══════════════════════════════════════════════════════
+       3. SECCIÓN BASE
+       ═══════════════════════════════════════════════════════ */
+
+.seccion-base {
+  background-color: var(--color-texto-primario);
+  color: var(--color-fondo-base);
+  border: var(--borde-grosor) solid var(--color-borde-suave);
+  padding: var(--espaciado-md);
+  transition: border-color var(--transicion-normal);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+}
+
+.seccion-base .titulo-contenedor {
+  flex-direction: row;
+  justify-content: space-between;
+  gap: var(--espaciado-xs);
+  width: 100%;
+}
+
+.seccion-base h3 {
+  font-size: var(--texto-h3);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+       5. FORMULARIO IMÁGENES
+       ═══════════════════════════════════════════════════════ */
+
+.formulario-imagenes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+}
+
+.global-formulario-imagenes__contenedor-imagenes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-sm);
+}
+
+
+/* ═══════════════════════════════════════════════════════
+       6. FORMULARIO CATEGORÍAS
+       ═══════════════════════════════════════════════════════ */
+
+.formulario-multiple-opcion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+}
+
+.formulario-categorias__contenedor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+}
+
+.formulario-categorias__seleccionadas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaciado-xs);
+}
+
+.categoria__seleccionada {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-xs);
+  background-color: var(--color-fondo-quinario);
+  border: var(--borde-grosor) solid var(--color-borde-suave);
+  border-radius: var(--borde-radio);
+  padding: var(--espaciado-xxs) var(--espaciado-xs);
+}
+
+.categoria__seleccionada p {
+  font-size: var(--texto-codigo);
+  color: var(--color-fondo-base);
+  margin: 0;
+}
+
+.categoria__boton-eliminar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 1rem;
+  height: 1rem;
+}
+
+.formulario-etiqueta__anuncio-alerta {
+  font-size: var(--texto-mini);
+  color: var(--color-primario);
+  font-weight: var(--peso-medium);
+}
+
+.formulario-categorias__opciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+  border: var(--borde-grosor) solid var(--color-borde);
+  border-radius: var(--borde-radio-grande);
+  padding: var(--espaciado-xs);
+  background-color: var(--color-texto-primario);
+}
+
+.formulario-categorias__busqueda {
+  margin-bottom: var(--espaciado-xs);
+}
+
+.formulario-categorias__opciones-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xxs);
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.categoria__opcion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--espaciado-xs);
+  border-radius: var(--borde-radio);
+  cursor: pointer;
+  transition: all var(--transicion-rapida);
+}
+
+.categoria__opcion:hover {
+  background-color: var(--color-fondo-quinario);
+}
+
+.categoria__opcion--seleccionada {
+  background-color: rgba(164, 196, 57, 0.1);
+}
+
+.categoria__opcion p {
+  font-size: var(--texto-codigo);
+  color: var(--color-fondo-base);
+  margin: 0;
+}
+
+.categoria__sin-resultados {
+  padding: var(--espaciado-xs);
+  text-align: center;
+}
+
+.categoria__sin-resultados p {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+  margin: 0;
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════
+       8. SECCIÓN PRECIOS
+       ═══════════════════════════════════════════════════════ */
+
+.formulario-precios {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-sm);
+}
+
+/* ═══════════════════════════════════════════════════════
+       9. FORMULARIO ESTADO
+       ═══════════════════════════════════════════════════════ */
+
+.formulario-estado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-sm);
+}
+
+.formulario-estado__opcion {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  padding: var(--espaciado-xs);
+  border: var(--borde-grosor) solid var(--color-borde);
+  border-radius: var(--borde-radio-grande);
+  cursor: pointer;
+  transition: all var(--transicion-rapida);
+}
+
+.formulario-estado__opcion:hover {
+  background-color: var(--color-fondo-quinario);
+  border-color: var(--color-primario);
+}
+
+.formulario-estado__opcion:has(.global-radio__input:checked) {
+  background-color: rgba(164, 196, 57, 0.1);
+  border-color: var(--color-primario);
+}
+
+.formulario-estado__contenido {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.formulario-estado__titulo {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+  margin: 0;
+}
+
+.formulario-estado__descripcion {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+       7. FORMULARIO TIPO CAMPO
+       ═══════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════
+       10. COMPONENTES REUTILIZABLES
+       ═══════════════════════════════════════════════════════ */
+
+/* ─── Item Arrastrable (Campos y Precios) ─── */
+.campo-adicional-agregado,
+.precio-agregado {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-xxs);
+  padding: var(--espaciado-sm);
+  background-color: var(--color-fondo-quinario);
+  border: var(--borde-grosor) solid var(--color-borde-suave);
+  border-radius: var(--borde-radio-grande);
+  cursor: move;
+  transition: all var(--transicion-rapida);
+  position: relative;
+}
+
+.campo-adicional-agregado:hover,
+.precio-agregado:hover {
+  border-color: var(--color-primario);
+  box-shadow: var(--sombra-primaria-fina-3);
+}
+
+.campo-adicional-agregado--arrastrando,
+.precio-agregado--arrastrando {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+.campo-adicional-agregado--zona-soltar,
+.precio-agregado--zona-soltar {
+  border-color: var(--color-primario);
+  background-color: rgba(164, 196, 57, 0.1);
+  border-style: dashed;
+}
+
+.campo-adicional-agregado__arrastrar,
+.precio-agregado__arrastrar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+}
+
+.campo-adicional-agregado__arrastrar:active,
+.precio-agregado__arrastrar:active {
+  cursor: grabbing;
+}
+
+.campo-adicional-agregado__info,
+.precio-agregado__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xxs);
+}
+
+.precio-agregado__cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+}
+
+.precio-agregado__cabecera-principal {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-xs);
+  flex-wrap: wrap;
+}
+
+.precio-agregado__nombre {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+}
+
+.precio-agregado__detalles {
+  width: max-content;
+  height: max-content;
+  display: flex;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: var(--espaciado-xs);
+  padding: var(--espaciado-xs);
+  background-color: var(--color-fondo-sexto);
+  border-radius: var(--borde-radio);
+}
+
+.precio-agregado__detalle-item {
+  width: max-content;
+  height: max-content;
+  display: flex;
+  flex-direction: column;
+  padding: var(--espaciado-xxs) var(--espaciado-xs);
+  background-color: var(--color-texto-primario);
+  border-radius: var(--borde-radio);
+  border: var(--borde-grosor) solid var(--color-borde-suave);
+  transition: all var(--transicion-rapida);
+}
+
+.precio-agregado__detalle-item:hover {
+  border-color: var(--color-primario);
+  box-shadow: var(--sombra-primaria-fina-2);
+}
+
+.precio-agregado__detalle-item--destacado {
+  border-color: var(--color-primario);
+  background-color: rgba(164, 196, 57, 0.05);
+}
+
+.precio-agregado__detalle-etiqueta {
+  font-size: var(--texto-mini);
+  color: var(--color-fondo-septimo);
+  font-weight: var(--peso-medium);
+}
+
+.precio-agregado__detalle-valor {
+  font-size: var(--texto-codigo);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+}
+
+.precio-agregado__detalle-item--destacado .precio-agregado__detalle-valor {
+  font-size: var(--texto-pequeno);
+  color: var(--color-primario-oscuro);
+}
+
+.campo-adicional-agregado__etiqueta,
+.precio-agregado__nombre {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+  margin: 0;
+}
+
+.campo-adicional-agregado__identificador {
+  font-size: var(--texto-codigo);
+  color: var(--color-fondo-septimo);
+  margin: 0;
+}
+
+.campo-adicional-agregado__estados,
+.precio-agregado__estados {
+  display: flex;
+  gap: var(--espaciado-xs);
+  flex-wrap: wrap;
+}
+
+.campo-adicional-agregado__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--espaciado-xxs) var(--espaciado-xs);
+  font-size: var(--texto-mini);
+  font-weight: var(--peso-medium);
+  color: var(--color-fondo-septimo);
+  background-color: var(--color-fondo-quinario);
+  border: var(--borde-grosor) solid var(--color-borde-suave);
+  border-radius: var(--borde-radio);
+  white-space: nowrap;
+}
+
+.campo-adicional-agregado__badge--numero {
+  color: var(--color-primario-oscuro);
+  background-color: rgba(164, 196, 57, 0.1);
+  border-color: var(--color-primario);
+}
+
+.campo-adicional-agregado__badge--requerido {
+  color: var(--color-fondo-base);
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+}
+
+.campo-adicional-agregado__acciones,
+.precio-agregado__acciones {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.campo-adicional-agregado__boton,
+.precio-agregado__boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--borde-radio);
+  transition: all var(--transicion-rapida);
+}
+
+.campo-adicional-agregado__boton:hover,
+.precio-agregado__boton:hover {
+  background-color: var(--color-fondo-sexto);
+}
+
+/* ═══════════════════════════════════════════════════════
+       12. MEDIA QUERIES
+       ═══════════════════════════════════════════════════════ */
+
+/* ─── Tablet ─── */
+@media (min-width: 768px) {
+  .seccion-titulo {
+    padding: 0;
+  }
+
+  .seccion-base {
+    border-radius: var(--borde-radio-grande);
+    box-shadow: var(--sombra-base-fina-1);
+    border: var(--borde-grosor) solid var(--color-borde-suave);
+    padding: var(--espaciado-md);
+  }
+
+  .global-formulario-imagenes__contenedor-imagenes {
+    flex-direction: row;
+  }
+}
+
+/* ─── Laptop ─── */
+@media (min-width: 1024px) {
+  .contenedor-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--espaciado-md);
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 var(--espaciado-md);
+  }
+}
+
+/* ─── Desktop ─── */
+@media (min-width: 1280px) {
+  .contenedor-grid {
+    max-width: var(--ancho-contenedor-maximo);
+  }
+
+  .precio-agregado__acciones {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

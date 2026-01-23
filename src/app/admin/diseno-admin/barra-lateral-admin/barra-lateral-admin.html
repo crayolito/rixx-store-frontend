@@ -1,0 +1,35 @@
+<!-- Overlay oscuro que cubre todo excepto el header (solo móvil) -->
+@if (estaAbierto()) {
+<div class="overlay-modal" (click)="cerrarModal()"></div>
+}
+
+<!-- Sidebar que se desliza desde la izquierda -->
+<aside class="barra-lateral-admin" [class.esta-abierto]="estaAbierto()">
+  <nav class="navegacion-lateral">
+    @for (opcion of opcionesMenu; track opcion.id) {
+    <div class="contenedor-opcion">
+      <!-- Botón principal de la opción -->
+      <button class="boton-navegacion" [class.activo]="opcion.activo && !opcion.subOpcionSeleccionada" type="button"
+        (click)="seleccionarOpcion(opcion)">
+        <img [src]="opcion.icono" [alt]="opcion.texto" class="icono-boton icono-color-base">
+        <span class="texto-opcion">{{ opcion.texto }}</span>
+      </button>
+
+      <!-- Subopciones desplegables -->
+      @if(tieneSubopciones(opcion) && opcion.estaDesplegado) {
+      <div class="contenedor-subopciones">
+        @for (subopcion of opcion.opciones; track subopcion) {
+        <button class="boton-subopcion" [class.activo]="opcion.subOpcionSeleccionada === subopcion" type="button"
+          (click)="seleccionarSubOpcion(opcion, subopcion)">
+          @if(opcion.subOpcionSeleccionada === subopcion) {
+          <img src="/iconos/icon-flecha-derecho.svg" alt="Subopciones" class="icono-boton icono-color-base">
+          }
+          {{ subopcion }}
+        </button>
+        }
+      </div>
+      }
+    </div>
+    }
+  </nav>
+</aside>

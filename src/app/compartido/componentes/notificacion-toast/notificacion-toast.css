@@ -1,0 +1,190 @@
+/*
+╔════════════════════════════════════════════════════════════╗
+║                    MAPA DE NAVEGACIÓN                      ║
+╠════════════════════════════════════════════════════════════╣
+║ 1. CONTENEDOR ................................ línea 15 ║
+║ 2. NOTIFICACIÓN BASE ......................... línea 30 ║
+║ 3. TIPOS DE NOTIFICACIÓN ..................... línea 70 ║
+║ 4. ANIMACIONES ............................... línea 140 ║
+║ 5. MEDIA QUERIES ............................. línea 165 ║
+╚════════════════════════════════════════════════════════════╝
+*/
+
+/* ═══════════════════════════════════════════════════════
+   1. CONTENEDOR
+   ═══════════════════════════════════════════════════════ */
+
+.contenedor-notificaciones {
+  position: fixed;
+  top: 80px;
+  /* Abajo del header */
+  right: var(--espaciado-md);
+  z-index: 1080;
+  /* Por encima del modal */
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-sm);
+  max-width: 400px;
+  width: calc(100% - var(--espaciado-md) * 2);
+  pointer-events: none;
+  /* No bloquear clicks en el fondo */
+}
+
+/* ═══════════════════════════════════════════════════════
+     2. NOTIFICACIÓN BASE
+     ═══════════════════════════════════════════════════════ */
+
+.notificacion {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  padding: var(--espaciado-md);
+  background-color: var(--color-fondo-cuaternario);
+  border-left: 4px solid;
+  border-radius: var(--borde-radio);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  pointer-events: auto;
+  /* La notificación sí recibe clicks */
+  animation: deslizarEntrada 0.3s ease-out;
+  transition: all 0.2s ease;
+  background-color: var(--color-fondo-base);
+  color: var(--color-primario);
+}
+
+.notificacion:hover {
+  transform: translateX(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.notificacion__icono {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.notificacion__mensaje {
+  flex: 1;
+  margin: 0;
+  font-size: var(--texto-base);
+  color: var(--color-fondo-base);
+  line-height: 1.4;
+}
+
+.notificacion__boton-cerrar {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: var(--espaciado-xs);
+  cursor: pointer;
+  color: var(--color-fondo-septimo);
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notificacion__boton-cerrar:hover {
+  color: var(--color-fondo-base);
+}
+
+/* ═══════════════════════════════════════════════════════
+     3. TIPOS DE NOTIFICACIÓN
+     ═══════════════════════════════════════════════════════ */
+
+/* ─── Éxito ─── */
+.notificacion--exito {
+  border-left-color: var(--color-primario);
+  /* background-color: #f0f9e8; */
+}
+
+.notificacion--exito .notificacion__icono {
+  color: var(--color-primario);
+}
+
+.notificacion--exito .notificacion__mensaje {
+  color: var(--color-primario);
+}
+
+/* ─── Error ─── */
+.notificacion--error {
+  border-left-color: #ef4444;
+  /* background-color: #fef2f2; */
+}
+
+.notificacion--error .notificacion__icono {
+  color: #ef4444;
+}
+
+.notificacion--error .notificacion__mensaje {
+  color: var(--color-primario);
+}
+
+/* ─── Advertencia ─── */
+.notificacion--advertencia {
+  border-left-color: #f59e0b;
+  /* background-color: #fffbeb; */
+}
+
+.notificacion--advertencia .notificacion__icono {
+  color: #f59e0b;
+}
+
+.notificacion--advertencia .notificacion__mensaje {
+  color: var(--color-primario);
+}
+
+/* ─── Info ─── */
+.notificacion--info {
+  border-left-color: var(--color-acento-cyan);
+  /* background-color: #ecfeff; */
+}
+
+.notificacion--info .notificacion__icono {
+  color: var(--color-acento-cyan);
+}
+
+.notificacion--info .notificacion__mensaje {
+  color: var(--color-primario);
+}
+
+/* ═══════════════════════════════════════════════════════
+     4. ANIMACIONES
+     ═══════════════════════════════════════════════════════ */
+
+@keyframes deslizarEntrada {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+     5. MEDIA QUERIES
+     ═══════════════════════════════════════════════════════ */
+
+/* ─── Móvil ─── */
+@media (max-width: 767px) {
+  .contenedor-notificaciones {
+    top: var(--espaciado-md);
+    right: var(--espaciado-sm);
+    left: var(--espaciado-sm);
+    width: auto;
+    max-width: none;
+  }
+
+  .notificacion {
+    padding: var(--espaciado-sm);
+  }
+
+  .notificacion__mensaje {
+    font-size: var(--texto-pequeno);
+  }
+}

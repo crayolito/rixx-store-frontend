@@ -1,0 +1,68 @@
+/*
+╔════════════════════════════════════════════════════════════╗
+║                    MAPA DE NAVEGACIÓN                      ║
+╠════════════════════════════════════════════════════════════╣
+║ 1. CONTENEDOR LAYOUT ....................... línea 15 ║
+║ 2. CONTENEDOR CONTENIDO .................... línea 30 ║
+║ 3. ÁREA CONTENIDO ........................... línea 50 ║
+║ 4. MEDIA QUERIES ............................ línea 65 ║
+╚════════════════════════════════════════════════════════════╝
+*/
+
+/* ═══════════════════════════════════════════════════════
+   1. CONTENEDOR LAYOUT
+   ═══════════════════════════════════════════════════════ */
+
+.contenedor-layout-admin {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-fondo-base);
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════
+     2. CONTENEDOR CONTENIDO
+     ═══════════════════════════════════════════════════════ */
+
+.contenedor-contenido-admin {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  height: calc(100vh - clamp(30px, 5vh, 70px));
+  border-top-left-radius: var(--borde-radio-extra-grande);
+  border-top-right-radius: var(--borde-radio-extra-grande);
+}
+
+/* ═══════════════════════════════════════════════════════
+     3. ÁREA CONTENIDO
+     ═══════════════════════════════════════════════════════ */
+
+.area-contenido-admin {
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--color-fondo-quinario);
+}
+
+/* ═══════════════════════════════════════════════════════
+     4. MEDIA QUERIES
+     ═══════════════════════════════════════════════════════ */
+
+/* ─── Tablet ─── */
+@media (min-width: 768px) {
+  .contenedor-contenido-admin {
+    height: calc(100vh - clamp(50px, 6vh, 80px));
+  }
+
+  .area-contenido-admin {
+    padding: var(--espaciado-md);
+  }
+}
+
+/* ─── Laptop ─── */
+@media (min-width: 1024px) {
+  .contenedor-contenido-admin {
+    height: calc(100vh - clamp(50px, 7vh, 90px));
+  }
+}

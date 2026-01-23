@@ -1,0 +1,288 @@
+<div class="contenedor-base" (click)="cerrarTodosLosDropdowns()">
+  <!-- ===== SECCIÓN: TITULO Y OPCIONES ===== -->
+  <section class="titulo-opciones-contenedor">
+    <div class="titulo-contenedor">
+      <img src="/iconos/ico-orden.svg" alt="Icono pedidos" class="icono-boton icono-color-base">
+      <h3>Pedidos</h3>
+    </div>
+    <div class="opciones-contenedor">
+      <button class="boton-secundario" (click)="alternarFiltros()">
+        <p>{{ filtrosVisibles() ? 'Ocultar Filtros' : 'Mostrar Filtros' }}</p>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== SECCIÓN: FILTROS AVANZADOS ===== -->
+  @if (filtrosVisibles()) {
+  <section class="global-filtros" (click)="$event.stopPropagation()">
+    <!-- Buscador - Por ID, usuario o producto -->
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Buscador</p>
+      <div class="global-filtros__busqueda">
+        <img src="/iconos/ico-busqueda.svg" alt="Icono busqueda" class="icono-boton icono-color-base">
+        <input type="text" placeholder="Buscar por ID, usuario o producto..." class="global-filtros__input"
+          [value]="textoBusqueda()" (input)="textoBusqueda.set($any($event.target).value)">
+      </div>
+    </div>
+
+    <!-- Dropdown Estado -->
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Estado</p>
+      <div class="global-filtros__dropdown" (click)="$event.stopPropagation()">
+        <button class="global-filtros__dropdown-boton" (click)="alternarDropdownEstado()" type="button">
+          <span>{{ obtenerNombreEstadoFiltro() }}</span>
+          <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="icono-boton icono-color-base">
+        </button>
+        @if (dropdownEstadoAbierto()) {
+        <div class="global-filtros__dropdown-menu">
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarEstadoFiltro('')" type="button">
+            Todos los estados
+          </button>
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarEstadoFiltro('completado')" type="button">
+            Completado
+          </button>
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarEstadoFiltro('procesando')" type="button">
+            Procesando
+          </button>
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarEstadoFiltro('cancelado')" type="button">
+            Cancelado
+          </button>
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarEstadoFiltro('pendiente')" type="button">
+            Pendiente
+          </button>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Fecha Inicio -->
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Fecha Inicio</p>
+      <div class="global-filtros__busqueda" (click)="$event.stopPropagation()">
+        <input type="date" class="global-filtros__input" [value]="fechaInicio()"
+          (change)="fechaInicio.set($any($event.target).value)" (click)="$event.stopPropagation()">
+      </div>
+    </div>
+
+    <!-- Fecha Fin -->
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Fecha Fin</p>
+      <div class="global-filtros__busqueda" (click)="$event.stopPropagation()">
+        <input type="date" class="global-filtros__input" [value]="fechaFin()"
+          (change)="fechaFin.set($any($event.target).value)" (click)="$event.stopPropagation()">
+      </div>
+    </div>
+
+    <!-- Botón Limpiar -->
+    <div class="global-filtros__item">
+      <button class="boton-secundario global-filtros__boton-icono" (click)="limpiarFiltros()" type="button">
+        <img src="/iconos/ico-limpiar.svg" alt="Icono limpiar" class="icono-boton icono-color-base">
+      </button>
+    </div>
+  </section>
+  }
+
+  <!-- ===== SECCIÓN: TABLA DE PEDIDOS ===== -->
+  <section class="global-tabla">
+    <table class="global-tabla__elemento">
+      <thead class="global-tabla__cabecera">
+        <tr>
+          <th>ID</th>
+          <th>Usuario</th>
+          <th>Producto</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th>Pago</th>
+          <th>Fecha</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="global-tabla__cuerpo">
+        @for (pedido of pedidosPaginados(); track pedido.id) {
+        <tr class="global-tabla__fila">
+          <td class="global-tabla__celda global-tabla__celda--id">{{ truncarTexto(pedido.id, 8) }}</td>
+          <td class="global-tabla__celda global-tabla__celda--usuario">{{ pedido.usuario_email }}</td>
+          <td class="global-tabla__celda global-tabla__celda--producto">
+            @for (prod of pedido.productos; track prod.id; let ultimo = $last) {
+            {{ prod.nombre }}@if (!ultimo) {, }
+            }
+          </td>
+          <td class="global-tabla__celda">${{ pedido.total_compra }}</td>
+          <td class="global-tabla__celda">
+            <span class="global-badge global-badge--{{pedido.estado}}">
+              {{ pedido.estado }}
+            </span>
+          </td>
+          <td class="global-tabla__celda">{{ pedido.metodo_pago }}</td>
+          <td class="global-tabla__celda">{{ pedido.fecha_compra | date:'short' }}</td>
+          <td class="global-tabla__celda global-tabla__celda-acciones">
+            <ul class="global-tabla__lista-acciones">
+              <li>
+                <button (click)="verDetalles(pedido)">
+                  <img src="/iconos/ico-ojo-abierto.svg" alt="Ver" class="icono-boton-mediano icono-color-base">
+                </button>
+              </li>
+              <li>
+                <button (click)="completarPedido(pedido)" [disabled]="pedido.estado === 'completado'">
+                  <img src="/iconos/ico-check.svg" alt="Completar" class="icono-boton-mediano icono-color-primario">
+                </button>
+              </li>
+            </ul>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    <!-- ===== SECCIÓN: PAGINACIÓN ===== -->
+    <div class="global-paginacion">
+      <div class="global-paginacion__controles">
+        <button class="global-paginacion__boton global-paginacion__boton--anterior" (click)="paginaAnterior()"
+          [disabled]="paginaActual() === 1">
+          <img src="/iconos/ico-flecha-izquierda-tabla.svg" alt="Icono flecha izquierda"
+            class="icono-boton icono-color-base">
+        </button>
+        <div class="global-paginacion__numeros">
+          @for (pagina of paginasAMostrar(); track pagina) {
+          @if (pagina === -1) {
+          <span class="global-paginacion__separador">...</span>
+          } @else {
+          <button class="global-paginacion__numero"
+            [class.global-paginacion__numero--activa]="pagina === paginaActual()" (click)="irAPagina(pagina)"
+            type="button">
+            {{ pagina }}
+          </button>
+          }
+          }
+        </div>
+        <button class="global-paginacion__boton global-paginacion__boton--siguiente" (click)="paginaSiguiente()"
+          [disabled]="paginaActual() === totalPaginas()">
+          <img src="/iconos/ico-flecha-derecha-tabla.svg" alt="Icono flecha derecha"
+            class="icono-boton icono-color-base">
+        </button>
+      </div>
+      <p class="global-paginacion__info">
+        {{ (paginaActual() - 1) * pedidosPorPagina() + 1 }}-{{ Math.min(paginaActual() * pedidosPorPagina(),
+        totalPedidos()) }} de {{ totalPedidos() }}
+      </p>
+    </div>
+  </section>
+</div>
+
+<!-- ===== MODAL: DETALLES DEL PEDIDO ===== -->
+<app-modal [estaAbierto]="modalDetallesAbierto()" (cerrar)="cerrarModalDetalles()">
+  @if (pedidoSeleccionado()) {
+  <div class="global-modal global-modal--ancho">
+
+    <!-- Cabecera -->
+    <div class="global-modal__cabecera">
+      <h3 class="global-modal__titulo">#{{ pedidoSeleccionado()!.id }}</h3>
+      <button type="button" class="global-modal__boton-cerrar" (click)="cerrarModalDetalles()"
+        aria-label="Cerrar modal">
+        <img src="/iconos/ico-cerrar.svg" alt="Cerrar" class="icono-boton icono-color-secundario">
+      </button>
+    </div>
+
+    <!-- Contenido -->
+    <div class="global-modal__contenido detalle-pedido__contenido">
+
+      <!-- Cliente -->
+      <div class="detalle-pedido__seccion">
+        <h4 class="detalle-pedido__titulo">Información del Cliente</h4>
+        <div class="detalle-pedido__grid">
+          <div>
+            <p class="detalle-pedido__etiqueta">Nombre</p>
+            <p class="detalle-pedido__valor">{{ pedidoSeleccionado()!.usuario_nombre }}</p>
+          </div>
+          <div>
+            <p class="detalle-pedido__etiqueta">Email</p>
+            <p class="detalle-pedido__valor">{{ pedidoSeleccionado()!.usuario_email }}</p>
+          </div>
+          <div>
+            <p class="detalle-pedido__etiqueta">Fecha</p>
+            <p class="detalle-pedido__valor">{{ pedidoSeleccionado()!.fecha_compra | date:'short' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Productos -->
+      <div class="detalle-pedido__seccion">
+        <h4 class="detalle-pedido__titulo">Productos</h4>
+        <div class="detalle-pedido__productos">
+          @for (producto of pedidoSeleccionado()!.productos; track producto.id) {
+          <div class="detalle-pedido__producto">
+            <div>
+              <p class="detalle-pedido__producto-nombre">{{ producto.nombre }}</p>
+              <p class="detalle-pedido__producto-id">ID: {{ producto.id }}</p>
+            </div>
+            <div class="detalle-pedido__producto-precios">
+              <span class="detalle-pedido__producto-cantidad">x{{ producto.cantidad }}</span>
+              <span class="detalle-pedido__producto-precio">${{ producto.precio_unitario }}</span>
+              <span class="detalle-pedido__producto-total">${{ producto.subtotal }}</span>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Información Adicional -->
+      @if (pedidoSeleccionado()!.informacion_adicional) {
+      <div class="detalle-pedido__seccion">
+        <h4 class="detalle-pedido__titulo">Información Adicional</h4>
+        <div class="detalle-pedido__grid">
+          @for (item of pedidoSeleccionado()!.informacion_adicional | keyvalue; track item.key) {
+          <div>
+            <p class="detalle-pedido__etiqueta">{{ item.key }}</p>
+            <p class="detalle-pedido__valor">{{ item.value }}</p>
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Pago -->
+      <div class="detalle-pedido__seccion">
+        <h4 class="detalle-pedido__titulo">Información de Pago</h4>
+        <div class="detalle-pedido__grid detalle-pedido__grid--dos-columnas">
+          <div>
+            <p class="detalle-pedido__etiqueta">Método</p>
+            <p class="detalle-pedido__valor">{{ pedidoSeleccionado()!.metodo_pago }}</p>
+          </div>
+          <div>
+            <p class="detalle-pedido__etiqueta">Estado</p>
+            <span class="global-badge global-badge--{{ pedidoSeleccionado()!.estado_pago }}">
+              {{ pedidoSeleccionado()!.estado_pago }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen Financiero -->
+      <div class="detalle-pedido__resumen">
+        <h4 class="detalle-pedido__resumen-titulo">Resumen Financiero</h4>
+        <div class="detalle-pedido__resumen-lista">
+
+          <div class="detalle-pedido__resumen-item">
+            <span class="detalle-pedido__resumen-etiqueta">Subtotal</span>
+            <span class="detalle-pedido__resumen-valor">${{ pedidoSeleccionado()!.resumen_financiero.subtotal }}</span>
+          </div>
+
+          <div class="detalle-pedido__resumen-item detalle-pedido__resumen-item--costo">
+            <span class="detalle-pedido__resumen-etiqueta">Costo Total</span>
+            <span class="detalle-pedido__resumen-valor detalle-pedido__resumen-valor--costo">${{
+              pedidoSeleccionado()!.resumen_financiero.costo_total }}</span>
+          </div>
+
+          <div class="detalle-pedido__resumen-item detalle-pedido__resumen-item--ganancia">
+            <span class="detalle-pedido__resumen-etiqueta detalle-pedido__resumen-etiqueta--destacado">Ganancia
+              Total</span>
+            <span class="detalle-pedido__resumen-valor detalle-pedido__resumen-valor--ganancia">${{
+              pedidoSeleccionado()!.resumen_financiero.ganancia_total }}</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+  }
+</app-modal>

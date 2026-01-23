@@ -1,0 +1,256 @@
+/*
+╔════════════════════════════════════════════════════════════╗
+║                    MAPA DE NAVEGACIÓN                      ║
+╠════════════════════════════════════════════════════════════╣
+║ 1. OVERLAY MODAL ................................ línea 15 ║
+║ 2. BARRA LATERAL ADMIN .................... línea 35 ║
+║ 3. NAVEGACIÓN LATERAL ...................... línea 75 ║
+║ 4. CONTENEDOR OPCIÓN ....................... línea 90 ║
+║ 5. BOTONES NAVEGACIÓN ...................... línea 100 ║
+║ 6. SUBOPCIONES .............................. línea 160 ║
+║ 7. MEDIA QUERIES .......................... línea 210 ║
+╚════════════════════════════════════════════════════════════╝
+*/
+
+/* ═══════════════════════════════════════════════════════
+   1. OVERLAY MODAL (SOLO MÓVIL)
+   ═══════════════════════════════════════════════════════ */
+
+.overlay-modal {
+  position: fixed;
+  top: clamp(54px, 4.5vh, 75px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: var(--z-modal-backdrop);
+  animation: aparecerOverlay var(--transicion-normal);
+}
+
+@keyframes aparecerOverlay {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* ─── Ocultar overlay en tablet/desktop ─── */
+@media (min-width: 768px) {
+  .overlay-modal {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+       2. BARRA LATERAL ADMIN
+       ═══════════════════════════════════════════════════════ */
+
+.barra-lateral-admin {
+  position: fixed;
+  top: clamp(54px, 4.5vh, 75px);
+  left: 0;
+  width: clamp(15rem, 5vh, 20rem);
+  height: calc(100vh - clamp(55px, 5vh, 80px));
+  background-color: var(--color-fondo-sexto);
+  border-right: var(--borde-grosor) solid var(--color-borde-separador);
+  overflow-y: auto;
+  z-index: var(--z-modal);
+  transform: translateX(-100%);
+  transition: transform var(--transicion-normal);
+  box-shadow: var(--sombra-fuerte);
+  border-top-left-radius: var(--borde-radio-grande);
+}
+
+.barra-lateral-admin.esta-abierto {
+  transform: translateX(0);
+}
+
+/* ─── En tablet/desktop: sidebar siempre visible y fijo ─── */
+@media (min-width: 768px) {
+  .barra-lateral-admin {
+    position: relative;
+    top: 0;
+    transform: translateX(0);
+    box-shadow: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 0;
+    height: 100%;
+    /* ===== CAMBIO: Usar 100% para ocupar toda la altura del padre ===== */
+  }
+
+  .barra-lateral-admin.esta-abierto {
+    transform: translateX(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+       3. NAVEGACIÓN LATERAL
+       ═══════════════════════════════════════════════════════ */
+
+.navegacion-lateral {
+  width: 100%;
+  padding: var(--espaciado-md) var(--espaciado-xs);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════════════════
+       4. CONTENEDOR OPCIÓN
+       ═══════════════════════════════════════════════════════ */
+
+.contenedor-opcion {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════════════════
+       5. BOTONES NAVEGACIÓN
+       ═══════════════════════════════════════════════════════ */
+
+.boton-navegacion {
+  width: 100%;
+  height: 2.8125rem;
+  padding: 0 var(--espaciado-md);
+  background-color: transparent;
+  border-radius: var(--borde-radio);
+  color: var(--color-fondo-base);
+  font-size: var(--texto-base);
+  font-weight: var(--peso-medio);
+  text-align: left;
+  border: none;
+  transition: all var(--transicion-rapida);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  position: relative;
+}
+
+/* ─── Iconos en botones ─── */
+.boton-navegacion .icono-boton {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* ─── Texto de la opción ─── */
+.texto-opcion {
+  flex: 1;
+}
+
+/* ─── Flecha desplegable simple ─── */
+.flecha-desplegable {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+  color: var(--color-texto-primario);
+  transition: transform var(--transicion-rapida);
+  transform: rotate(0deg);
+}
+
+.flecha-desplegable.rotada {
+  transform: rotate(180deg);
+}
+
+.boton-navegacion.activo {
+  background-color: var(--color-texto-primario);
+  font-weight: var(--peso-semibold);
+}
+
+/* ═══════════════════════════════════════════════════════
+       6. SUBOPCIONES
+       ═══════════════════════════════════════════════════════ */
+
+.contenedor-subopciones {
+  width: 100%;
+  padding-left: var(--espaciado-lg);
+  display: flex;
+  flex-direction: column;
+  animation: desplegar var(--transicion-normal);
+  overflow: hidden;
+}
+
+@keyframes desplegar {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+.boton-subopcion {
+  width: 100%;
+  height: 2.5rem;
+  padding: 0 var(--espaciado-xs);
+  background-color: transparent;
+  border-radius: var(--borde-radio);
+  color: var(--color-fondo-base);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  text-align: left;
+  border: none;
+  transition: all var(--transicion-rapida);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-xs);
+}
+
+.boton-subopcion.activo {
+  background-color: var(--color-texto-primario);
+  font-weight: var(--peso-semibold);
+}
+
+/* ═══════════════════════════════════════════════════════
+       7. MEDIA QUERIES
+       ═══════════════════════════════════════════════════════ */
+
+/* ─── Tablet ─── */
+@media (min-width: 768px) {
+  .boton-navegacion {
+    height: 2rem;
+    padding: 0 var(--espaciado-xs);
+  }
+
+
+  .barra-lateral-admin {
+    width: 14.5rem;
+  }
+
+  .overlay-modal {
+    top: clamp(50px, 6vh, 80px);
+  }
+}
+
+/* ─── Laptop ─── */
+@media (min-width: 1024px) {
+  .barra-lateral-admin {
+    width: 14.5rem;
+  }
+}
+
+/* ─── Desktop ─── */
+@media (min-width: 1280px) {
+  .navegacion-lateral {
+    gap: var(--espaciado-xs);
+    padding: var(--espaciado-md) var(--espaciado-lg) var(--espaciado-md) var(--espaciado-md);
+  }
+
+  .boton-subopcion {
+    height: 2rem;
+    padding: 0 var(--espaciado-xs);
+  }
+
+  .barra-lateral-admin {
+    width: 14rem;
+  }
+}

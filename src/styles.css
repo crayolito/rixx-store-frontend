@@ -1,1 +1,2081 @@
-/* You can add global styles to this file, and also import other style files */
+/*
+╔════════════════════════════════════════════════════════════╗
+║                    MAPA DE NAVEGACIÓN                      ║
+╠════════════════════════════════════════════════════════════╣
+║ 1. VARIABLES GLOBALES ........................... línea 20 ║
+║ 2. RESET BÁSICO ............................... línea 80   ║
+║ 3. TIPOGRAFÍA BASE ............................ línea 110  ║
+║ 4. ESTILOS BASE HTML ........................... línea 150 ║
+║ 5. COMPONENTES BASE - BOTONES .................. línea 180 ║
+║ 6. UTILIDADES - ESPACIADO ...................... línea 260 ║
+║ 7. ANIMACIONES Y TRANSICIONES .................. línea 290 ║
+║ 8. MEDIA QUERIES ............................... línea 310 ║
+╚════════════════════════════════════════════════════════════╝
+*/
+
+/* ═══════════════════════════════════════════════════════
+   1. VARIABLES GLOBALES
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* ─── Colores Primarios ─── */
+  --color-primario: #a4c439;
+  --color-primario-claro: #d4f157;
+  --color-primario-oscuro: #8ba82f;
+
+  /* ─── Colores de Fondo ─── */
+  --color-fondo-base: #0f1419;
+  --color-fondo-secundario: #1a1f2e;
+  --color-fondo-terciario: #1f2639;
+  --color-fondo-cuaternario: #ffffff;
+  --color-fondo-quinario: #f2f2f2;
+  --color-fondo-sexto: #ebebeb;
+  --color-fondo-septimo: #a6a6a6;
+  --color-fondo-octavo: #e3e3e3;
+  --color-fondo-noveno: #f7f7f7;
+
+  /* ─── Colores de Borde  ─── */
+  --color-borde: #a6a6a6;
+  --color-borde-suave: #e3e3e3;
+
+  /* ─── Colores de Texto ─── */
+  --color-texto-primario: #ffffff;
+  --color-texto-secundario: #d4d4d4;
+  --color-texto-terciario: #a3a3a3;
+
+  /* ─── Colores de Utilidad ─── */
+  --color-acento-cyan: #00d9ff;
+  --color-borde-sutil: rgba(224, 224, 224, 0.2);
+  --color-borde-separador: rgba(255, 255, 255, 0.15);
+
+  /* ─── Tipografía ─── */
+  --fuente-principal: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --fuente-mono: 'Space Mono', 'Courier New', monospace;
+
+  /* ─── Tamaños de Texto ─── */
+  --texto-h1: 2.8rem;
+  --texto-h2: 2rem;
+  --texto-h3: 1.2rem;
+  --texto-base: 1rem;
+  --texto-pequeno: 0.875rem;
+  --texto-codigo: 0.8rem;
+  --texto-mini: 0.7rem;
+
+  /* ─── Pesos de Fuente ─── */
+  --peso-normal: 400;
+  --peso-medio: 500;
+  --peso-semibold: 600;
+  --peso-bold: 700;
+
+  /* ─── Espaciado (Sistema Base 8px) ─── */
+  --espaciado-xxs: 0.25rem;
+  /* 4px */
+  --espaciado-xs: 0.5rem;
+  /* 8px */
+  --espaciado-sm: 0.75rem;
+  /* 12px */
+  --espaciado-md: 1rem;
+  /* 16px */
+  --espaciado-lg: 1.5rem;
+  /* 24px */
+  --espaciado-xl: 2rem;
+  /* 32px */
+  --espaciado-2xl: 3rem;
+  /* 48px */
+  --espaciado-3xl: 3.75rem;
+  /* 60px */
+
+  /* ─── Bordes ─── */
+  --borde-grosor: 1px;
+  --borde-grosor-grande: 3px;
+  --borde-grosor-extra-grande: 3px;
+  --borde-radio: 8px;
+  --borde-radio-pequeno: 4px;
+  --borde-radio-grande: 8px;
+  --borde-radio-extra-grande: 16px;
+
+  /* ─── Sombras ─── */
+  --sombra-suave: 0 4px 12px rgba(164, 196, 57, 0.3);
+  --sombra-media: 0 8px 24px rgba(164, 196, 57, 0.1);
+  --sombra-fuerte: 0 12px 32px rgba(0, 0, 0, 0.3);
+
+  /* ─── Sombras Finas - Color Primario ─── */
+  --sombra-primaria-fina-1: 0 1px 2px rgba(164, 196, 57, 0.1);
+  --sombra-primaria-fina-2: 0 2px 4px rgba(164, 196, 57, 0.12);
+  --sombra-primaria-fina-3: 0 2px 6px rgba(164, 196, 57, 0.15);
+
+  /* ─── Sombras Finas - Color Base ─── */
+  --sombra-base-fina-1: 0 1px 2px rgba(15, 20, 25, 0.1);
+  --sombra-base-fina-2: 0 2px 4px rgba(15, 20, 25, 0.12);
+  --sombra-base-fina-3: 0 2px 6px rgba(15, 20, 25, 0.15);
+
+  /* ─── Transiciones ─── */
+  --transicion-rapida: 0.2s ease;
+  --transicion-normal: 0.3s ease;
+  --transicion-lenta: 0.4s ease-in-out;
+
+  /* ─── Ancho Contenedor ─── */
+  --ancho-contenedor-pequeno: 768px;
+  --ancho-contenedor-base: 1024px;
+  --ancho-contenedor-maximo: 1200px;
+  --ancho-contenedor-grande: 1440px;
+
+  /* ─── Z-Index Escala ─── */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+}
+
+/* ═══════════════════════════════════════════════════════
+     2. RESET BÁSICO
+     ═══════════════════════════════════════════════════════ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--fuente-principal);
+  font-size: var(--texto-base);
+  font-weight: var(--peso-normal);
+  line-height: 1.6;
+  color: var(--color-texto-primario);
+  background-color: var(--color-fondo-base);
+  min-height: 100vh;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  font-size: var(--texto-codigo);
+}
+
+input {
+  width: 100%;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+     3. TIPOGRAFÍA BASE
+     ═══════════════════════════════════════════════════════ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--fuente-principal);
+  font-weight: var(--peso-bold);
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw + 1rem, var(--texto-h1));
+  font-weight: var(--peso-bold);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 4vw + 0.5rem, var(--texto-h2));
+  font-weight: var(--peso-bold);
+}
+
+h3 {
+  font-size: clamp(1.1rem, 2vw + 0.3rem, var(--texto-h3));
+  font-weight: var(--peso-semibold);
+}
+
+p {
+  font-size: var(--texto-codigo);
+}
+
+/* ─── Texto Mono (Para Precios, Códigos) ─── */
+.mono,
+.precio,
+.codigo {
+  font-family: var(--fuente-mono);
+  font-size: var(--texto-codigo);
+  letter-spacing: 0.02em;
+}
+
+/* ═══════════════════════════════════════════════════════
+     4. ESTILOS BASE HTML
+     ═══════════════════════════════════════════════════════ */
+
+/* ─── Contenedor Principal ─── */
+.contenedor {
+  width: 100%;
+  max-width: var(--ancho-contenedor-maximo);
+  margin: 0 auto;
+  padding: 0 var(--espaciado-md);
+}
+
+.contenedor-grande {
+  max-width: var(--ancho-contenedor-grande);
+}
+
+/* ─── Links ─── */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+/* ─── Separadores ─── */
+.separador {
+  height: 1px;
+  background-color: var(--color-borde-separador);
+  border: none;
+  margin: var(--espaciado-2xl) 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+     5. COMPONENTES BASE - BOTONES
+     ═══════════════════════════════════════════════════════ */
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem var(--espaciado-lg);
+  /* 10px 24px */
+  font-family: var(--fuente-principal);
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  border-radius: var(--borde-radio);
+  transition: all var(--transicion-rapida);
+  text-align: center;
+  cursor: pointer;
+}
+
+/* ─── Botón Primario ─── */
+.boton-primario {
+  background-color: var(--color-fondo-base);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-cuaternario);
+  padding: var(--espaciado-xxs) var(--espaciado-md);
+  border-radius: var(--borde-radio-grande);
+  box-shadow: var(--sombra-primaria-fina-3);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaciado-xs);
+  flex-direction: row;
+}
+
+.boton-primario:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-suave);
+  background: linear-gradient(135deg, var(--color-primario-claro), var(--color-primario));
+}
+
+.boton-primario:active:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+/* ─── Botón Secundario ─── */
+.boton-secundario {
+  width: max-content;
+  color: var(--color-fondo-base);
+  font-weight: var(--peso-semibold);
+  background-color: var(--color-fondo-octavo);
+  padding: var(--espaciado-xxs) var(--espaciado-md);
+  border-radius: var(--borde-radio-grande);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaciado-xs);
+  flex-direction: row;
+}
+
+.boton-secundario:hover:not(:disabled) {
+  background: var(--color-fondo-septimo);
+  transform: translateY(-2px);
+}
+
+.boton-secundario:active:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+/* ─── Botón Ghost ─── */
+.boton-ghost {
+  background: transparent;
+  color: var(--color-texto-primario);
+  border: var(--borde-grosor) solid var(--color-borde-sutil);
+}
+
+.boton-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.boton-ghost:active:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+/* ─── Estados Deshabilitados ─── */
+.boton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+     6. UTILIDADES - ESPACIADO
+     ═══════════════════════════════════════════════════════ */
+
+/* ─── Márgenes ─── */
+.mt-xs {
+  margin-top: var(--espaciado-xs);
+}
+
+.mt-sm {
+  margin-top: var(--espaciado-sm);
+}
+
+.mt-md {
+  margin-top: var(--espaciado-md);
+}
+
+.mt-lg {
+  margin-top: var(--espaciado-lg);
+}
+
+.mt-xl {
+  margin-top: var(--espaciado-xl);
+}
+
+.mt-2xl {
+  margin-top: var(--espaciado-2xl);
+}
+
+.mt-3xl {
+  margin-top: var(--espaciado-3xl);
+}
+
+.mb-xs {
+  margin-bottom: var(--espaciado-xs);
+}
+
+.mb-sm {
+  margin-bottom: var(--espaciado-sm);
+}
+
+.mb-md {
+  margin-bottom: var(--espaciado-md);
+}
+
+.mb-lg {
+  margin-bottom: var(--espaciado-lg);
+}
+
+.mb-xl {
+  margin-bottom: var(--espaciado-xl);
+}
+
+.mb-2xl {
+  margin-bottom: var(--espaciado-2xl);
+}
+
+.mb-3xl {
+  margin-bottom: var(--espaciado-3xl);
+}
+
+/* ─── Padding ─── */
+.p-xs {
+  padding: var(--espaciado-xs);
+}
+
+.p-sm {
+  padding: var(--espaciado-sm);
+}
+
+.p-md {
+  padding: var(--espaciado-md);
+}
+
+.p-lg {
+  padding: var(--espaciado-lg);
+}
+
+.p-xl {
+  padding: var(--espaciado-xl);
+}
+
+.p-2xl {
+  padding: var(--espaciado-2xl);
+}
+
+/* ═══════════════════════════════════════════════════════
+     7. ANIMACIONES Y TRANSICIONES
+     ═══════════════════════════════════════════════════════ */
+
+/* ─── Animación de Fade ─── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn var(--transicion-normal);
+}
+
+/* ─── Animación de Slide Up ─── */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp var(--transicion-normal);
+}
+
+/* ─── Transición Global para Cards ─── */
+.tarjeta-transicion {
+  transition: all var(--transicion-normal);
+}
+
+.tarjeta-transicion:hover {
+  transform: translateY(-4px);
+  border-color: rgba(164, 196, 57, 0.4);
+  box-shadow: var(--sombra-media);
+}
+
+/* ═══════════════════════════════════════════════════════
+     8. MEDIA QUERIES
+     ═══════════════════════════════════════════════════════ */
+
+/* ─── Tablet (768px en adelante) ─── */
+@media (min-width: 768px) {
+  .contenedor {
+    padding: 0 var(--espaciado-lg);
+  }
+}
+
+/* ─── Laptop (1024px en adelante) ─── */
+@media (min-width: 1024px) {
+  .contenedor {
+    padding: 0 var(--espaciado-xl);
+  }
+}
+
+/* ─── Desktop (1280px en adelante) ─── */
+@media (min-width: 1280px) {
+  html {
+    font-size: 17px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   7. UTILIDADES - ICONOS (CENTRALIZADO)
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Clase base para iconos ─── */
+.icono-boton {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: block;
+  flex-shrink: 0;
+  transition: filter var(--transicion-rapida);
+}
+
+.icono-boton-mediano {
+  width: 1.7rem;
+  height: 1.7rem;
+}
+
+.icono-boton-grande {
+  width: 2rem;
+  height: 2rem;
+}
+
+@media (min-width: 768px) {
+  .icono-boton {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .icono-boton-mediano {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .icono-boton-grande {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .icono-boton {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .icono-boton-mediano {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .icono-boton-grande {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+
+/* ─── Colores de iconos (sin hover por ahora) ─── */
+.icono-color-base {
+  filter: brightness(0.08) saturate(120%) hue-rotate(180deg);
+}
+
+.icono-color-primario {
+  filter: brightness(0) saturate(100%) invert(67%) sepia(89%) saturate(1200%) hue-rotate(45deg) brightness(1.1);
+}
+
+.icono-color-secundario {
+  filter: brightness(0) saturate(100%) invert(69%) contrast(1);
+}
+
+.icono-color-terciario {
+  filter: brightness(0) saturate(100%) invert(45%);
+}
+
+.icono-color-cuaternario {
+  filter: brightness(0) saturate(100%) invert(100%);
+}
+
+.icono-color-quinario {
+  filter: brightness(0) saturate(100%) invert(94%);
+}
+
+.icono-color-sexto {
+  filter: brightness(0) saturate(100%) invert(11%);
+}
+
+.icono-color-septimo {
+  filter: brightness(0) saturate(100%) invert(69%);
+}
+
+.icono-color-octavo {
+  filter: brightness(0) saturate(100%) invert(69%);
+}
+
+.icono-color-noveno {
+  filter: brightness(0) saturate(100%) invert(69%);
+}
+
+/* ═══════════════════════════════════════════════════════
+   9. COMPONENTES GLOBALES - BADGES
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Badge Base ─── */
+.global-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--espaciado-xxs) var(--espaciado-sm);
+  border-radius: var(--borde-radio-pequeno);
+  font-size: var(--texto-codigo);
+  font-weight: var(--peso-semibold);
+  text-transform: capitalize;
+  text-align: center;
+  white-space: nowrap;
+  transition: all var(--transicion-rapida);
+}
+
+/* ─── Badges de Estado (para productos, pedidos, etc.) ─── */
+.global-badge--activo {
+  background-color: #d4edda;
+  color: #155724;
+  border: var(--borde-grosor) solid #c3e6cb;
+}
+
+.global-badge--inactivo {
+  background-color: #fff3cd;
+  color: #856404;
+  border: var(--borde-grosor) solid #ffeaa7;
+}
+
+.global-badge--agotado {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: var(--borde-grosor) solid #f5c6cb;
+}
+
+.global-badge--pendiente {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: var(--borde-grosor) solid #bee5eb;
+}
+
+.global-badge--completado {
+  background-color: #d4edda;
+  color: #155724;
+  border: var(--borde-grosor) solid #c3e6cb;
+}
+
+.global-badge--cancelado,
+.global-badge--rechazado {
+
+  background-color: #f8d7da;
+  color: #721c24;
+  border: var(--borde-grosor) solid #f5c6cb;
+}
+
+.global-badge--disponible {
+  background-color: #d4edda;
+  color: #155724;
+  border: var(--borde-grosor) solid #c3e6cb;
+}
+
+.global-badge--vendido {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: var(--borde-grosor) solid #bee5eb;
+}
+
+.global-badge--expirado {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: var(--borde-grosor) solid #f5c6cb;
+}
+
+.global-badge--usado {
+  background-color: #e2e3e5;
+  color: #383d41;
+  border: var(--borde-grosor) solid #d6d8db;
+}
+
+.global-badge--reservado {
+  background-color: #fff3cd;
+  color: #856404;
+  border: var(--borde-grosor) solid #ffeaa7;
+}
+
+/* ─── Badges de Tipo (para categorizar) ─── */
+.global-badge--primario {
+  background-color: rgba(164, 196, 57, 0.2);
+  color: var(--color-primario-oscuro);
+  border: var(--borde-grosor) solid var(--color-primario);
+}
+
+.global-badge--secundario {
+  background-color: var(--color-fondo-octavo);
+  color: var(--color-fondo-base);
+  border: var(--borde-grosor) solid var(--color-borde);
+}
+
+.global-badge--neutro {
+  background-color: var(--color-fondo-quinario);
+  color: var(--color-fondo-base);
+  border: var(--borde-grosor) solid var(--color-borde-suave);
+}
+
+/* ─── Badges de Tamaño ─── */
+.global-badge--pequeno {
+  font-size: var(--texto-mini);
+  padding: calc(var(--espaciado-xxs) * 0.5) var(--espaciado-xs);
+}
+
+.global-badge--grande {
+  font-size: var(--texto-pequeno);
+  padding: var(--espaciado-xs) var(--espaciado-md);
+}
+
+/* ─── Badge con Hover Interactivo (opcional) ─── */
+.global-badge--interactivo {
+  cursor: pointer;
+}
+
+.global-badge--interactivo:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-primaria-fina-2);
+}
+
+/* ═══════════════════════════════════════════════════════
+   10. COMPONENTES GLOBALES - PAGINACIÓN
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Contenedor Principal ─── */
+.global-paginacion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  border-top: var(--borde-grosor) solid var(--color-borde-suave);
+  background-color: var(--color-fondo-noveno);
+  padding: var(--espaciado-sm) var(--espaciado-md);
+}
+
+/* ─── Información de Resultados ─── */
+.global-paginacion__info {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-base);
+  margin: 0;
+  text-align: center;
+}
+
+/* ─── Controles de Paginación ─── */
+.global-paginacion__controles {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espaciado-xxs);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ─── Botón Base de Paginación ─── */
+.global-paginacion__boton {
+  height: 2rem;
+  width: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--espaciado-xxs);
+  background-color: var(--color-fondo-octavo);
+  color: var(--color-fondo-base);
+  font-size: var(--texto-pequeno);
+  cursor: pointer;
+  transition: all var(--transicion-rapida);
+  border: var(--borde-grosor) solid transparent;
+}
+
+.global-paginacion__boton:hover:not(:disabled) {
+  background-color: var(--color-fondo-quinario);
+  border-color: var(--color-primario);
+  transform: translateY(-1px);
+}
+
+.global-paginacion__boton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Botones de Navegación (Anterior/Siguiente) ─── */
+.global-paginacion__boton--anterior {
+  border-top-left-radius: var(--borde-radio);
+  border-bottom-left-radius: var(--borde-radio);
+}
+
+.global-paginacion__boton--siguiente {
+  border-bottom-right-radius: var(--borde-radio);
+  border-top-right-radius: var(--borde-radio);
+}
+
+/* ─── Contenedor de Números ─── */
+.global-paginacion__numeros {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espaciado-xxs);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ─── Botón de Número de Página ─── */
+.global-paginacion__numero {
+  min-width: 2rem;
+  height: 2rem;
+  padding: var(--espaciado-xxs) var(--espaciado-xs);
+  background-color: var(--color-fondo-octavo);
+  border: var(--borde-grosor) solid var(--color-borde);
+  border-radius: var(--borde-radio);
+  color: var(--color-fondo-base);
+  font-size: var(--texto-pequeno);
+  cursor: pointer;
+  transition: all var(--transicion-rapida);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.global-paginacion__numero:hover {
+  background-color: var(--color-fondo-quinario);
+  border-color: var(--color-primario);
+  transform: translateY(-1px);
+}
+
+/* ─── Página Activa ─── */
+.global-paginacion__numero--activa {
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+  color: var(--color-fondo-base);
+  font-weight: var(--peso-semibold);
+}
+
+.global-paginacion__numero--activa:hover {
+  background-color: var(--color-primario-oscuro);
+  border-color: var(--color-primario-oscuro);
+  transform: none;
+}
+
+/* ─── Separador de Páginas (...) ─── */
+.global-paginacion__separador {
+  padding: 0 var(--espaciado-xxs);
+  color: var(--color-fondo-base);
+  font-size: var(--texto-pequeno);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Responsive: Tablet en adelante ─── */
+@media (min-width: 768px) {
+  .global-paginacion {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .global-paginacion__info {
+    text-align: left;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   11. COMPONENTES GLOBALES - FILTROS Y BÚSQUEDA
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Contenedor Principal de Filtros ─── */
+.global-filtros {
+  background-color: var(--color-texto-primario);
+  color: var(--color-fondo-base);
+  padding: var(--espaciado-sm);
+  border: var(--borde-grosor) solid var(--color-borde-suave);
+  box-shadow: var(--sombra-base-fina-1);
+  display: flex;
+  flex-direction: row;
+  align-items: end;
+  gap: var(--espaciado-sm);
+}
+
+/* ─── Item Individual de Filtro ─── */
+.global-filtros__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xxs);
+  flex: 1 1 auto;
+  min-width: 150px;
+  max-width: 100%;
+}
+
+/* ─── Item con Botón (ej: limpiar filtros) ─── */
+.global-filtros__item:has(.boton-secundario) {
+  flex: 0 0 auto;
+  min-width: auto;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.global-filtros__item:has(.boton-secundario)::before {
+  content: "";
+  height: calc(var(--texto-codigo) * 1.2);
+  display: block;
+}
+
+.global-filtros__item .boton-secundario {
+  white-space: nowrap;
+  align-self: flex-end;
+}
+
+/* ─── Título del Filtro ─── */
+.global-filtros__titulo {
+  font-size: var(--texto-codigo);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* ─── Input de Búsqueda ─── */
+.global-filtros__busqueda {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  gap: var(--espaciado-xs);
+  border: var(--borde-grosor) solid var(--color-borde);
+  border-radius: var(--borde-radio);
+  padding: var(--espaciado-xs) var(--espaciado-sm);
+  transition: all var(--transicion-rapida);
+  width: 100%;
+}
+
+.global-filtros__busqueda:has(.global-filtros__input:focus) {
+  border-color: var(--color-primario);
+  background-color: rgba(164, 196, 57, 0.05);
+}
+
+.global-filtros__input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  color: var(--color-fondo-base);
+  border: none;
+  outline: none;
+}
+
+.global-filtros__input::placeholder {
+  color: var(--color-fondo-septimo);
+}
+
+/* ─── Input tipo Date ─── */
+input[type="date"].global-filtros__input {
+  cursor: pointer;
+  position: relative;
+  font-family: inherit;
+  color: var(--color-fondo-base);
+  min-width: 150px;
+  z-index: 1;
+}
+
+/* Calendario del input date - z-index alto para que aparezca */
+input[type="date"].global-filtros__input::-webkit-datetime-edit {
+  cursor: pointer;
+}
+
+input[type="date"].global-filtros__input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.7);
+  margin-left: var(--espaciado-xs);
+}
+
+input[type="date"].global-filtros__input:focus {
+  outline: none;
+  position: relative;
+  z-index: var(--z-dropdown);
+}
+
+/* Estilos para el valor cuando está vacío */
+input[type="date"].global-filtros__input:not(:focus):invalid {
+  color: var(--color-fondo-septimo);
+}
+
+/* Asegurar que el contenedor del input date tenga overflow visible */
+.global-filtros__busqueda:has(input[type="date"]) {
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+
+.global-filtros__busqueda:has(input[type="date"]:focus) {
+  z-index: var(--z-dropdown);
+}
+
+/* ─── Dropdown de Filtro ─── */
+.global-filtros__dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.global-filtros__dropdown-boton {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaciado-xs);
+  padding: var(--espaciado-xs) var(--espaciado-sm);
+  background-color: var(--color-fondo-cuaternario);
+  border: var(--borde-grosor) solid var(--color-borde);
+  border-radius: var(--borde-radio);
+  cursor: pointer;
+  transition: all var(--transicion-rapida);
+  color: var(--color-fondo-base);
+  width: 100%;
+}
+
+.global-filtros__dropdown-boton span {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.global-filtros__dropdown-boton:hover {
+  border-color: var(--color-primario);
+  background-color: rgba(164, 196, 57, 0.05);
+  transform: translateY(-1px);
+}
+
+.global-filtros__dropdown-boton:active {
+  transform: translateY(0);
+}
+
+/* ─── Menú del Dropdown ─── */
+.global-filtros__dropdown-menu {
+  position: absolute;
+  top: calc(100% + var(--espaciado-xxs));
+  left: 0;
+  right: 0;
+  min-width: 100%;
+  background-color: var(--color-fondo-cuaternario);
+  border: var(--borde-grosor) solid var(--color-borde);
+  border-radius: var(--borde-radio);
+  box-shadow: var(--sombra-media);
+  padding: var(--espaciado-xxs);
+  z-index: var(--z-dropdown);
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── Opción del Dropdown ─── */
+.global-filtros__dropdown-opcion {
+  display: flex;
+  align-items: center;
+  padding: var(--espaciado-xs) var(--espaciado-sm);
+  background-color: transparent;
+  border: none;
+  border-radius: var(--borde-radio-pequeno);
+  cursor: pointer;
+  transition: all var(--transicion-rapida);
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-base);
+  text-align: left;
+  width: 100%;
+}
+
+.global-filtros__dropdown-opcion:hover {
+  background-color: var(--color-fondo-quinario);
+  color: var(--color-primario-oscuro);
+}
+
+.global-filtros__dropdown-opcion:active {
+  background-color: var(--color-fondo-sexto);
+}
+
+/* ─── Botón Solo con Icono ─── */
+.global-filtros__boton-icono {
+  width: auto;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: var(--espaciado-xxs);
+  aspect-ratio: 1;
+}
+
+.global-filtros__boton-icono p {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE - FILTROS
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Móvil: Filtros en columna ─── */
+@media (max-width: 767px) {
+  .global-filtros {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--espaciado-sm);
+    padding: var(--espaciado-sm);
+    border-radius: var(--borde-radio);
+  }
+
+  .global-filtros__item {
+    min-width: auto;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .global-filtros__item:has(.boton-secundario) {
+    flex: 1 1 auto;
+    min-width: auto;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+
+  .global-filtros__item:has(.boton-secundario)::before {
+    display: none;
+  }
+
+  .global-filtros__item .boton-secundario {
+    align-self: flex-start;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .global-filtros__busqueda {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .global-filtros__titulo {
+    font-size: var(--texto-pequeno);
+  }
+}
+
+/* ─── Tablet: Filtros en fila con wrap ─── */
+@media (min-width: 768px) {
+  .global-filtros {
+    border-radius: var(--borde-radio-grande);
+    padding: var(--espaciado-md);
+    gap: var(--espaciado-md);
+    flex-wrap: nowrap;
+  }
+
+  .global-filtros__item {
+    min-width: 180px;
+  }
+
+  .global-filtros__item:has(.boton-secundario) {
+    min-width: auto;
+    flex: 0 0 auto;
+  }
+
+  .global-filtros__busqueda {
+    /* min-width: 250px; */
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   12. COMPONENTES GLOBALES - TABLAS Y LISTADOS
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Contenedor de Tabla ─── */
+.global-tabla {
+  box-shadow: var(--sombra-base-fina-1);
+  border: var(--borde-grosor) solid var(--color-borde-suave);
+  background-color: var(--color-fondo-cuaternario);
+  color: var(--color-fondo-base);
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+/* ─── Elemento Table ─── */
+.global-tabla__elemento {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  min-width: 800px;
+}
+
+/* ─── Cabecera de Tabla ─── */
+.global-tabla__cabecera {
+  background-color: var(--color-fondo-noveno);
+  border-bottom: var(--borde-grosor) solid var(--color-borde-suave);
+}
+
+.global-tabla__cabecera th {
+  font-size: var(--texto-codigo);
+  color: var(--color-fondo-base);
+  font-weight: var(--peso-semibold);
+  padding: var(--espaciado-sm) var(--espaciado-md);
+  text-align: center;
+}
+
+/* ─── Cuerpo de Tabla ─── */
+.global-tabla__cuerpo {
+  background-color: var(--color-fondo-cuaternario);
+  color: var(--color-fondo-base);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-normal);
+}
+
+.global-tabla__fila {
+  border-bottom: var(--borde-grosor) solid var(--color-borde-suave);
+  transition: background-color var(--transicion-rapida);
+}
+
+.global-tabla__fila:hover {
+  background-color: var(--color-fondo-noveno);
+}
+
+.global-tabla__fila:last-child {
+  border-bottom: none;
+}
+
+.global-tabla__celda {
+  padding: var(--espaciado-xs) var(--espaciado-md);
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* ─── Celda con Imagen y Texto (Primera columna típica) ─── */
+.global-tabla__celda-principal {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  /* min-width: 300px; */
+  text-align: left !important;
+}
+
+.global-tabla__imagen {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: var(--borde-radio);
+  flex-shrink: 0;
+}
+
+.global-tabla__texto-principal {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-base);
+  font-weight: var(--peso-medio);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  max-width: 100%;
+  flex: 1;
+}
+
+/* ─── Celdas de Información ─── */
+.global-tabla__celda-info {
+  /* min-width: 120px; */
+  text-align: center;
+}
+
+.global-tabla__celda-info p {
+  margin: 0;
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-base);
+}
+
+/* ─── Celda de Acciones ─── */
+.global-tabla__celda-acciones {
+  align-items: center;
+  gap: var(--espaciado-xs);
+  /* min-width: 200px; */
+  text-align: center;
+}
+
+.global-tabla__lista-acciones {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaciado-xs);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.global-tabla__boton-accion {
+  padding: var(--espaciado-xxs) var(--espaciado-sm);
+  font-size: var(--texto-codigo);
+  gap: var(--espaciado-xxs);
+}
+
+.global-tabla__boton-accion p {
+  margin: 0;
+  font-size: var(--texto-codigo);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE - TABLAS (VISTA CARD EN MÓVIL)
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Móvil: Convertir tabla en cards ─── */
+@media (max-width: 767px) {
+  .global-tabla {
+    overflow-x: visible;
+  }
+
+  .global-tabla__elemento {
+    min-width: auto;
+    display: block;
+  }
+
+  .global-tabla__cabecera {
+    display: none;
+  }
+
+  .global-tabla__cuerpo {
+    display: block;
+    background-color: transparent;
+  }
+
+  .global-tabla__fila {
+    padding: var(--espaciado-xs) 0;
+    display: block;
+    border-bottom: var(--borde-grosor) solid var(--color-borde-suave);
+    background-color: var(--color-fondo-cuaternario);
+    transition: background-color var(--transicion-rapida);
+  }
+
+  .global-tabla__fila:last-child {
+    margin-bottom: 0;
+    border-bottom: var(--borde-grosor) solid var(--color-borde-suave);
+  }
+
+  .global-tabla__fila:hover {
+    box-shadow: var(--sombra-media);
+  }
+
+  .global-tabla__celda {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--espaciado-xs);
+    padding: var(--espaciado-xs) 0;
+    text-align: left !important;
+    min-width: auto;
+    border: none;
+  }
+
+  /* ─── Celda Principal en Móvil ─── */
+  .global-tabla__celda-principal {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--espaciado-sm);
+    padding-bottom: var(--espaciado-sm);
+    border-bottom: var(--borde-grosor) solid var(--color-borde-suave);
+    margin-bottom: var(--espaciado-xs);
+    min-width: auto;
+    text-align: left !important;
+  }
+
+  .global-tabla__imagen {
+    width: 80px;
+    height: 80px;
+  }
+
+  .global-tabla__texto-principal {
+    flex: 1;
+    font-size: var(--texto-base);
+    font-weight: var(--peso-semibold);
+    -webkit-line-clamp: 3;
+  }
+
+  /* ─── Etiquetas antes del contenido (::before) ─── */
+  .global-tabla__celda-info::before {
+    font-weight: var(--peso-semibold);
+    color: var(--color-fondo-septimo);
+    margin-right: var(--espaciado-xxs);
+  }
+
+  /* Estas clases específicas necesitan definirse por página según la columna */
+  .global-tabla__celda--estado::before {
+    content: "Estado: ";
+  }
+
+  .global-tabla__celda--inventario::before {
+    content: "Inventario: ";
+  }
+
+  .global-tabla__celda--fecha::before {
+    content: "Fecha: ";
+  }
+
+  .global-tabla__celda--categoria::before {
+    content: "Categoría: ";
+  }
+
+  .global-tabla__celda--fuente::before {
+    content: "Fuente: ";
+  }
+
+  .global-tabla__celda-acciones::before {
+    content: "Acciones: ";
+    font-weight: var(--peso-semibold);
+    color: var(--color-fondo-septimo);
+    margin-right: var(--espaciado-xxs);
+    display: block;
+    margin-bottom: var(--espaciado-xs);
+  }
+
+  /* ─── Ajustes de Celdas en Móvil ─── */
+  .global-tabla__celda-info {
+    display: flex;
+    align-items: center;
+    gap: var(--espaciado-xs);
+    min-width: auto;
+    text-align: left;
+  }
+
+  .global-tabla__celda-info p {
+    display: inline;
+  }
+
+  .global-tabla__celda-acciones {
+    min-width: auto;
+    text-align: left;
+    padding-top: var(--espaciado-sm);
+    border-top: var(--borde-grosor) solid var(--color-borde-suave);
+  }
+
+  .global-tabla__lista-acciones {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .global-tabla__boton-accion {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ─── Tablet: Ajustes de imagen ─── */
+@media (min-width: 768px) {
+  .global-tabla__imagen {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* ─── Desktop: Bordes redondeados ─── */
+@media (min-width: 1280px) {
+  .global-tabla {
+    border-radius: var(--borde-radio-grande);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   13. COMPONENTES GLOBALES - FORMULARIOS
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Campo Base de Formulario ─── */
+.global-formulario-campo {
+  display: flex;
+  flex-direction: column;
+  border: var(--borde-grosor) solid var(--color-borde);
+  border-radius: var(--borde-radio-grande);
+  padding: var(--espaciado-xs);
+  transition: all var(--transicion-rapida);
+  gap: var(--espaciado-xxs);
+}
+
+.global-formulario-campo:has(.global-formulario-campo__input:focus),
+.global-formulario-campo:has(.global-formulario-campo__textarea:focus) {
+  border-color: var(--color-primario);
+  background-color: rgba(164, 196, 57, 0.05);
+}
+
+/* ─── Etiqueta del Campo ─── */
+.global-formulario-campo__etiqueta {
+  font-size: var(--texto-codigo);
+  color: var(--color-fondo-septimo);
+  font-weight: var(--peso-medium);
+  gap: var(--espaciado-xs);
+}
+
+/* ─── Texto de Ayuda ─── */
+.global-formulario-campo__ayuda {
+  font-size: var(--texto-mini);
+  color: var(--color-fondo-septimo);
+  margin-top: var(--espaciado-xxs);
+  font-style: italic;
+}
+
+/* ─── Contenedor de Input ─── */
+.global-formulario-campo__contenedor {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espaciado-sm);
+  width: 100%;
+}
+
+.global-formulario-campo__contenedor--clickeable {
+  cursor: pointer;
+}
+
+.global-formulario-campo__contenedor--textarea {
+  padding: 0;
+}
+
+/* ─── Input Text / Number / Email / etc. ─── */
+.global-formulario-campo__input {
+  flex: 1;
+  padding: 0;
+  font-size: var(--texto-base);
+  font-family: var(--fuente-principal);
+  color: var(--color-fondo-base);
+  background-color: transparent;
+  border: none;
+  outline: none;
+  transition: all var(--transicion-rapida);
+  text-align: start;
+}
+
+.global-formulario-campo__input--readonly {
+  background-color: var(--color-fondo-quinario);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.global-formulario-campo__input::placeholder {
+  color: var(--color-texto-terciario);
+  opacity: 0.4;
+  text-align: start;
+}
+
+/* ─── Textarea ─── */
+.global-formulario-campo__textarea {
+  width: 100%;
+  min-height: 6rem;
+  padding: var(--espaciado-xs);
+  font-size: var(--texto-base);
+  font-family: var(--fuente-principal);
+  color: var(--color-fondo-base);
+  background-color: transparent;
+  border: none;
+  outline: none;
+  resize: vertical;
+  transition: all var(--transicion-rapida);
+}
+
+.global-formulario-campo__textarea::placeholder {
+  color: var(--color-texto-terciario);
+  opacity: 0.4;
+}
+
+/* ─── Botón con Icono en el Campo ─── */
+.global-formulario-campo__boton-icono {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  background: transparent;
+  transition: all var(--transicion-rapida);
+}
+
+.global-formulario-campo__boton-icono:hover {
+  transform: scale(1.1);
+}
+
+/* ═══════════════════════════════════════════════════════
+   14. COMPONENTES GLOBALES - CHECKBOX PERSONALIZADO
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Contenedor de Checkbox ─── */
+.global-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+}
+
+/* ─── Input Checkbox Personalizado ─── */
+.global-checkbox__input {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0.125rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  appearance: none;
+  background-color: var(--color-fondo-cuaternario);
+  border: var(--borde-grosor) solid var(--color-borde);
+  border-radius: var(--borde-radio-pequeno);
+  position: relative;
+  transition: all var(--transicion-rapida);
+}
+
+.global-checkbox__input::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 0.75rem;
+  height: 0.75rem;
+  background-color: var(--color-texto-primario);
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transition: transform var(--transicion-rapida);
+}
+
+.global-checkbox__input:checked {
+  background-color: var(--color-fondo-base);
+  border-color: var(--color-fondo-base);
+}
+
+.global-checkbox__input:checked::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.global-checkbox__input:focus {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+.global-checkbox__input:hover:not(:disabled) {
+  border-color: var(--color-primario);
+}
+
+.global-checkbox__input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Contenido del Checkbox ─── */
+.global-checkbox__contenido {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.global-checkbox__titulo {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+  margin: 0;
+}
+
+.global-checkbox__descripcion {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   15. COMPONENTES GLOBALES - RADIO BUTTON PERSONALIZADO
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Contenedor de Radio ─── */
+.global-radio {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+}
+
+/* ─── Input Radio Personalizado ─── */
+.global-radio__input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  cursor: pointer;
+  appearance: none;
+  border: var(--borde-grosor) solid var(--color-borde);
+  border-radius: 50%;
+  background-color: var(--color-texto-primario);
+  position: relative;
+  transition: all var(--transicion-rapida);
+  flex-shrink: 0;
+}
+
+.global-radio__input:checked {
+  border-color: var(--color-fondo-base);
+  background-color: var(--color-texto-primario);
+}
+
+.global-radio__input:checked::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  background-color: var(--color-fondo-base);
+}
+
+.global-radio__input:focus {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+.global-radio__input:hover:not(:disabled) {
+  border-color: var(--color-primario);
+}
+
+.global-radio__input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Contenido del Radio ─── */
+.global-radio__contenido {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.global-radio__titulo {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+  margin: 0;
+}
+
+.global-radio__descripcion {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+  margin: 0;
+}
+
+/* ─── Contenedor de Carga de Imágenes ─── */
+.global-formulario-imagenes__contenedor {
+  width: 100%;
+  height: clamp(8rem, 15vh, 12rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xxs);
+  align-items: center;
+  justify-content: center;
+  border: var(--borde-grosor) dashed var(--color-borde);
+  border-radius: var(--borde-radio-grande);
+  padding: var(--espaciado-xs) var(--espaciado-sm);
+  transition: all var(--transicion-rapida);
+  cursor: pointer;
+}
+
+.global-formulario-imagenes__contenedor:hover {
+  background-color: var(--color-fondo-quinario);
+  border-color: var(--color-primario);
+  box-shadow: var(--sombra-primaria-fina-3);
+}
+
+.global-formulario-imagenes__etiqueta1 {
+  font-size: var(--texto-codigo);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-septimo);
+}
+
+.global-formulario-imagenes__etiqueta2 {
+  font-size: var(--texto-mini);
+  color: var(--color-texto-terciario);
+  opacity: 0.95;
+}
+
+/* ─── Modificador para contenedor clickeable ─── */
+.global-formulario-imagenes__contenedor--clickeable {
+  cursor: pointer;
+  position: relative;
+}
+
+/* ─── Preview de imagen subida ─── */
+.global-formulario-imagenes__preview {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* ← IMPORTANTE: mantiene proporción sin estirar */
+  border-radius: var(--borde-radio);
+}
+
+/* Contenedor principal */
+.global-formulario-opciones-radio {
+  display: flex;
+  flex-direction: row;
+  gap: var(--espaciado-xs);
+  flex-wrap: wrap;
+}
+
+/* Cada opción individual - FALTA __opcion */
+.global-formulario-opciones-radio__opcion {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-xs);
+  padding: var(--espaciado-xs);
+  border: var(--borde-grosor) solid var(--color-borde);
+  border-radius: var(--borde-radio-grande);
+  cursor: pointer;
+  transition: all var(--transicion-rapida);
+  flex: 1;
+  min-width: fit-content;
+}
+
+.global-formulario-opciones-radio__opcion:hover {
+  background-color: var(--color-fondo-quinario);
+  border-color: var(--color-primario);
+}
+
+.global-formulario-opciones-radio__opcion:has(.global-radio__input:checked) {
+  background-color: rgba(164, 196, 57, 0.1);
+  border-color: var(--color-primario);
+}
+
+.global-formulario-opciones-radio__label {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-medium);
+  color: var(--color-fondo-base);
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE - FORMULARIOS
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Desktop: Etiquetas más grandes y campos con border ─── */
+@media (min-width: 1280px) {
+  .global-formulario-campo {
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .global-formulario-campo:has(.global-formulario-campo__input:focus),
+  .global-formulario-campo:has(.global-formulario-campo__textarea:focus) {
+    border-color: transparent;
+    background-color: transparent;
+  }
+
+  .global-formulario-campo__etiqueta {
+    font-size: var(--texto-base);
+    font-weight: var(--peso-semibold);
+    color: var(--color-fondo-base);
+    margin: 0;
+  }
+
+  .global-formulario-campo__contenedor {
+    display: flex;
+    align-items: center;
+    gap: var(--espaciado-xxs);
+    width: 100%;
+    border: var(--borde-grosor) solid var(--color-borde);
+    border-radius: var(--borde-radio-grande);
+    padding: var(--espaciado-xs);
+    transition: all var(--transicion-rapida);
+  }
+
+  .global-formulario-campo__contenedor:has(.global-formulario-campo__input:focus),
+  .global-formulario-campo__contenedor:has(.global-formulario-campo__textarea:focus) {
+    border-color: var(--color-primario);
+    background-color: rgba(164, 196, 57, 0.05);
+  }
+
+  .global-formulario-campo__contenedor--textarea {
+    padding: var(--espaciado-xs) var(--espaciado-sm);
+  }
+
+  .global-formulario-campo__textarea {
+    padding: 0;
+    min-height: 5rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   14. COMPONENTES GLOBALES - MODALES
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Modal Base ─── */
+.global-modal {
+  padding: var(--espaciado-md);
+  min-width: 20rem;
+}
+
+.global-modal--ancho {
+  min-width: 100%;
+  max-width: 100%;
+}
+
+/* ─── Cabecera ─── */
+.global-modal__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--espaciado-xs);
+  border-bottom: var(--borde-grosor) solid var(--color-borde-separador);
+}
+
+.global-modal__titulo {
+  font-size: var(--texto-h3);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+  margin: 0;
+}
+
+.global-modal__boton-cerrar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--borde-radio);
+  transition: all var(--transicion-rapida);
+}
+
+.global-modal__boton-cerrar:hover {
+  background-color: var(--color-fondo-quinario);
+}
+
+/* ─── Contenido ─── */
+.global-modal__contenido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xxs);
+}
+
+.global-modal__contenido--grid {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Acciones (Footer) ─── */
+.global-modal__acciones {
+  display: flex;
+  gap: var(--espaciado-sm);
+  justify-content: flex-end;
+  border-top: var(--borde-grosor) solid var(--color-borde-separador);
+  padding-top: var(--espaciado-xs);
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+
+  .global-modal__contenido--grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--espaciado-xs);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   15. COMPONENTES GLOBALES - MENSAJES VACÍOS
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Contenedor Principal ─── */
+.global-mensaje-vacio {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaciado-xs);
+  padding: var(--espaciado-xs);
+  background-color: var(--color-fondo-quinario);
+  border: var(--borde-grosor) solid var(--color-borde-suave);
+  border-left: 4px solid var(--color-primario);
+  border-radius: var(--borde-radio-grande);
+}
+
+/* ─── Icono ─── */
+.global-mensaje-vacio__icono {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  padding-top: var(--espaciado-xxs);
+}
+
+/* ─── Contenido ─── */
+.global-mensaje-vacio__contenido {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xxs);
+}
+
+.global-mensaje-vacio__titulo {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+  margin: 0;
+}
+
+.global-mensaje-vacio__texto {
+  color: var(--color-fondo-base);
+  margin: 0;
+  line-height: 1.6;
+  font-weight: var(--peso-medium);
+}
+
+/* ─── Lista ─── */
+.global-mensaje-vacio__lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.global-mensaje-vacio__item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--espaciado-xs);
+  padding: var(--espaciado-xxs);
+}
+
+.global-mensaje-vacio__item:hover {
+  border-color: var(--color-primario);
+  background-color: rgba(164, 196, 57, 0.05);
+}
+
+.global-mensaje-vacio__item-bullet {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-top: 0.375rem;
+  background-color: var(--color-primario);
+  border-radius: 50%;
+}
+
+.global-mensaje-vacio__item-texto {
+  color: var(--color-fondo-base);
+  line-height: 1.6;
+  flex: 1;
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  .global-modal--ancho {
+    min-width: 100%;
+    max-width: 100%;
+  }
+}

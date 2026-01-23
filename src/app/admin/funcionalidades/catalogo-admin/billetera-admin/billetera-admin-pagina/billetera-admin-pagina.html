@@ -1,0 +1,284 @@
+<div class="contenedor-base" (click)="cerrarTodosLosDropdowns()">
+  <!-- ===== SECCIÓN: TITULO Y OPCIONES ===== -->
+  <section class="titulo-opciones-contenedor">
+    <div class="titulo-contenedor">
+      <img src="/iconos/ico-billetera.svg" alt="Icono billetera" class="icono-boton icono-color-base">
+      <h3>Billetera</h3>
+    </div>
+    <div class="opciones-contenedor">
+      <button class="boton-secundario" (click)="alternarFiltros()">
+        <p>{{ filtrosVisibles() ? 'Ocultar Filtros' : 'Mostrar Filtros' }}</p>
+      </button>
+      <button class="boton-primario" (click)="abrirModalAgregarSaldo()">
+        <p>Agregar Saldo</p>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== SECCIÓN: FILTROS AVANZADOS ===== -->
+  @if (filtrosVisibles()) {
+  <section class="global-filtros" (click)="$event.stopPropagation()">
+    <!-- Buscador - Por email o nombre -->
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Buscador</p>
+      <div class="global-filtros__busqueda">
+        <img src="/iconos/ico-busqueda.svg" alt="Icono busqueda" class="icono-boton icono-color-base">
+        <input type="text" placeholder="Buscar por email o nombre..." class="global-filtros__input"
+          [value]="textoBusqueda()" (input)="textoBusqueda.set($any($event.target).value)">
+      </div>
+    </div>
+
+    <!-- Dropdown Método -->
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Método</p>
+      <div class="global-filtros__dropdown" (click)="$event.stopPropagation()">
+        <button class="global-filtros__dropdown-boton" (click)="alternarDropdownMetodo()" type="button">
+          <span>{{ obtenerNombreMetodoFiltro() }}</span>
+          <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="icono-boton icono-color-base">
+        </button>
+        @if (dropdownMetodoAbierto()) {
+        <div class="global-filtros__dropdown-menu">
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarMetodo('')" type="button">
+            Todos los métodos
+          </button>
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarMetodo('Transferencia')" type="button">
+            Transferencia
+          </button>
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarMetodo('Efectivo')" type="button">
+            Efectivo
+          </button>
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarMetodo('Tarjeta')" type="button">
+            Tarjeta
+          </button>
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarMetodo('Manual')" type="button">
+            Manual
+          </button>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Dropdown Estado -->
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Estado</p>
+      <div class="global-filtros__dropdown" (click)="$event.stopPropagation()">
+        <button class="global-filtros__dropdown-boton" (click)="alternarDropdownEstado()" type="button">
+          <span>{{ obtenerNombreEstadoFiltro() }}</span>
+          <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="icono-boton icono-color-base">
+        </button>
+        @if (dropdownEstadoAbierto()) {
+        <div class="global-filtros__dropdown-menu">
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarEstado('')" type="button">
+            Todos los estados
+          </button>
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarEstado('completada')" type="button">
+            Completada
+          </button>
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarEstado('pendiente')" type="button">
+            Pendiente
+          </button>
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarEstado('rechazada')" type="button">
+            Rechazada
+          </button>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Fecha de Transacción -->
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Fecha de Transacción</p>
+      <div class="global-filtros__busqueda" (click)="$event.stopPropagation()">
+        <input type="date" class="global-filtros__input" [value]="fechaTransaccion()"
+          (change)="fechaTransaccion.set($any($event.target).value)" (click)="$event.stopPropagation()">
+      </div>
+    </div>
+
+    <!-- Botón Limpiar -->
+    <div class="global-filtros__item">
+      <button class="boton-secundario global-filtros__boton-icono" (click)="limpiarFiltros()" type="button">
+        <img src="/iconos/ico-limpiar.svg" alt="Icono limpiar" class="icono-boton icono-color-base">
+      </button>
+    </div>
+  </section>
+  }
+
+  <!-- ===== SECCIÓN: TABLA DE TRANSACCIONES ===== -->
+  <section class="global-tabla">
+    <table class="global-tabla__elemento">
+      <thead class="global-tabla__cabecera">
+        <tr>
+          <th>Usuario</th>
+          <th>Saldo Anterior</th>
+          <th>Monto</th>
+          <th>Nuevo Saldo</th>
+          <th>Método</th>
+          <th>Estado</th>
+          <th>Nota</th>
+          <th>Fecha de Transacción</th>
+        </tr>
+      </thead>
+      <tbody class="global-tabla__cuerpo">
+        @for (transaccion of transaccionesPaginadas(); track transaccion.id) {
+        <tr class="global-tabla__fila">
+          <td class="global-tabla__celda">{{ transaccion.usuarioNombre }} <br> {{ transaccion.usuarioEmail }}</td>
+          <td class="global-tabla__celda">${{ transaccion.saldoAnterior }}</td>
+          <td class="global-tabla__celda" [class.monto-positivo]="transaccion.tipoMovimiento === 'deposito'"
+            [class.monto-negativo]="transaccion.tipoMovimiento === 'retiro'">
+            {{ transaccion.tipoMovimiento === 'deposito' ? '+' : '-' }}${{ transaccion.monto }}
+          </td>
+          <td class="global-tabla__celda global-tabla__celda--destacado">${{ transaccion.nuevoSaldo }}</td>
+          <td class="global-tabla__celda">{{ transaccion.metodoPago }}</td>
+          <td class="global-tabla__celda">
+            <span class="global-badge global-badge--{{transaccion.estado}}">
+              {{ transaccion.estado }}
+            </span>
+          </td>
+          <td class="global-tabla__celda" [title]="transaccion.nota">
+            {{ truncarTexto(transaccion.nota, 30) }}
+          </td>
+          <td class="global-tabla__celda">{{ transaccion.fechaCreacion | date:'short' }}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+
+    <!-- ===== SECCIÓN: PAGINACIÓN ===== -->
+    <div class="global-paginacion">
+      <div class="global-paginacion__controles">
+        <button class="global-paginacion__boton global-paginacion__boton--anterior" (click)="paginaAnterior()"
+          [disabled]="paginaActual() === 1">
+          <img src="/iconos/ico-flecha-izquierda-tabla.svg" alt="Icono flecha izquierda"
+            class="icono-boton icono-color-base">
+        </button>
+        <div class="global-paginacion__numeros">
+          @for (pagina of paginasAMostrar(); track pagina) {
+          @if (pagina === -1) {
+          <span class="global-paginacion__separador">...</span>
+          } @else {
+          <button class="global-paginacion__numero"
+            [class.global-paginacion__numero--activa]="pagina === paginaActual()" (click)="irAPagina(pagina)"
+            type="button">
+            {{ pagina }}
+          </button>
+          }
+          }
+        </div>
+        <button class="global-paginacion__boton global-paginacion__boton--siguiente" (click)="paginaSiguiente()"
+          [disabled]="paginaActual() === totalPaginas()">
+          <img src="/iconos/ico-flecha-derecha-tabla.svg" alt="Icono flecha derecha"
+            class="icono-boton icono-color-base">
+        </button>
+      </div>
+      <p class="global-paginacion__info">
+        {{ (paginaActual() - 1) * transaccionesPorPagina() + 1 }}-{{ Math.min(paginaActual() * transaccionesPorPagina(),
+        totalTransacciones()) }} de {{ totalTransacciones() }}
+      </p>
+    </div>
+  </section>
+</div>
+
+<!-- ===== MODAL: AGREGAR SALDO ===== -->
+<app-modal [estaAbierto]="modalAgregarSaldoAbierto()" (cerrar)="cerrarModalAgregarSaldo()">
+  <div class="global-modal" (click)="cerrarTodosLosDropdowns()">
+
+    <!-- Cabecera -->
+    <div class="global-modal__cabecera">
+      <h3 class="global-modal__titulo">Agregar Saldo a Usuario</h3>
+      <button type="button" class="global-modal__boton-cerrar" (click)="cerrarModalAgregarSaldo()"
+        aria-label="Cerrar modal">
+        <img src="/iconos/ico-cerrar.svg" alt="Cerrar" class="icono-boton icono-color-secundario">
+      </button>
+    </div>
+
+    <!-- Contenido -->
+    <div class="global-modal__contenido">
+
+      <!-- Buscar Usuario -->
+      <div class="formulario-grupo">
+        <label class="formulario-etiqueta">Buscar Usuario</label>
+        @if (!usuarioSeleccionado()) {
+        <div class="formulario-input-contenedor">
+          <img src="/iconos/ico-busqueda.svg" alt="Buscar" class="icono-boton icono-color-base">
+          <input type="text" class="formulario-input" placeholder="Escriba email o nombre..."
+            [value]="busquedaUsuario()" (input)="busquedaUsuario.set($any($event.target).value)"
+            (click)="$event.stopPropagation()">
+        </div>
+
+        <!-- Lista de usuarios encontrados -->
+        @if (usuariosFiltrados().length > 0) {
+        <div class="lista-usuarios">
+          @for (usuario of usuariosFiltrados(); track usuario.id) {
+          <button class="usuario-item" (click)="seleccionarUsuario(usuario)" type="button">
+            <p class="usuario-item__nombre">{{ usuario.nombre }}</p>
+            <p class="usuario-item__email">{{ usuario.email }}</p>
+          </button>
+          }
+        </div>
+        }
+        } @else {
+        <!-- Usuario seleccionado -->
+        <div class="usuario-seleccionado">
+          <div class="usuario-seleccionado__info">
+            <p class="usuario-seleccionado__nombre">{{ usuarioSeleccionado()!.nombre }}</p>
+            <p class="usuario-seleccionado__email">{{ usuarioSeleccionado()!.email }}</p>
+            <p class="usuario-seleccionado__saldo">Saldo actual: ${{ usuarioSeleccionado()!.saldoActual }}</p>
+          </div>
+          <button class="usuario-seleccionado__remover" (click)="removerUsuarioSeleccionado()" type="button">
+            <img src="/iconos/ico-cerrar.svg" alt="Remover" class="icono-boton-pequeno icono-color-secundario">
+          </button>
+        </div>
+        }
+      </div>
+
+      <!-- Tipo de Transacción -->
+      <div class="formulario-grupo">
+        <label class="formulario-etiqueta">Tipo de Transacción</label>
+        <div class="global-filtros__dropdown" (click)="$event.stopPropagation()">
+          <button class="global-filtros__dropdown-boton" (click)="alternarTipoTransaccion()" type="button">
+            <span>{{ obtenerNombreTipoTransaccion() }}</span>
+            <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="icono-boton icono-color-base">
+          </button>
+          @if (dropdownTipoTransaccionAbierto()) {
+          <div class="global-filtros__dropdown-menu">
+            <button class="global-filtros__dropdown-opcion" (click)="seleccionarTipoTransaccion('deposito')"
+              type="button">
+              Agregar saldo
+            </button>
+            <button class="global-filtros__dropdown-opcion" (click)="seleccionarTipoTransaccion('retiro')"
+              type="button">
+              Restar saldo
+            </button>
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Monto -->
+      <div class="formulario-grupo">
+        <label class="formulario-etiqueta">Monto</label>
+        <input type="number" class="formulario-input" placeholder="0.00" min="0" step="0.01"
+          [value]="montoTransaccion()" (input)="montoTransaccion.set($any($event.target).value)">
+      </div>
+
+      <!-- Nota -->
+      <div class="formulario-grupo">
+        <label class="formulario-etiqueta">Nota (opcional)</label>
+        <textarea class="formulario-textarea" placeholder="Agregar una nota sobre esta transacción..." rows="3"
+          [value]="notaTransaccion()" (input)="notaTransaccion.set($any($event.target).value)"></textarea>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="global-modal__acciones">
+      <button type="button" class="boton-secundario" (click)="cerrarModalAgregarSaldo()">
+        Cancelar
+      </button>
+      <button type="button" class="boton-primario" (click)="guardarTransaccion()"
+        [disabled]="!usuarioSeleccionado() || !montoTransaccion()">
+        Guardar Transacción
+      </button>
+    </div>
+  </div>
+</app-modal>

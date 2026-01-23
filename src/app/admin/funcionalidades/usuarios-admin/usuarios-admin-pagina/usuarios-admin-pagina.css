@@ -1,0 +1,101 @@
+/* ═══════════════════════════════════════════════════════
+   CONTENEDOR PRINCIPAL
+   ═══════════════════════════════════════════════════════ */
+.lista-usuarios-contenedor {
+  width: 100%;
+  padding: var(--espaciado-md) 0;
+  color: var(--color-texto-primario);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-md);
+}
+
+/* ═══════════════════════════════════════════════════════
+     TÍTULO Y OPCIONES
+     ═══════════════════════════════════════════════════════ */
+.titulo-opciones-contenedor {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: var(--espaciado-sm);
+  padding: 0 var(--espaciado-md);
+  color: var(--color-fondo-base);
+}
+
+.titulo-contenedor {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  gap: var(--espaciado-xs);
+}
+
+.opciones-contenedor {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espaciado-xs);
+  flex-wrap: wrap;
+}
+
+/* ═══════════════════════════════════════════════════════
+     IMAGEN USUARIO (REDONDA)
+     ═══════════════════════════════════════════════════════ */
+.global-tabla__imagen-usuario {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--color-borde-suave);
+}
+
+/* ═══════════════════════════════════════════════════════
+     CONTENEDOR FOTO PERFIL EN MODAL
+     ═══════════════════════════════════════════════════════ */
+.contenedor-foto-perfil {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaciado-sm);
+}
+
+.foto-perfil-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-primario);
+}
+
+/* ═══════════════════════════════════════════════════════
+     MEDIA QUERIES
+     ═══════════════════════════════════════════════════════ */
+
+/* ─── Tablet ─── */
+@media (min-width: 768px) {
+  .lista-usuarios-contenedor {
+    padding: var(--espaciado-md) var(--espaciado-lg);
+  }
+
+  .titulo-opciones-contenedor {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0;
+  }
+}
+
+/* ─── Laptop ─── */
+@media (min-width: 1024px) {
+  .lista-usuarios-contenedor {
+    padding: var(--espaciado-md) var(--espaciado-xl);
+  }
+}
+
+/* ─── Desktop ─── */
+@media (min-width: 1280px) {
+  .lista-usuarios-contenedor {
+    padding: 0;
+    max-width: var(--ancho-contenedor-maximo);
+    margin: 0 auto;
+  }
+}

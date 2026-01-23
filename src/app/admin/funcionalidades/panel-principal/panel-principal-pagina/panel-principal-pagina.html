@@ -1,0 +1,116 @@
+<div class="panel-principal-contenedor">
+  <!-- ===== SECCIÓN: INFORMACIÓN DEL ROL ===== -->
+  <section class="panel-rol">
+    <div class="panel-rol__icono-contenedor">
+      <img src="/iconos/icon-rol-usuario.svg" alt="Icono rol" class="panel-rol__icono">
+    </div>
+    <h3 class="panel-rol__titulo"> > ADMINISTRADOR</h3>
+  </section>
+
+  <!-- ===== SECCIÓN: INFORMACIÓN DEL USUARIO ===== -->
+  <section class="panel-seccion">
+    <div class="panel-seccion__cabecera">
+      <h3 class="panel-seccion__titulo">Información del Usuario</h3>
+    </div>
+    <div class="panel-seccion__contenido">
+      <div class="panel-formulario-campos">
+        <div class="global-formulario-campo">
+          <label for="usuario-titulo" class="global-formulario-campo__etiqueta">Nombre</label>
+          <div class="global-formulario-campo__contenedor">
+            <input id="usuario-titulo" type="text" [value]="nombre()" (input)="onNombreChange($event)"
+              class="global-formulario-campo__input" placeholder="Ingrese el nombre">
+          </div>
+        </div>
+        <div class="global-formulario-campo">
+          <label for="usuario-correo" class="global-formulario-campo__etiqueta">Correo Electrónico</label>
+          <div class="global-formulario-campo__contenedor">
+            <input id="usuario-correo" type="email" [value]="correo()" (input)="onCorreoChange($event)"
+              class="global-formulario-campo__input" placeholder="correo@ejemplo.com">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECCIÓN: CONTRASEÑA ===== -->
+  <section class="panel-seccion">
+    <div class="panel-seccion__cabecera">
+      <h3 class="panel-seccion__titulo">Contraseña</h3>
+      <div class="panel-switch">
+        <label for="cambiar-contrasena" class="panel-switch__etiqueta">Cambiar</label>
+        <input type="checkbox" id="cambiar-contrasena" class="panel-switch__input" [checked]="puedeCambiarContrasena()"
+          (change)="toggleCambiarContrasena($event)">
+      </div>
+    </div>
+    <div class="panel-seccion__contenido">
+      <div class="panel-formulario-campos">
+        <div class="global-formulario-campo">
+          <label for="usuario-contrasena" class="global-formulario-campo__etiqueta">Actual</label>
+          <div class="global-formulario-campo__contenedor">
+            <input id="usuario-contrasena" [type]="mostrarContrasena() ? 'text' : 'password'" [(ngModel)]="contrasena"
+              class="global-formulario-campo__input"
+              [placeholder]="puedeCambiarContrasena() ? 'Nueva contraseña' : 'Contraseña actual'">
+            <button type="button" class="global-formulario-campo__boton-icono" (click)="toggleMostrarContrasena()"
+              [attr.aria-label]="mostrarContrasena() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+              <img [src]="mostrarContrasena() ? '/iconos/ico-ojo-cerrado.svg' : '/iconos/ico-ojo-abierto.svg'"
+                [alt]="mostrarContrasena() ? 'Ocultar' : 'Mostrar'" class="icono-boton icono-color-blanco">
+            </button>
+          </div>
+        </div>
+        <div class="global-formulario-campo" [class.panel-seccion__contenido--oculto]="!puedeCambiarContrasena()">
+          <label for="usuario-confirmar-contrasena" class="global-formulario-campo__etiqueta">Confirmar</label>
+          <div class="global-formulario-campo__contenedor">
+            <input id="usuario-confirmar-contrasena" [type]="mostrarConfirmarContrasena() ? 'text' : 'password'"
+              [(ngModel)]="confirmarContrasena" class="global-formulario-campo__input"
+              placeholder="Confirmar nueva contraseña">
+            <button type="button" class="global-formulario-campo__boton-icono"
+              (click)="toggleMostrarConfirmarContrasena()"
+              [attr.aria-label]="mostrarConfirmarContrasena() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+              <img [src]="mostrarConfirmarContrasena() ? '/iconos/ico-ojo-cerrado.svg' : '/iconos/ico-ojo-abierto.svg'"
+                [alt]="mostrarConfirmarContrasena() ? 'Ocultar' : 'Mostrar'" class="icono-boton icono-color-blanco">
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECCIÓN: CRONOLOGÍA ===== -->
+  <section class="panel-seccion">
+    <div class="panel-seccion__cabecera">
+      <h3 class="panel-seccion__titulo">Cronología</h3>
+    </div>
+    <div class="panel-seccion__contenido">
+      <div class="panel-cronologia">
+        <div class="panel-cronologia-item">
+          <img src="/iconos/ico-opcion-cronologia.svg" alt="Icono fecha" class="panel-cronologia-item__imagen">
+          <div class="panel-cronologia-item__contenido">
+            <h4 class="panel-cronologia-item__titulo">Fecha de Registro</h4>
+            <p class="panel-cronologia-item__fecha">2026-01-17 10:00:00</p>
+          </div>
+        </div>
+        <div class="panel-cronologia-item">
+          <img src="/iconos/ico-opcion-cronologia.svg" alt="Icono fecha" class="panel-cronologia-item__imagen">
+          <div class="panel-cronologia-item__contenido">
+            <h4 class="panel-cronologia-item__titulo">Fecha de Creación</h4>
+            <p class="panel-cronologia-item__fecha">2026-01-17 10:00:00</p>
+          </div>
+        </div>
+        <div class="panel-cronologia-item">
+          <img src="/iconos/ico-opcion-cronologia.svg" alt="Icono fecha" class="panel-cronologia-item__imagen">
+          <div class="panel-cronologia-item__contenido">
+            <h4 class="panel-cronologia-item__titulo">Fecha de Última Actualización</h4>
+            <p class="panel-cronologia-item__fecha">2026-01-17 10:00:00</p>
+          </div>
+        </div>
+        <div class="panel-cronologia-item">
+          <img src="/iconos/ico-opcion-cronologia.svg" alt="Icono fecha" class="panel-cronologia-item__imagen">
+          <div class="panel-cronologia-item__contenido">
+            <h4 class="panel-cronologia-item__titulo">Fecha de Último Inicio de Sesión</h4>
+            <p class="panel-cronologia-item__fecha">2026-01-17 10:00:00</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

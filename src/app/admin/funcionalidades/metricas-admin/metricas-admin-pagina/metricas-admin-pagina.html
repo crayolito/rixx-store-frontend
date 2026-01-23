@@ -1,0 +1,204 @@
+<div class="contenedor-base">
+  <!-- CABECERA -->
+  <section class="cabecera-dashboard">
+    <div class="cabecera-izquierda">
+      <div class="titulo-principal">
+        <img src="/iconos/ico-metricas.svg" alt="Métricas" class="icono-titulo">
+        <div>
+          <h2>Métricas del Mes</h2>
+          <p class="subtitulo">{{ mesActual() }} {{ anioActual() }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="cabecera-derecha">
+      <div class="badge-usuarios">
+        <span class="punto-online"></span>
+        <span>{{ usuariosActivos() }} usuarios activos</span>
+      </div>
+      <select class="selector-periodo" [(ngModel)]="mesSeleccionado" (change)="actualizarDatos()">
+        <option value="enero">Enero</option>
+        <option value="febrero">Febrero</option>
+        <option value="marzo">Marzo</option>
+        <option value="abril">Abril</option>
+        <option value="mayo">Mayo</option>
+        <option value="junio">Junio</option>
+        <option value="julio">Julio</option>
+        <option value="agosto">Agosto</option>
+        <option value="septiembre">Septiembre</option>
+        <option value="octubre">Octubre</option>
+        <option value="noviembre">Noviembre</option>
+        <option value="diciembre">Diciembre</option>
+      </select>
+      <select class="selector-periodo" [(ngModel)]="anioSeleccionado" (change)="actualizarDatos()">
+        <option value="2026">2026</option>
+        <option value="2025">2025</option>
+        <option value="2024">2024</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- MÉTRICAS PRINCIPALES (4 COLUMNAS) -->
+  <section class="metricas-principales">
+    <div class="metrica-card">
+      <div class="metrica-header">
+        <span class="metrica-icono metrica-icono--ingreso">
+          <img src="/iconos/ico-metricas.svg" alt="Ingresos" class="icono-pequeno">
+        </span>
+        <span class="metrica-label">Ingresos Totales</span>
+      </div>
+      <div class="metrica-valor">${{ datosFinancieros().totalIngresos.toLocaleString() }}</div>
+      <div class="metrica-footer">
+        <span class="metrica-cambio metrica-cambio--positivo">↑ 12.5%</span>
+        <span class="metrica-detalle">vs mes anterior</span>
+      </div>
+    </div>
+
+    <div class="metrica-card">
+      <div class="metrica-header">
+        <span class="metrica-icono metrica-icono--gasto">
+          <img src="/iconos/ico-metricas.svg" alt="Costos" class="icono-pequeno">
+        </span>
+        <span class="metrica-label">Costos</span>
+      </div>
+      <div class="metrica-valor">${{ datosFinancieros().totalGastos.toLocaleString() }}</div>
+      <div class="metrica-footer">
+        <span class="metrica-cambio metrica-cambio--negativo">↓ 3.2%</span>
+        <span class="metrica-detalle">vs mes anterior</span>
+      </div>
+    </div>
+
+    <div class="metrica-card metrica-card--destacada">
+      <div class="metrica-header">
+        <span class="metrica-icono metrica-icono--ganancia">
+          <img src="/iconos/ico-metricas.svg" alt="Ganancia" class="icono-pequeno">
+        </span>
+        <span class="metrica-label">Ganancia Neta</span>
+      </div>
+      <div class="metrica-valor metrica-valor--destacada">${{ datosFinancieros().ganancia.toLocaleString() }}</div>
+      <div class="metrica-footer">
+        <span class="metrica-margen">Margen: {{ datosFinancieros().margen }}</span>
+      </div>
+    </div>
+
+    <div class="metrica-card">
+      <div class="metrica-header">
+        <span class="metrica-icono metrica-icono--ordenes">
+          <img src="/iconos/ico-orden.svg" alt="Órdenes" class="icono-pequeno">
+        </span>
+        <span class="metrica-label">Órdenes</span>
+      </div>
+      <div class="metrica-valor">{{ totalOrdenes() }}</div>
+      <div class="metrica-footer">
+        <span class="metrica-cambio metrica-cambio--positivo">↑ 8.3%</span>
+        <span class="metrica-detalle">vs mes anterior</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- GRID 2 COLUMNAS: GRÁFICO LÍNEA + GRÁFICO PIE -->
+  <section class="grid-graficos">
+    <!-- GANANCIAS POR HORA -->
+    <div class="tarjeta-grafico">
+      <div class="tarjeta-header">
+        <h3>Ganancias por Hora</h3>
+        <p class="tarjeta-descripcion">Últimas 24 horas</p>
+      </div>
+      <div class="grafico-contenedor">
+        <apx-chart [series]="graficoLineaSeries" [chart]="graficoLineaOpciones" [xaxis]="graficoLineaXAxis"
+          [yaxis]="graficoLineaYAxis" [colors]="['#a4c439']" [stroke]="{ curve: 'smooth', width: 3 }"
+          [grid]="graficoLineaGrid" [tooltip]="graficoLineaTooltip">
+        </apx-chart>
+      </div>
+    </div>
+
+    <!-- VENTAS POR PAÍS -->
+    <div class="tarjeta-grafico">
+      <div class="tarjeta-header">
+        <h3>Ventas por País</h3>
+        <p class="tarjeta-descripcion">Distribución geográfica</p>
+      </div>
+      <div class="grafico-contenedor">
+        <apx-chart [series]="graficoPieSeries" [chart]="graficoPieOpciones" [labels]="graficoPieLabels"
+          [colors]="graficoPieColores" [legend]="graficoPieLegend"
+          [dataLabels]="{ enabled: true, style: { colors: ['#fff'] } }">
+        </apx-chart>
+      </div>
+      <div class="geografia-detalles">
+        @for (pais of datosGeograficos(); track pais.nombre) {
+        <div class="geografia-item">
+          <span class="geografia-punto" [style.background-color]="pais.color"></span>
+          <span class="geografia-nombre">{{ pais.nombre }}</span>
+          <span class="geografia-ordenes">{{ pais.ordenes }} órdenes</span>
+          <span class="geografia-monto">${{ pais.ganancia.toLocaleString() }}</span>
+        </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- GRID 2 COLUMNAS: MÉTODOS DE PAGO + TOP SERVICIOS -->
+  <section class="grid-informacion">
+    <!-- MÉTODOS DE PAGO -->
+    <div class="tarjeta-info">
+      <div class="tarjeta-header">
+        <h3>Métodos de Pago</h3>
+        <p class="tarjeta-descripcion">Transacciones procesadas</p>
+      </div>
+      <div class="metodos-lista">
+        @for (metodo of metodosPago(); track metodo.nombre) {
+        <div class="metodo-item">
+          <div class="metodo-info">
+            <span class="metodo-nombre">{{ metodo.nombre }}</span>
+            <span class="metodo-transacciones">{{ metodo.transacciones }} transacciones</span>
+          </div>
+          <span class="metodo-monto" [class.metodo-monto--negativo]="metodo.monto < 0">
+            ${{ metodo.monto.toLocaleString() }}
+          </span>
+        </div>
+        }
+        <div class="metodo-total">
+          <span>TOTAL PROCESADO</span>
+          <span class="total-valor">${{ totalProcesado().toLocaleString() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOP 5 SERVICIOS -->
+    <div class="tarjeta-info">
+      <div class="tarjeta-header">
+        <h3>Top 5 Servicios</h3>
+        <p class="tarjeta-descripcion">Más rentables del mes</p>
+      </div>
+      <div class="servicios-lista">
+        @for (servicio of topServicios(); track servicio.posicion) {
+        <div class="servicio-item">
+          <div class="servicio-ranking">#{{ servicio.posicion }}</div>
+          <div class="servicio-contenido">
+            <div class="servicio-nombre">{{ servicio.nombre }}</div>
+            <div class="servicio-metricas">
+              <div class="servicio-metrica">
+                <span class="servicio-metrica-label">Ingresos:</span>
+                <span class="servicio-metrica-valor servicio-metrica-valor--positivo">
+                  ${{ servicio.ingresos.toLocaleString() }}
+                </span>
+              </div>
+              <div class="servicio-metrica">
+                <span class="servicio-metrica-label">Costos:</span>
+                <span class="servicio-metrica-valor servicio-metrica-valor--neutro">
+                  ${{ servicio.costos.toLocaleString() }}
+                </span>
+              </div>
+              <div class="servicio-metrica">
+                <span class="servicio-metrica-label">Ganancia:</span>
+                <span class="servicio-metrica-valor servicio-metrica-valor--ganancia">
+                  ${{ servicio.ganancia.toLocaleString() }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </section>
+</div>

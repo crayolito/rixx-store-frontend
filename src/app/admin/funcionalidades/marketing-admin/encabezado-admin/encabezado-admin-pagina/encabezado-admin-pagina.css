@@ -1,0 +1,5 @@
+.contenedor-pagina {
+  padding: var(--espaciado-medio);
+  color: black;
+  background-color: var(--color-fondo-base);
+}

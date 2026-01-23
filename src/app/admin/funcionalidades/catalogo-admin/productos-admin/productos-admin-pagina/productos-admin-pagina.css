@@ -1,0 +1,90 @@
+/* ═══════════════════════════════════════════════════════
+   CONTENEDOR PRINCIPAL
+   ═══════════════════════════════════════════════════════ */
+.lista-productos-contenedor {
+  width: 100%;
+  padding: var(--espaciado-md) 0;
+  color: var(--color-texto-primario);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-md);
+}
+
+/* ═══════════════════════════════════════════════════════
+       TÍTULO Y OPCIONES
+       ═══════════════════════════════════════════════════════ */
+.titulo-opciones-contenedor {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: var(--espaciado-sm);
+  padding: 0 var(--espaciado-md);
+  color: var(--color-fondo-base);
+}
+
+#boton-exportar,
+#boton-importar,
+#boton-mas-acciones {
+  display: none;
+}
+
+.titulo-contenedor {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  gap: var(--espaciado-xs);
+}
+
+.opciones-contenedor {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espaciado-xs);
+  flex-wrap: wrap;
+}
+
+/* ═══════════════════════════════════════════════════════
+       ESTILOS MÓVIL - CARDS (SOLO EN MÓVIL)
+       ═══════════════════════════════════════════════════════ */
+@media (max-width: 767px) {}
+
+/* ═══════════════════════════════════════════════════════
+       MEDIA QUERIES
+       ═══════════════════════════════════════════════════════ */
+
+/* ─── Tablet ─── */
+@media (min-width: 768px) {
+  .lista-productos-contenedor {
+    padding: var(--espaciado-md) var(--espaciado-lg);
+  }
+
+  .titulo-opciones-contenedor {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0;
+  }
+}
+
+/* ─── Laptop ─── */
+@media (min-width: 1024px) {
+  .lista-productos-contenedor {
+    padding: var(--espaciado-md) var(--espaciado-xl);
+  }
+}
+
+/* ─── Desktop ─── */
+@media (min-width: 1280px) {
+
+  #boton-exportar,
+  #boton-importar,
+  #boton-mas-acciones {
+    display: block;
+  }
+
+  .lista-productos-contenedor {
+    padding: 0;
+    max-width: var(--ancho-contenedor-maximo);
+    margin: 0 auto;
+  }
+}

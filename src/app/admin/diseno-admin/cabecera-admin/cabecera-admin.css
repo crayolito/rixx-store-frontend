@@ -1,0 +1,267 @@
+/*
+╔════════════════════════════════════════════════════════════╗
+║                    MAPA DE NAVEGACIÓN                      ║
+╠════════════════════════════════════════════════════════════╣
+║ 1. CABECERA ................................. línea 15 ║
+║ 2. LOGO ADMIN ............................... línea 38 ║
+║ 3. BOTONES CON ICONOS ........................ línea 50 ║
+║ 4. MEDIA QUERIES ............................. línea 100 ║
+╚════════════════════════════════════════════════════════════╝
+*/
+
+/* ═══════════════════════════════════════════════════════
+   1. CABECERA
+   ═══════════════════════════════════════════════════════ */
+
+.cabecera-admin {
+  width: 100%;
+  height: clamp(55px, 5vh, 80px);
+  background-color: var(--color-fondo-base);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--espaciado-xs) var(--espaciado-sm);
+  gap: var(--espaciado-sm);
+}
+
+.contenedor-cabecera-izquierda,
+.contenedor-cabecera-derecha {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-xxs);
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.contenedor-cabecera-derecha-perfil {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  height: 100%;
+}
+
+.perfil-usuario {
+  height: clamp(80%, 2.5vh, 3.5rem);
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-primario);
+  color: var(--color-fondo-base);
+  border-radius: var(--borde-radio);
+  border: none;
+  cursor: pointer;
+}
+
+.nombre-usuario {
+  display: none;
+  color: var(--color-texto-primario);
+  font-size: var(--texto-base);
+  margin: 0;
+  white-space: nowrap;
+}
+
+#boton-cerrar-sesion {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   2. LOGO ADMIN
+   ═══════════════════════════════════════════════════════ */
+
+.logo-admin-link {
+  display: none;
+  align-items: center;
+  gap: var(--espaciado-xxs);
+  text-decoration: none;
+  color: var(--color-texto-primario);
+  height: 100%;
+}
+
+.logo-admin-link h4,
+.logo-admin-link p {
+  display: none;
+  margin: 0;
+  line-height: 1;
+}
+
+.logo-admin-link h4 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: var(--peso-bold);
+  color: var(--color-texto-primario);
+  letter-spacing: 0.15rem;
+  text-transform: uppercase;
+  font-family: var(--fuente-principal);
+}
+
+.logo-admin-link p {
+  font-size: clamp(0.625rem, 1.2vw, 0.75rem);
+  color: var(--color-texto-secundario);
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-borde-sutil);
+  border-radius: var(--borde-radio-grande);
+  background-color: var(--color-fondo-secundario);
+  letter-spacing: 0.1rem;
+  text-transform: uppercase;
+}
+
+.logo-admin {
+  height: clamp(1.5rem, 4vh, 2.5rem);
+  width: auto;
+  max-width: 8rem;
+  object-fit: contain;
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+     3. BOTONES CON ICONOS
+     ═══════════════════════════════════════════════════════ */
+
+.boton-menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--espaciado-xs);
+  background-color: transparent;
+  color: var(--color-texto-primario);
+  cursor: pointer;
+  transition: all var(--transicion-rapida);
+  border: none;
+  border-radius: var(--borde-radio);
+  min-width: 2.5rem;
+  height: 2.5rem;
+}
+
+.boton-menu:hover {
+  background-color: var(--color-fondo-secundario);
+  border: var(--borde-grosor) solid var(--color-borde-sutil);
+}
+
+.icono-boton {
+  width: 1.2rem;
+  height: 1.2rem;
+  display: block;
+}
+
+.boton-busqueda {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--espaciado-xs);
+  min-width: 0;
+  flex: 1;
+  max-width: none;
+  height: 2.1rem;
+  padding: var(--espaciado-xs) var(--espaciado-sm);
+  background-color: #303030;
+  border: var(--borde-grosor) solid var(--color-borde-sutil);
+  border-radius: var(--borde-radio-grande);
+  cursor: pointer;
+  transition: all var(--transicion-rapida);
+  flex: 1;
+}
+
+.boton-busqueda:hover {
+  background-color: var(--color-fondo-secundario);
+  border-color: var(--color-primario);
+}
+
+/* ═══════════════════════════════════════════════════════
+     4. MEDIA QUERIES
+     ═══════════════════════════════════════════════════════ */
+
+/* ─── Tablet ─── */
+@media (min-width: 768px) {
+  .cabecera-admin {
+    height: clamp(50px, 6vh, 80px);
+    gap: var(--espaciado-md);
+  }
+
+  .boton-menu[type='button']:first-of-type {
+    display: none;
+  }
+
+  .logo-admin {
+    height: clamp(2rem, 5vh, 3rem);
+    max-width: 10rem;
+    display: block;
+  }
+
+  .logo-admin-link {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .logo-admin-link h4,
+  .logo-admin-link p {
+    display: block;
+  }
+
+  .nombre-usuario {
+    display: block;
+  }
+
+  .icono-boton {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .contenedor-cabecera-izquierda,
+  .contenedor-cabecera-derecha {
+    gap: 0;
+  }
+
+  .boton-busqueda {
+    max-width: 20rem;
+  }
+}
+
+/* ─── Laptop ─── */
+@media (min-width: 1024px) {
+  .cabecera-admin {
+    height: clamp(55px, 7vh, 90px);
+    gap: var(--espaciado-lg);
+  }
+
+  .logo-admin-link h4 {
+    letter-spacing: 0.2rem;
+  }
+
+  .logo-admin {
+    height: 3rem;
+    max-width: 12rem;
+  }
+
+  .icono-boton {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  .boton-busqueda {
+    max-width: 30rem;
+    flex: 1;
+  }
+
+  #boton-cerrar-sesion {
+    display: flex;
+  }
+
+}
+
+/* ─── Desktop ─── */
+@media (min-width: 1280px) {
+  .cabecera-admin {
+    gap: var(--espaciado-lg);
+  }
+
+  .boton-busqueda {
+    max-width: 35rem;
+  }
+
+  .contenedor-cabecera-izquierda {
+    gap: var(--espaciado-md);
+  }
+
+
+}

@@ -1,0 +1,11 @@
+<div class="contenedor-layout-admin">
+  <app-cabecera-admin></app-cabecera-admin>
+  <app-notificacion-toast></app-notificacion-toast>
+  <div class="contenedor-contenido-admin">
+    <!-- El sidebar ya no está aquí, ahora es un modal -->
+    <app-barra-lateral-admin></app-barra-lateral-admin>
+    <div class="area-contenido-admin">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

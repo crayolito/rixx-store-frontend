@@ -1,0 +1,77 @@
+/*
+╔════════════════════════════════════════════════════════════╗
+║                    MAPA DE NAVEGACIÓN                      ║
+╠════════════════════════════════════════════════════════════╣
+║ 1. OVERLAY ................................... línea 15 ║
+║ 2. CONTENIDO MODAL .......................... línea 35 ║
+║ 3. ANIMACIONES ............................... línea 60 ║
+╚════════════════════════════════════════════════════════════╝
+*/
+
+/* ═══════════════════════════════════════════════════════
+   1. OVERLAY
+   ═══════════════════════════════════════════════════════ */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--espaciado-md);
+  animation: aparecerOverlay var(--transicion-normal);
+}
+
+/* ═══════════════════════════════════════════════════════
+     2. CONTENIDO MODAL
+     ═══════════════════════════════════════════════════════ */
+
+.modal-contenido {
+  background-color: var(--color-texto-primario);
+  border: var(--borde-grosor) solid var(--color-borde-suave);
+  border-radius: var(--borde-radio-grande);
+  box-shadow: var(--sombra-fuerte);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: aparecerModal var(--transicion-normal);
+  position: relative;
+}
+
+/* ═══════════════════════════════════════════════════════
+     3. ANIMACIONES
+     ═══════════════════════════════════════════════════════ */
+
+@keyframes aparecerOverlay {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes aparecerModal {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ─── Desktop ─── */
+@media (min-width: 1280px) {
+  .modal-contenido {
+    max-width: 600px;
+  }
+}

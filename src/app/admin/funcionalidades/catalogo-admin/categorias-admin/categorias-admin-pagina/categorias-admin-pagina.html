@@ -1,0 +1,232 @@
+<div class="contenedor-flex" (click)="cerrarTodosLosDropdowns()">
+
+  <!-- ===== SECCIÓN: TITULO Y OPCIONES ===== -->
+  <section class="titulo-opciones-contenedor">
+    <div class="titulo-contenedor">
+      <img src="/iconos/ico-categorias.svg" alt="Icono categorías" class="icono-boton icono-color-base">
+      <h3>Categorías</h3>
+    </div>
+    <div class="opciones-contenedor">
+      <button class="boton-secundario" (click)="alternarFiltros()" type="button">
+        <p>{{ filtrosVisibles() ? 'Ocultar Filtros' : 'Mostrar Filtros' }}</p>
+      </button>
+      <button class="boton-primario" (click)="abrirModalAgregar()" type="button">
+        <p>Agregar Categoría</p>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== SECCIÓN: FILTROS Y BÚSQUEDA ===== -->
+  @if (filtrosVisibles()) {
+  <section class="global-filtros" (click)="$event.stopPropagation()">
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Buscador</p>
+      <div class="global-filtros__busqueda">
+        <img src="/iconos/ico-busqueda.svg" alt="Icono busqueda" class="icono-boton icono-color-base">
+        <input type="text" placeholder="Nombre de la categoría..." class="global-filtros__input"
+          [value]="textoBusqueda()" (input)="textoBusqueda.set($any($event.target).value)">
+      </div>
+    </div>
+
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Estado</p>
+      <div class="global-filtros__dropdown" (click)="$event.stopPropagation()">
+        <button class="global-filtros__dropdown-boton" (click)="alternarEstado()" type="button">
+          <span>{{ estadoSeleccionado() }}</span>
+          <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="icono-boton icono-color-base">
+        </button>
+        @if (dropdownEstadoAbierto()) {
+        <div class="global-filtros__dropdown-menu">
+          @for (opcion of opcionesEstado; track opcion) {
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarEstado(opcion)" type="button">
+            {{ opcion }}
+          </button>
+          }
+        </div>
+        }
+      </div>
+    </div>
+
+    <div class="global-filtros__item">
+      <button class="boton-secundario global-filtros__boton-icono" (click)="limpiarFiltros()" type="button"
+        aria-label="Limpiar filtros">
+        <img src="/iconos/ico-limpiar.svg" alt="Icono limpiar filtros" class="icono-boton icono-color-base">
+      </button>
+    </div>
+  </section>
+  }
+
+  <!-- ===== SECCIÓN: TABLA DE CATEGORÍAS ===== -->
+  <section class="global-tabla">
+    <table class="global-tabla__elemento">
+      <thead class="global-tabla__cabecera">
+        <tr>
+          <th>Categoría</th>
+          <th>Estado</th>
+          <th>Productos</th>
+          <th>Fecha de Actualización</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="global-tabla__cuerpo">
+        @if (categoriasPaginadas().length === 0) {
+        <tr class="global-tabla__fila">
+          <td colspan="5" class="global-tabla__celda" style="text-align: center; padding: var(--espaciado-md);">
+            <p>No se encontraron categorías</p>
+          </td>
+        </tr>
+        } @else {
+        @for (categoria of categoriasPaginadas(); track categoria.id) {
+        <tr class="global-tabla__fila">
+          <td class="global-tabla__celda global-tabla__celda-principal">
+            <img [src]="categoria.imagen" [alt]="categoria.nombre" class="global-tabla__imagen">
+            <p class="global-tabla__texto-principal" [title]="categoria.nombre">
+              {{ truncarTexto(categoria.nombre, 50) }}
+            </p>
+          </td>
+          <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--estado">
+            <span class="global-badge" [class]="'global-badge--' + categoria.estado.toLowerCase()">
+              {{ categoria.estado === 'activo' ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="global-tabla__celda global-tabla__celda-info">
+            <p>{{ categoria.productos }}</p>
+          </td>
+          <td class="global-tabla__celda global-tabla__celda-info">
+            <p>{{ formatearFecha(categoria.fechaActualizacion) }}</p>
+          </td>
+          <td class="global-tabla__celda global-tabla__celda-acciones">
+            <ul class="global-tabla__lista-acciones">
+              <li>
+                <button class="boton-secundario global-tabla__boton-accion" (click)="abrirModalEditar(categoria)"
+                  [attr.aria-label]="'Editar categoría ' + categoria.nombre">
+                  <img src="/iconos/ico-editar.svg" alt="" class="icono-boton icono-color-base">
+                  <p>Editar</p>
+                </button>
+              </li>
+              <li>
+                <button class="boton-secundario global-tabla__boton-accion" (click)="eliminarCategoria(categoria.id)"
+                  [attr.aria-label]="'Eliminar categoría ' + categoria.nombre">
+                  <img src="/iconos/ico-borrar.svg" alt="Icono borrar" class="icono-boton icono-color-base">
+                  <p>Eliminar</p>
+                </button>
+              </li>
+            </ul>
+          </td>
+        </tr>
+        }
+        }
+      </tbody>
+    </table>
+
+    <!-- ===== PAGINACIÓN ===== -->
+    @if (totalPaginas() > 0) {
+    <div class="global-paginacion">
+      <div class="global-paginacion__controles">
+        <button class="global-paginacion__boton global-paginacion__boton--anterior" (click)="paginaAnterior()"
+          [disabled]="paginaActual() === 1">
+          <img src="/iconos/ico-flecha-izquierda-tabla.svg" alt="Icono flecha izquierda"
+            class="icono-boton icono-color-base">
+        </button>
+        <div class="global-paginacion__numeros">
+          @for (pagina of paginasAMostrar(); track pagina) {
+          @if (pagina === -1) {
+          <span class="global-paginacion__separador">...</span>
+          } @else {
+          <button class="global-paginacion__numero"
+            [class.global-paginacion__numero--activa]="pagina === paginaActual()" (click)="irAPagina(pagina)"
+            type="button">
+            {{ pagina }}
+          </button>
+          }
+          }
+        </div>
+        <button class="global-paginacion__boton global-paginacion__boton--siguiente" (click)="paginaSiguiente()"
+          [disabled]="paginaActual() === totalPaginas()">
+          <img src="/iconos/ico-flecha-derecha-tabla.svg" alt="Icono flecha derecha"
+            class="icono-boton icono-color-base">
+        </button>
+      </div>
+      <p class="global-paginacion__info">
+        {{ (paginaActual() - 1) * categoriasPorPagina() + 1 }}-{{ Math.min(paginaActual() * categoriasPorPagina(),
+        totalCategorias()) }} de {{ totalCategorias() }}
+      </p>
+    </div>
+    }
+  </section>
+</div>
+
+<!-- Modal: Agregar/Editar Categoría -->
+<app-modal [estaAbierto]="modalTipoCampoAbierto()" (cerrar)="cerrarModalTipoCampo()">
+  <div class="global-modal">
+    <div class="global-modal__cabecera">
+      <h3 class="global-modal__titulo">{{ categoriaEditando() ? 'Editar Categoría' : 'Agregar Categoría' }}</h3>
+      <button type="button" class="global-modal__boton-cerrar" (click)="cerrarModalTipoCampo()"
+        aria-label="Cerrar modal">
+        <img src="/iconos/ico-cerrar.svg" alt="Cerrar" class="icono-boton icono-color-secundario">
+      </button>
+    </div>
+    <div class="global-modal__contenido">
+      <div class="global-formulario-campo">
+        <label class="global-formulario-campo__etiqueta">Nombre</label>
+        <div class="global-formulario-campo__contenedor">
+          <input type="text" class="global-formulario-campo__input" placeholder="Ej: Electrónica"
+            [value]="nombreCategoria()" (input)="nombreCategoria.set($any($event.target).value)">
+        </div>
+      </div>
+
+      <div class="global-formulario-campo">
+        <label class="global-formulario-campo__etiqueta">Descripción</label>
+        <div class="global-formulario-campo__contenedor global-formulario-campo__contenedor--textarea">
+          <textarea class="global-formulario-campo__textarea" placeholder="Ingrese la descripción de la categoría"
+            [value]="descripcionCategoria()" (input)="descripcionCategoria.set($any($event.target).value)"
+            rows="4"></textarea>
+        </div>
+      </div>
+
+      <div class="formulario-imagenes">
+        <label class="global-formulario-campo__etiqueta">Imagen</label>
+        <div class="formulario-imagenes__contenedor-imagenes">
+          <label for="input-imagen-categoria"
+            class="global-formulario-imagenes__contenedor global-formulario-imagenes__contenedor--clickeable">
+            @if (imagenCategoria()) {
+            <!-- Cuando HAY imagen: mostrar la imagen y texto para cambiar -->
+            <img [src]="imagenCategoria()" alt="Imagen de categoría" class="global-formulario-imagenes__preview">
+            } @else {
+            <!-- Cuando NO hay imagen: mostrar icono y textos -->
+            <img src="/iconos/ico-imagen.svg" alt="Icono imagen" class="icono-boton icono-color-secundario">
+            <span class="global-formulario-imagenes__etiqueta1">Haz clic para subir una imagen</span>
+            <span class="global-formulario-imagenes__etiqueta2">PNG, JPG, GIF hasta 10MB</span>
+            }
+          </label>
+          <input type="file" id="input-imagen-categoria" accept="image/*" (change)="manejarCambioImagen($event)"
+            style="display: none;">
+        </div>
+      </div>
+
+      <div class="global-formulario-campo">
+        <label class="global-formulario-campo__etiqueta">Estado</label>
+        <div class="global-formulario-opciones-radio">
+          <label class="global-formulario-opciones-radio__opcion">
+            <input type="radio" name="estado-categoria" value="activo" [checked]="estadoCategoria() === 'activo'"
+              (change)="estadoCategoria.set('activo')" class="global-radio__input">
+            <span class="global-formulario-opciones-radio__label">Activo</span>
+          </label>
+          <label class="global-formulario-opciones-radio__opcion">
+            <input type="radio" name="estado-categoria" value="inactivo" [checked]="estadoCategoria() === 'inactivo'"
+              (change)="estadoCategoria.set('inactivo')" class="global-radio__input">
+            <span class="global-formulario-opciones-radio__label">Inactivo</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="global-modal__acciones">
+      <button type="button" class="boton-secundario" (click)="cerrarModalTipoCampo()">
+        <p>Cerrar</p>
+      </button>
+      <button type="button" class="boton-primario" (click)="guardarCategoria()">
+        <p>{{ categoriaEditando() ? 'Guardar Cambios' : 'Guardar' }}</p>
+      </button>
+    </div>
+  </div>
+</app-modal>

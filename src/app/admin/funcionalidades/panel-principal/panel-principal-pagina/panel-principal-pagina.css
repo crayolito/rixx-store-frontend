@@ -1,0 +1,250 @@
+/*
+╔════════════════════════════════════════════════════════════╗
+║                    MAPA DE NAVEGACIÓN                      ║
+╠════════════════════════════════════════════════════════════╣
+║ 1. CONTENEDOR PRINCIPAL .................. línea 20 ║
+║ 2. SECCIÓN ROL ........................... línea 35 ║
+║ 3. SECCIONES ............................ línea 50 ║
+║ 4. CAMPOS DE FORMULARIO .................. línea 90 ║
+║ 5. SWITCH ............................... línea 190 ║
+║ 6. CRONOLOGÍA ........................... línea 240 ║
+║ 7. MEDIA QUERIES ........................ línea 310 ║
+╚════════════════════════════════════════════════════════════╝
+*/
+
+/* ═══════════════════════════════════════════════════════
+   1. CONTENEDOR PRINCIPAL
+   ═══════════════════════════════════════════════════════ */
+
+.panel-principal-contenedor {
+  width: 100%;
+  padding: var(--espaciado-md) 0;
+  color: var(--color-texto-primario);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════════════════
+       2. SECCIÓN ROL
+       ═══════════════════════════════════════════════════════ */
+
+.panel-rol {
+  padding: var(--espaciado-md) var(--espaciado-sm) 0 var(--espaciado-sm);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espaciado-xxs);
+}
+
+.panel-rol__icono-contenedor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-fondo-octavo);
+  border-radius: var(--borde-radio);
+  padding: var(--espaciado-xxs);
+  transition: all var(--transicion-normal);
+}
+
+.panel-rol__icono {
+  width: 1.5rem;
+  height: 1.5rem;
+  filter: brightness(0) saturate(100%) invert(45%);
+  object-fit: contain;
+}
+
+.panel-rol__titulo {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-bold);
+  color: var(--color-fondo-base);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+       3. SECCIONES
+       ═══════════════════════════════════════════════════════ */
+
+.panel-seccion {
+  background-color: var(--color-texto-primario);
+  color: var(--color-fondo-base);
+  border: var(--borde-grosor) solid var(--color-borde-suave);
+  padding: var(--espaciado-md);
+  transition: border-color var(--transicion-normal);
+  margin-top: var(--espaciado-md);
+}
+
+.panel-seccion__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--espaciado-md);
+  border-bottom: var(--borde-grosor) solid var(--color-borde-separador);
+}
+
+.panel-seccion__titulo {
+  font-size: var(--texto-h3);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+  margin: 0;
+}
+
+.panel-seccion__contenido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-md);
+  transition: all var(--transicion-normal);
+}
+
+.panel-seccion__contenido--oculto {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+       5. SWITCH
+       ═══════════════════════════════════════════════════════ */
+
+.panel-switch {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+}
+
+.panel-switch__etiqueta {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-medium);
+  color: var(--color-fondo-base);
+  cursor: pointer;
+}
+
+.panel-switch__input {
+  width: 2.5rem;
+  height: 1.25rem;
+  appearance: none;
+  background-color: var(--color-fondo-terciario);
+  border: var(--borde-grosor) solid var(--color-borde-sutil);
+  border-radius: 1rem;
+  position: relative;
+  cursor: pointer;
+  transition: all var(--transicion-rapida);
+}
+
+.panel-switch__input::before {
+  content: '';
+  position: absolute;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+  background-color: var(--color-texto-secundario);
+  top: 50%;
+  left: 0.125rem;
+  transform: translateY(-50%);
+  transition: all var(--transicion-rapida);
+}
+
+.panel-switch__input:checked {
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+}
+
+.panel-switch__input:checked::before {
+  left: calc(100% - 0.125rem);
+  transform: translate(-100%, -50%);
+  background-color: var(--color-fondo-base);
+}
+
+.panel-switch__input:focus {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════
+       6. CRONOLOGÍA
+       ═══════════════════════════════════════════════════════ */
+
+.panel-cronologia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-md);
+}
+
+.panel-cronologia-item {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-md);
+}
+
+.panel-cronologia-item__imagen {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  filter: brightness(0) saturate(100%) invert(45%);
+}
+
+.panel-cronologia-item__contenido {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+}
+
+.panel-cronologia-item__titulo {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+  margin: 0;
+}
+
+.panel-cronologia-item__fecha {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+       7. MEDIA QUERIES
+       ═══════════════════════════════════════════════════════ */
+
+/* ─── Tablet ─── */
+@media (min-width: 768px) {
+  .panel-rol {
+    padding: 0;
+  }
+
+  .panel-principal-contenedor {
+    padding: 0;
+  }
+
+  .panel-formulario-campos {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--espaciado-lg);
+  }
+
+  .panel-cronologia {
+    gap: var(--espaciado-lg);
+  }
+
+  .panel-seccion {
+    border-radius: var(--borde-radio-grande);
+    box-shadow: var(--sombra-base-fina-1);
+    border: var(--borde-grosor) solid var(--color-borde-suave);
+    padding: var(--espaciado-md);
+  }
+}
+
+/* ─── Laptop ─── */
+@media (min-width: 1024px) {
+  .panel-principal-contenedor {
+    max-width: var(--ancho-contenedor-pequeno);
+    margin: 0 auto;
+  }
+}
+
+/* ─── Desktop ─── */
+@media (min-width: 1280px) {
+  .panel-cronologia {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--espaciado-lg);
+  }
+}

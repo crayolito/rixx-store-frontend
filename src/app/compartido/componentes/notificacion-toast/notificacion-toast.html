@@ -1,0 +1,47 @@
+<!-- Contenedor de notificaciones (se posiciona arriba de la página) -->
+<div class="contenedor-notificaciones">
+  @for (notif of notificacionServicio.notificaciones(); track notif.id) {
+  <div class="notificacion notificacion--{{ notif.tipo }}" role="alert">
+    <!-- Icono según el tipo -->
+    <div class="notificacion__icono">
+      @switch (notif.tipo) {
+      @case ('exito') {
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path
+          d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm-2 15l-5-5 1.41-1.41L8 12.17l7.59-7.59L17 6l-9 9z"
+          fill="currentColor" />
+      </svg>
+      }
+      @case ('error') {
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm1 15H9v-2h2v2zm0-4H9V5h2v6z"
+          fill="currentColor" />
+      </svg>
+      }
+      @case ('advertencia') {
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M1 19h18L10 1 1 19zm10-3h-2v-2h2v2zm0-4h-2V8h2v4z" fill="currentColor" />
+      </svg>
+      }
+      @case ('info') {
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm1 15H9V9h2v6zm0-8H9V5h2v2z"
+          fill="currentColor" />
+      </svg>
+      }
+      }
+    </div>
+
+    <!-- Mensaje -->
+    <p class="notificacion__mensaje">{{ notif.mensaje }}</p>
+
+    <!-- Botón cerrar -->
+    <button class="notificacion__boton-cerrar" (click)="cerrarNotificacion(notif.id)" type="button"
+      aria-label="Cerrar notificación">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
+  </div>
+  }
+</div>

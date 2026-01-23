@@ -1,0 +1,185 @@
+<div class="lista-productos-contenedor" (click)="cerrarTodosLosDropdowns()">
+  <!-- ===== SECCIÓN: TITULO Y OPCIONES ===== -->
+  <section class="titulo-opciones-contenedor">
+    <div class="titulo-contenedor">
+      <img src="/iconos/ico-producto.svg" alt="Icono productos" class="icono-boton icono-color-base">
+      <h3>Productos</h3>
+    </div>
+    <div class="opciones-contenedor">
+      <button id="boton-mostrar-filtros" class="boton-secundario">
+        <p>Mostrar Filtros</p>
+      </button>
+      <button id="boton-agregar-producto" class="boton-primario">
+        <p>Agregar producto</p>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== SECCIÓN: FILTROS Y BÚSQUEDA ===== -->
+  <section class="global-filtros" (click)="$event.stopPropagation()">
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Buscador</p>
+      <div class="global-filtros__busqueda">
+        <img src="/iconos/ico-busqueda.svg" alt="Icono busqueda" class="icono-boton icono-color-base">
+        <input type="text" placeholder="Nombre del producto..." class="global-filtros__input" [value]="textoBusqueda()"
+          (input)="textoBusqueda.set($any($event.target).value)">
+      </div>
+    </div>
+
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Categoría</p>
+      <div class="global-filtros__dropdown" (click)="$event.stopPropagation()">
+        <button class="global-filtros__dropdown-boton" (click)="alternarCategoria()" type="button">
+          <span>{{ categoriaSeleccionada() }}</span>
+          <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="icono-boton icono-color-base">
+        </button>
+        @if (dropdownCategoriaAbierto()) {
+        <div class="global-filtros__dropdown-menu">
+          @for (opcion of opcionesCategoria; track opcion) {
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarCategoria(opcion)" type="button">
+            {{ opcion }}
+          </button>
+          }
+        </div>
+        }
+      </div>
+    </div>
+
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Estado</p>
+      <div class="global-filtros__dropdown" (click)="$event.stopPropagation()">
+        <button class="global-filtros__dropdown-boton" (click)="alternarEstado()" type="button">
+          <span>{{ estadoSeleccionado() }}</span>
+          <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="icono-boton icono-color-base">
+        </button>
+        @if (dropdownEstadoAbierto()) {
+        <div class="global-filtros__dropdown-menu">
+          @for (opcion of opcionesEstado; track opcion) {
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarEstado(opcion)" type="button">
+            {{ opcion }}
+          </button>
+          }
+        </div>
+        }
+      </div>
+    </div>
+
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Disponibilidad</p>
+      <div class="global-filtros__dropdown" (click)="$event.stopPropagation()">
+        <button class="global-filtros__dropdown-boton" (click)="alternarDisponibilidad()" type="button">
+          <span>{{ disponibilidadSeleccionada() }}</span>
+          <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="icono-boton icono-color-base">
+        </button>
+        @if (dropdownDisponibilidadAbierto()) {
+        <div class="global-filtros__dropdown-menu">
+          @for (opcion of opcionesDisponibilidad; track opcion) {
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarDisponibilidad(opcion)" type="button">
+            {{ opcion }}
+          </button>
+          }
+        </div>
+        }
+      </div>
+    </div>
+    <div class="global-filtros__item">
+      <button class="boton-secundario global-filtros__boton-icono" (click)="limpiarFiltros()" type="button"
+        aria-label="Limpiar filtros">
+        <img src="/iconos/ico-limpiar.svg" alt="Icono limpiar filtros" class="icono-boton icono-color-base">
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== SECCIÓN: TABLA DE PRODUCTOS ===== -->
+  <section class="global-tabla">
+    <table class="global-tabla__elemento">
+      <thead class="global-tabla__cabecera">
+        <tr>
+          <th>Producto</th>
+          <th>Categoria</th>
+          <th>Estado</th>
+          <th>Fuente</th>
+          <th>Inventario</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="global-tabla__cuerpo">
+        @for (producto of productosPaginados(); track producto.id) {
+        <tr class="global-tabla__fila">
+          <td class="global-tabla__celda global-tabla__celda-principal">
+            <img [src]="producto.imagen" [alt]="producto.nombre" class="global-tabla__imagen">
+            <p class="global-tabla__texto-principal" [title]="producto.nombre">
+              {{ truncarTexto(producto.nombre, 50) }}
+            </p>
+          </td>
+          <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--categoria">
+            <p>{{ producto.categoria }}</p>
+          </td>
+          <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--estado">
+            <span class="global-badge" [class]="'global-badge--' + producto.estado.toLowerCase()">
+              {{ producto.estado }}
+            </span>
+          </td>
+          <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--fuente">
+            <p>{{ producto.fuente }}</p>
+          </td>
+          <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--inventario">
+            <p>{{ producto.inventario }} en existencias</p>
+          </td>
+          <td class="global-tabla__celda global-tabla__celda-acciones">
+            <ul class="global-tabla__lista-acciones">
+              <li>
+                <a [routerLink]="['/admin/catalogo/productos/editar', producto.id]"
+                  class="boton-secundario global-tabla__boton-accion"
+                  [attr.aria-label]="'Editar producto ' + producto.nombre">
+                  <img src="/iconos/ico-editar.svg" alt="" class="icono-boton icono-color-base">
+                  <p>Editar</p>
+                </a>
+              </li>
+              <li>
+                <button class="boton-secundario global-tabla__boton-accion" (click)="eliminarProducto(producto.id)">
+                  <img src="/iconos/ico-borrar.svg" alt="Icono borrar" class="icono-boton icono-color-base">
+                  <p>Eliminar</p>
+                </button>
+              </li>
+            </ul>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+
+    <!-- ===== PAGINACIÓN ===== -->
+    <div class="global-paginacion">
+      <div class="global-paginacion__controles">
+        <button class="global-paginacion__boton global-paginacion__boton--anterior" (click)="paginaAnterior()"
+          [disabled]="paginaActual() === 1">
+          <img src="/iconos/ico-flecha-izquierda-tabla.svg" alt="Icono flecha izquierda"
+            class="icono-boton icono-color-base">
+        </button>
+        <div class="global-paginacion__numeros">
+          @for (pagina of paginasAMostrar(); track pagina) {
+          @if (pagina === -1) {
+          <span class="global-paginacion__separador">...</span>
+          } @else {
+          <button class="global-paginacion__numero"
+            [class.global-paginacion__numero--activa]="pagina === paginaActual()" (click)="irAPagina(pagina)"
+            type="button">
+            {{ pagina }}
+          </button>
+          }
+          }
+        </div>
+        <button class="global-paginacion__boton global-paginacion__boton--siguiente" (click)="paginaSiguiente()"
+          [disabled]="paginaActual() === totalPaginas()">
+          <img src="/iconos/ico-flecha-derecha-tabla.svg" alt="Icono flecha derecha"
+            class="icono-boton icono-color-base">
+        </button>
+      </div>
+      <p class="global-paginacion__info">
+        {{ (paginaActual() - 1) * productosPorPagina() + 1 }}-{{ Math.min(paginaActual() * productosPorPagina(),
+        totalProductos()) }} de {{ totalProductos() }}
+      </p>
+    </div>
+  </section>
+</div>
