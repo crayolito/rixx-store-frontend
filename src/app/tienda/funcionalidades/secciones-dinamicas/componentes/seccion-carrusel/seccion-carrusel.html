@@ -1,1 +1,23 @@
-<p>seccion-carrusel works!</p>
+<section class="tienda-carrusel">
+  <div class="tienda-carrusel__contenedor">
+    <div class="tienda-carrusel__pista">
+      @for (slide of slides(); track slide.id; let i = $index) {
+      <div class="tienda-carrusel__slide" [class.tienda-carrusel__slide--anterior]="esAnterior(i)"
+        [class.tienda-carrusel__slide--activa]="esActiva(i)" [class.tienda-carrusel__slide--siguiente]="esSiguiente(i)"
+        [class.tienda-carrusel__slide--oculta]="esOculta(i)" (click)="irASlide(i)">
+
+        @if (esActiva(i)) {
+        <!-- Imagen activa con eventos de arrastre -->
+        <a (click)="manejarClickImagen($event)" (mousedown)="iniciarArrastre($event)"
+          (mouseup)="finalizarArrastre($event)" (mouseleave)="cancelarArrastre()">
+          <img [src]="slide.src" [alt]="slide.alt" class="tienda-carrusel__imagen">
+        </a>
+        } @else {
+        <!-- Imágenes laterales sin eventos de arrastre -->
+        <img [src]="slide.src" [alt]="slide.alt" class="tienda-carrusel__imagen">
+        }
+      </div>
+      }
+    </div>
+  </div>
+</section>

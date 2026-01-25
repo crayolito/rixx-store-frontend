@@ -1,0 +1,355 @@
+/* ═══════════════════════════════════════════════════════
+   DRAWER DEL CARRITO - ESTILO SHOPIFY
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Overlay de fondo ─── */
+.drawer-carrito-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: var(--z-modal-backdrop);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* ─── Contenedor principal del drawer ─── */
+.drawer-carrito {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 100%;
+  max-width: 24rem;
+  background-color: var(--color-fondo-base);
+  box-shadow: var(--sombra-fuerte);
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+  overflow: auto;
+
+}
+
+.drawer-carrito--abierto {
+  transform: translateX(0);
+}
+
+/* ─── Header del drawer ─── */
+.drawer-carrito__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--espaciado-lg);
+  border-bottom: 1px solid var(--color-borde-separador);
+  flex-shrink: 0;
+}
+
+.drawer-carrito__header-titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+}
+
+.drawer-carrito__header-titulo h3 {
+  font-size: var(--texto-h3);
+  font-weight: var(--peso-semibold);
+  color: var(--color-texto-primario);
+}
+
+.drawer-carrito__icono-carrito {
+  width: 1.5rem;
+  height: 1.5rem;
+  filter: brightness(0) invert(1);
+}
+
+.drawer-carrito__badge {
+  background-color: var(--color-primario);
+  color: var(--color-fondo-base);
+  font-size: var(--texto-mini);
+  font-weight: var(--peso-bold);
+  padding: 0.125rem 0.5rem;
+  border-radius: 12px;
+  min-width: 1.25rem;
+  text-align: center;
+}
+
+.drawer-carrito__boton-cerrar {
+  padding: var(--espaciado-xs);
+  border-radius: var(--borde-radio-pequeno);
+  transition: background-color var(--transicion-rapida);
+}
+
+.drawer-carrito__boton-cerrar:hover {
+  background-color: var(--color-fondo-secundario);
+}
+
+.drawer-carrito__icono-cerrar {
+  width: 1.25rem;
+  height: 1.25rem;
+  filter: brightness(0) invert(1);
+}
+
+/* ─── Contenido del drawer (scrollable) ─── */
+.drawer-carrito__contenido {
+  flex: 1;
+  padding: var(--espaciado-lg);
+}
+
+/* ─── Estado vacío ─── */
+.drawer-carrito__vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--espaciado-3xl) var(--espaciado-lg);
+  gap: var(--espaciado-md);
+}
+
+.drawer-carrito__vacio-icono {
+  width: 4rem;
+  height: 4rem;
+  opacity: 0.3;
+  filter: brightness(0) invert(1);
+}
+
+.drawer-carrito__vacio h4 {
+  font-size: var(--texto-h3);
+  font-weight: var(--peso-semibold);
+  color: var(--color-texto-primario);
+}
+
+.drawer-carrito__vacio p {
+  font-size: var(--texto-pequeno);
+  color: var(--color-texto-terciario);
+}
+
+/* ─── Lista de items ─── */
+.drawer-carrito__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-lg);
+}
+
+/* ─── Item individual ─── */
+.drawer-carrito__item {
+  display: flex;
+  gap: var(--espaciado-md);
+  padding: var(--espaciado-md);
+  background-color: var(--color-fondo-secundario);
+  border-radius: var(--borde-radio);
+  transition: background-color var(--transicion-rapida);
+}
+
+.drawer-carrito__item:hover {
+  background-color: var(--color-fondo-terciario);
+}
+
+.drawer-carrito__item-imagen {
+  flex-shrink: 0;
+  width: 5rem;
+  height: 5rem;
+  border-radius: var(--borde-radio-pequeno);
+  overflow: hidden;
+  background-color: var(--color-fondo-base);
+}
+
+.drawer-carrito__item-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.drawer-carrito__item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+}
+
+.drawer-carrito__item-titulo {
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  color: var(--color-texto-primario);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.drawer-carrito__item-precio {
+  font-size: var(--texto-pequeno);
+  color: var(--color-texto-terciario);
+}
+
+/* ─── Controles de cantidad ─── */
+.drawer-carrito__item-controles {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-xs);
+  margin-top: var(--espaciado-xs);
+}
+
+.drawer-carrito__boton-cantidad {
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-fondo-base);
+  border: 1px solid var(--color-borde-separador);
+  border-radius: var(--borde-radio-pequeno);
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  color: var(--color-texto-primario);
+  transition: all var(--transicion-rapida);
+}
+
+.drawer-carrito__boton-cantidad:hover:not(:disabled) {
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+  color: var(--color-fondo-base);
+}
+
+.drawer-carrito__boton-cantidad:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.drawer-carrito__cantidad {
+  min-width: 2rem;
+  text-align: center;
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  color: var(--color-texto-primario);
+}
+
+/* ─── Acciones del item (precio total y eliminar) ─── */
+.drawer-carrito__item-acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espaciado-sm);
+}
+
+.drawer-carrito__item-total {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  color: var(--color-primario);
+}
+
+.drawer-carrito__boton-eliminar {
+  padding: var(--espaciado-xs);
+  border-radius: var(--borde-radio-pequeno);
+  transition: background-color var(--transicion-rapida);
+}
+
+.drawer-carrito__boton-eliminar:hover {
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+.drawer-carrito__boton-eliminar img {
+  width: 1.25rem;
+  height: 1.25rem;
+  filter: brightness(0) saturate(100%) invert(30%) sepia(95%) saturate(7460%) hue-rotate(357deg) brightness(101%) contrast(115%);
+}
+
+/* ─── Footer simplificado ─── */
+.drawer-carrito__footer {
+  padding: var(--espaciado-md) var(--espaciado-lg);
+  border-top: 1px solid var(--color-borde-separador);
+  background-color: var(--color-fondo-secundario);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-md);
+  flex-shrink: 0;
+}
+
+/* Subtotal único */
+.drawer-carrito__subtotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--texto-h3);
+  font-weight: var(--peso-bold);
+  color: var(--color-texto-primario);
+}
+
+.drawer-carrito__subtotal-precio {
+  color: var(--color-primario);
+  font-size: 1.5rem;
+}
+
+/* Contenedor de botones */
+.drawer-carrito__botones {
+  display: flex;
+  gap: var(--espaciado-md);
+}
+
+/* Botón Ocultar */
+.drawer-carrito__boton-ocultar {
+  flex: 1;
+  padding: var(--espaciado-sm);
+  background-color: transparent;
+  color: var(--color-texto-primario);
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  border: 2px solid var(--color-borde-separador);
+  border-radius: var(--borde-radio);
+  transition: all var(--transicion-rapida);
+}
+
+.drawer-carrito__boton-ocultar:hover {
+  background-color: var(--color-fondo-terciario);
+  border-color: var(--color-texto-terciario);
+}
+
+/* Botón Pagar */
+.drawer-carrito__boton-pagar {
+  flex: 1;
+  padding: var(--espaciado-sm);
+  background-color: var(--color-primario);
+  color: var(--color-fondo-base);
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  border-radius: var(--borde-radio);
+  transition: all var(--transicion-rapida);
+}
+
+.drawer-carrito__boton-pagar:hover {
+  background-color: var(--color-primario-oscuro);
+  box-shadow: var(--sombra-suave);
+  transform: translateY(-2px);
+}
+
+/* ─── Media queries ─── */
+
+/* TABLET (768px en adelante) */
+@media (min-width: 768px) {
+  .drawer-carrito {
+    max-width: 32rem;
+  }
+}
+
+/* LAPTOP (1024px en adelante) */
+@media (min-width: 1024px) {
+  .drawer-carrito {
+    max-width: 28rem;
+  }
+}

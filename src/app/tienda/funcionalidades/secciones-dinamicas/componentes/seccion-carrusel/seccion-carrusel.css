@@ -1,0 +1,212 @@
+/* ═══════════════════════════════════════════════════════════════
+     5. CARRUSEL (max-width en .tienda-carrusel)
+     ═══════════════════════════════════════════════════════════════ */
+
+.tienda-carrusel {
+  padding: var(--espaciado-lg) 0;
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+  overflow-x: hidden;
+}
+
+.tienda-carrusel__contenedor {
+  overflow: hidden;
+  border-radius: var(--borde-radio-extra-grande);
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.tienda-carrusel__pista {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  position: relative;
+  max-width: 100%;
+}
+
+.tienda-carrusel__slide {
+  flex: 0 0 auto;
+  width: 220px;
+  min-width: 0;
+  overflow: hidden;
+  aspect-ratio: 21 / 9;
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border-radius: var(--borde-radio-extra-grande);
+  isolation: isolate;
+  cursor: pointer;
+}
+
+.tienda-carrusel__slide--oculta {
+  display: none;
+}
+
+.tienda-carrusel__slide--anterior {
+  order: 1;
+  z-index: 1;
+  width: 380px;
+  opacity: 0.5;
+  transform: scale(1) translateX(70%);
+  border-radius: var(--borde-radio-extra-grande);
+  overflow: hidden;
+  /* ← Asegurar que esté aquí */
+  will-change: transform;
+  isolation: isolate;
+  /* ← Agregar esto si no está */
+}
+
+.tienda-carrusel__slide--activa {
+  order: 2;
+  z-index: 2;
+  width: 520px;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.tienda-carrusel__slide--siguiente {
+  order: 3;
+  z-index: 1;
+  width: 380px;
+  opacity: 0.5;
+  transform: scale(1) translateX(-60%);
+  border-radius: var(--borde-radio-extra-grande);
+  overflow: hidden;
+  /* ← Asegurar que esté aquí */
+  will-change: transform;
+  isolation: isolate;
+  /* ← Agregar esto si no está */
+}
+
+.tienda-carrusel__imagen {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: var(--borde-radio-extra-grande);
+  object-fit: cover;
+  box-shadow: var(--sombra-fuerte);
+}
+
+.tienda-carrusel__slide--anterior .tienda-carrusel__imagen,
+.tienda-carrusel__slide--siguiente .tienda-carrusel__imagen {
+  border-radius: var(--borde-radio-extra-grande) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+         6. MEDIA QUERIES
+         ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Tablet (768px) ─── */
+
+@media (min-width: 768px) {
+
+  .tienda-header__barra-superior,
+  .tienda-header__barra-principal {
+    padding: var(--espaciado-md) 0;
+  }
+
+  .tienda-header__barra-superior {
+    padding: var(--espaciado-xs) 0 !important;
+  }
+
+  .tienda-header__barra-superior {
+    padding-bottom: var(--espaciado-xxs) !important;
+  }
+
+  .tienda-header__barra-principal {
+    padding-bottom: var(--espaciado-md);
+  }
+
+  .tienda-header__categorias {
+    display: flex;
+  }
+
+  .logo-imagen {
+    height: 45px;
+  }
+
+  .tienda-carrusel {
+    padding: var(--espaciado-md) 0;
+  }
+
+  .tienda-carrusel__slide {
+    width: 300px;
+  }
+
+  .tienda-carrusel__slide--anterior {
+    width: 450px;
+    transform: scale(1) translateX(60%);
+  }
+
+  .tienda-carrusel__slide--activa {
+    width: 620px;
+  }
+
+  .tienda-carrusel__slide--siguiente {
+    width: 450px;
+    transform: scale(1) translateX(-60%);
+  }
+}
+
+/* ─── Laptop (1024px) ─── */
+
+@media (min-width: 1024px) {
+  .tienda-header__promocion {
+    font-size: var(--texto-base);
+  }
+
+  .logo-imagen {
+    height: 50px;
+  }
+
+  .tienda-carrusel__slide {
+    width: 340px;
+  }
+
+  .tienda-carrusel__slide--anterior {
+    width: 560px;
+    aspect-ratio: 24 / 9;
+    opacity: 0.5;
+    transform: scale(1) translateX(60%);
+  }
+
+  .tienda-carrusel__slide--activa {
+    width: 820px;
+    aspect-ratio: 24 / 9;
+  }
+
+  .tienda-carrusel__slide--siguiente {
+    width: 560px;
+    aspect-ratio: 24 / 9;
+    opacity: 0.5;
+    transform: scale(1) translateX(-60%);
+  }
+}
+
+/* ─── Desktop (1280px) ─── */
+
+@media (min-width: 1280px) {
+  .tienda-carrusel__slide--anterior {
+    width: 660px;
+    /* Punto medio entre 340 y 660 */
+    aspect-ratio: 19 / 9;
+    opacity: 0.5;
+    transform: scale(1) translateX(80%);
+    /* ← Agregar esto si no está */
+  }
+
+  .tienda-carrusel__slide--activa {
+    width: 960px;
+    aspect-ratio: 22 / 9;
+  }
+
+  .tienda-carrusel__slide--siguiente {
+    width: 660px;
+    /* Punto medio */
+    aspect-ratio: 19 / 9;
+    opacity: 0.5;
+    transform: scale(1) translateX(-80%);
+    /* ← Agregar esto si no está */
+  }
+}

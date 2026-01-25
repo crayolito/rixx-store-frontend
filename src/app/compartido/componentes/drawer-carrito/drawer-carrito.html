@@ -1,0 +1,90 @@
+<!-- Overlay de fondo -->
+@if (estaAbierto()) {
+<div class="drawer-carrito-overlay" (click)="cerrarDrawer()"></div>
+}
+
+<!-- Drawer lateral -->
+<div class="drawer-carrito" [class.drawer-carrito--abierto]="estaAbierto()">
+  <!-- Header del drawer -->
+  <div class="drawer-carrito__header">
+    <div class="drawer-carrito__header-titulo">
+      <img src="/iconos/ico-carrito.svg" alt="Carrito" class="drawer-carrito__icono-carrito">
+      <h3>Tu Carrito</h3>
+      <span class="drawer-carrito__badge">{{ cantidadItems() }}</span>
+    </div>
+    <button class="drawer-carrito__boton-cerrar" (click)="cerrarDrawer()" aria-label="Cerrar carrito">
+      <img src="/iconos/ico-cerrar.svg" alt="Cerrar" class="drawer-carrito__icono-cerrar">
+    </button>
+  </div>
+
+  <!-- Contenido del drawer -->
+  <div class="drawer-carrito__contenido">
+    @if (items().length === 0) {
+    <!-- Estado vacío -->
+    <div class="drawer-carrito__vacio">
+      <img src="/iconos/ico-carrito.svg" alt="Carrito vacío" class="drawer-carrito__vacio-icono">
+      <h4>Tu carrito está vacío</h4>
+      <p>¡Agrega productos para comenzar tu compra!</p>
+    </div>
+    } @else {
+    <!-- Lista de items -->
+    <div class="drawer-carrito__items">
+      @for (item of items(); track item.id) {
+      <div class="drawer-carrito__item">
+        <!-- Imagen del producto -->
+        <div class="drawer-carrito__item-imagen">
+          <img [src]="item.imagen" [alt]="item.titulo">
+        </div>
+
+        <!-- Info del producto -->
+        <div class="drawer-carrito__item-info">
+          <h4 class="drawer-carrito__item-titulo">{{ item.titulo }}</h4>
+          <div class="drawer-carrito__item-precio">${{ item.precio }}</div>
+
+          <!-- Controles de cantidad -->
+          <div class="drawer-carrito__item-controles">
+            <button class="drawer-carrito__boton-cantidad" (click)="disminuirCantidad(item.id)"
+              [disabled]="item.cantidad === 1">
+              -
+            </button>
+            <span class="drawer-carrito__cantidad">{{ item.cantidad }}</span>
+            <button class="drawer-carrito__boton-cantidad" (click)="aumentarCantidad(item.id)">
+              +
+            </button>
+          </div>
+        </div>
+
+        <!-- Precio total y eliminar -->
+        <div class="drawer-carrito__item-acciones">
+          <div class="drawer-carrito__item-total">${{ item.precioTotal }}</div>
+          <button class="drawer-carrito__boton-eliminar" (click)="eliminarItem(item.id)" aria-label="Eliminar producto">
+            <img src="/iconos/ico-borrar.svg" alt="Eliminar">
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+    }
+  </div>
+
+  <!-- Footer con subtotal y botones -->
+  @if (items().length > 0) {
+  <div class="drawer-carrito__footer">
+    <!-- Solo subtotal -->
+    <div class="drawer-carrito__subtotal">
+      <span>Subtotal:</span>
+      <span class="drawer-carrito__subtotal-precio">${{ subtotal() }}</span>
+    </div>
+
+    <!-- 2 botones: Ocultar y Pagar -->
+    <div class="drawer-carrito__botones">
+      <button class="drawer-carrito__boton-ocultar" (click)="cerrarDrawer()">
+        Ocultar
+      </button>
+      <button class="drawer-carrito__boton-pagar" (click)="irAlCheckout()">
+        Pagar
+      </button>
+    </div>
+  </div>
+  }
+</div>

@@ -1,1 +1,54 @@
-<p>cabecera-tienda works!</p>
+<header class="tienda-header">
+  <div class="header-fondo" [style.display]="barraVisible() ? 'block' : 'none'"></div>
+  <div class="header-transparente" [class.con-blur]="blurActivo()">
+    <!-- Barra superior promocional -->
+    <div class="tienda-header__barra-superior" [style.display]="barraVisible() ? 'flex' : 'none'">
+      <h3 class="tienda-header__promocion">{{ promoTexto }}</h3>
+      <div class="tienda-header__controles-superior">
+        <div class="tienda-header__selector-pais">
+          <img [src]="paisPorCodigo(paisActivo())?.bandera" alt="Bandera" class="bandera-icono">
+          <p>{{ paisPorCodigo(paisActivo())?.nombre }}</p>
+          <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="flecha-selector">
+        </div>
+        <div class="tienda-header__selector-idioma">
+          @for (idioma of idiomas; track idioma.codigo) {
+          <div class="idioma-opcion" [class.idioma-activo]="idiomaActivo() === idioma.codigo"
+            (click)="seleccionarIdioma(idioma.codigo)">
+            {{ idioma.etiqueta }}
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra principal de navegación -->
+    <div class="tienda-header__barra-principal" [style.padding-top]="paddingTopBarra()">
+      <div class="tienda-header__izquierda">
+        <a href="/" class="tienda-header__logo">
+          <img src="/logo.png" alt="RixxStore Logo" class="logo-imagen">
+        </a>
+        <nav class="tienda-header__categorias">
+          @for (categoria of categorias; track categoria.id) {
+          <div class="categoria-item">
+            <span class="categoria-texto">{{ categoria.nombre }}</span>
+            <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="categoria-flecha">
+          </div>
+          }
+        </nav>
+      </div>
+
+      <div class="tienda-header__derecha">
+        <div class="tienda-header__busqueda">
+          <img src="/iconos/ico-busqueda.svg" alt="Buscar" class="busqueda-icono">
+          <input type="text" placeholder="Buscar en RixxStore" class="busqueda-input">
+        </div>
+        <button class="tienda-btn-primario" (click)="emitirAbrirModal()">
+          Iniciar sesión
+        </button>
+        <button (click)="emitirAbrirCarrito()">
+          <img src="/iconos/ico-carrito.svg" alt="Carrito" class="icono-boton-mediano icono-color-blanco">
+        </button>
+      </div>
+    </div>
+  </div>
+</header>

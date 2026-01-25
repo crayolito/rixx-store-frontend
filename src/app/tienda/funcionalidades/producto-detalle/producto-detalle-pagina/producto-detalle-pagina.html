@@ -1,1 +1,186 @@
-<p>producto-detalle-pagina works!</p>
+<!-- ═══════════════════════════════════════════════════════════════
+     CONTENEDOR PRINCIPAL CON IMAGEN DE FONDO
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="tienda-producto-detalle">
+  <!-- Imagen de fondo con difuminado -->
+  <div class="tienda-producto-detalle__fondo">
+    <img [src]="producto().imagenBanner" [alt]="producto().titulo" class="tienda-producto-detalle__imagen-banner">
+  </div>
+
+  <!-- Contenido encima de la imagen -->
+  <div class="tienda-producto-detalle__contenido">
+
+    <!-- ─── Header: Imagen del juego, título y descripción básica ─── -->
+    <div class="tienda-producto-detalle__header">
+      <img [src]="producto().imagenJuego" [alt]="producto().titulo" class="tienda-producto-detalle__imagen-juego">
+      <div class="tienda-producto-detalle__contenido-header">
+        <h3 class="tienda-producto-detalle__titulo">{{ producto().titulo }}</h3>
+        <p class="tienda-producto-detalle__info">
+          <img src="/iconos/ico-server.svg" alt="Server" class="icono-boton icono-color-blanco">
+          <span class="tienda-producto-detalle__server">{{ producto().servidor }}</span>
+        </p>
+        <p class="tienda-producto-detalle__info">
+          <img src="/iconos/ico-informacion.svg" alt="Descripción" class="icono-boton icono-color-blanco">
+          <span>{{ producto().descripcion }}</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- ─── Contenido principal: Dos columnas ─── -->
+    <div class="tienda-producto-detalle__principal">
+
+      <!-- ─── COLUMNA IZQUIERDA: Variantes del producto ─── -->
+      <div class="tienda-producto-detalle__izquierda">
+        <div class="tienda-producto-detalle__variantes">
+          <div class="tienda-producto-detalle__variantes-lista">
+            @for (variante of variantes(); track variante.id) {
+            <button type="button" class="tienda-producto-detalle__variante" [disabled]="!variante.disponible"
+              (click)="seleccionarVariante(variante.id)">
+              <input type="radio" name="variante" class="global-radio__input" [value]="variante.id"
+                [checked]="varianteSeleccionada() === variante.id" (change)="seleccionarVariante(variante.id)">
+              <span class="tienda-producto-detalle__variante-nombre">{{ variante.nombre }}</span>
+              <div class="tienda-producto-detalle__variante-contenido">
+                <span class="tienda-producto-detalle__variante-precio">{{ variante.precio | number:'1.2-2' }} Bs</span>
+              </div>
+            </button>
+            }
+          </div>
+
+          <!-- ─── Dropdowns: Descripción, Instrucciones, Términos ─── -->
+          <div class="tienda-producto-detalle__dropdowns">
+            <!-- Descripción -->
+            <div class="tienda-producto-detalle__dropdown">
+              <button type="button" class="tienda-producto-detalle__dropdown-boton" (click)="alternarDescripcion()">
+                <span>Descripción</span>
+                <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha"
+                  class="tienda-producto-detalle__dropdown-flecha"
+                  [class.tienda-producto-detalle__dropdown-flecha--abierta]="descripcionAbierta()">
+              </button>
+              @if (descripcionAbierta()) {
+              <div class="tienda-producto-detalle__dropdown-contenido">
+                <p class="tienda-producto-detalle__dropdown-texto">{{ producto().descripcionCompleta }}</p>
+              </div>
+              }
+            </div>
+
+            <!-- Cómo canjear -->
+            <div class="tienda-producto-detalle__dropdown">
+              <button type="button" class="tienda-producto-detalle__dropdown-boton" (click)="alternarInstrucciones()">
+                <span>Cómo canjear</span>
+                <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha"
+                  class="tienda-producto-detalle__dropdown-flecha"
+                  [class.tienda-producto-detalle__dropdown-flecha--abierta]="instruccionesAbierta()">
+              </button>
+              @if (instruccionesAbierta()) {
+              <div class="tienda-producto-detalle__dropdown-contenido">
+                <p class="tienda-producto-detalle__dropdown-texto">{{ producto().instrucciones }}</p>
+              </div>
+              }
+            </div>
+
+            <!-- Términos y Condiciones -->
+            <div class="tienda-producto-detalle__dropdown">
+              <button type="button" class="tienda-producto-detalle__dropdown-boton" (click)="alternarTerminos()">
+                <span>Términos y Condiciones</span>
+                <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha"
+                  class="tienda-producto-detalle__dropdown-flecha"
+                  [class.tienda-producto-detalle__dropdown-flecha--abierta]="terminosAbierta()">
+              </button>
+              @if (terminosAbierta()) {
+              <div class="tienda-producto-detalle__dropdown-contenido">
+                <p class="tienda-producto-detalle__dropdown-texto">{{ producto().terminos }}</p>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── COLUMNA DERECHA: Formulario, métodos de pago y acciones ─── -->
+      <div class="tienda-producto-detalle__derecha">
+
+        <!-- ─── SECCIÓN 1: Formulario de datos del cliente ─── -->
+        <div class="tienda-producto-detalle__seccion">
+          <h4 class="tienda-producto-detalle__seccion-titulo">Ingresa tus datos</h4>
+          <div class="tienda-producto-detalle__formulario">
+            <div class="global-formulario-campo">
+              <label class="global-formulario-campo__etiqueta">Servidor</label>
+              <div class="global-formulario-campo__contenedor">
+                <input type="text" class="global-formulario-campo__input" placeholder="Ej: LATAM, EEUU, Asia"
+                  [value]="servidor()" (input)="servidor.set($any($event.target).value)">
+              </div>
+            </div>
+            <div class="global-formulario-campo">
+              <label class="global-formulario-campo__etiqueta">ID de Jugador</label>
+              <div class="global-formulario-campo__contenedor">
+                <input type="text" class="global-formulario-campo__input" placeholder="Ej: 123456789"
+                  [value]="idJugador()" (input)="idJugador.set($any($event.target).value)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── SECCIÓN 2: Métodos de pago con radio buttons ─── -->
+        <div class="tienda-producto-detalle__seccion">
+          <h4 class="tienda-producto-detalle__seccion-titulo">Método de pago</h4>
+          <div class="tienda-producto-detalle__metodos-pago">
+            @for (metodo of metodosPago(); track metodo.id) {
+            @if (metodo.activo) {
+            <label class="tienda-producto-detalle__metodo-pago">
+              <input type="radio" name="metodo-pago" class="global-radio__input" [value]="metodo.id"
+                [checked]="metodoPagoSeleccionado() === metodo.id" (change)="seleccionarMetodoPago(metodo.id)">
+              <div class="tienda-producto-detalle__metodo-contenido">
+                <img [src]="metodo.logo" [alt]="metodo.nombre" class="tienda-producto-detalle__metodo-logo">
+                <div class="tienda-producto-detalle__metodo-info">
+                  <p class="tienda-producto-detalle__metodo-nombre">{{ metodo.nombre }}</p>
+                </div>
+              </div>
+            </label>
+            }
+            }
+          </div>
+        </div>
+
+        <!-- ─── SECCIÓN 3: Resumen del pedido ─── -->
+        <div class="tienda-producto-detalle__seccion">
+          <h4 class="tienda-producto-detalle__seccion-titulo">Resumen del pedido</h4>
+          <div class="tienda-producto-detalle__resumen">
+            <div class="tienda-producto-detalle__resumen-item">
+              <span class="tienda-producto-detalle__resumen-label">Variante:</span>
+              <span class="tienda-producto-detalle__resumen-valor">{{ varianteActual()?.nombre }}</span>
+            </div>
+            <div class="tienda-producto-detalle__resumen-item">
+              <span class="tienda-producto-detalle__resumen-label">Cantidad:</span>
+              <div class="tienda-producto-detalle__cantidad-controls">
+                <button type="button" class="tienda-producto-detalle__cantidad-boton" (click)="decrementarCantidad()">
+                  -
+                </button>
+                <span class="tienda-producto-detalle__cantidad-valor">{{ cantidad() }}</span>
+                <button type="button" class="tienda-producto-detalle__cantidad-boton" (click)="incrementarCantidad()">
+                  +
+                </button>
+              </div>
+            </div>
+            <div class="tienda-producto-detalle__resumen-item tienda-producto-detalle__resumen-item--total">
+              <span class="tienda-producto-detalle__resumen-label">Total:</span>
+              <span class="tienda-producto-detalle__resumen-precio">{{ precioTotal() | number:'1.2-2' }} Bs</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── SECCIÓN 4: Botones de acción (3 botones) ─── -->
+        <div class="tienda-producto-detalle__acciones">
+          <button type="button" class="boton-primario tienda-producto-detalle__boton" (click)="agregarAlCarrito()">
+            Agregar al carrito
+          </button>
+          <button type="button" class="boton-secundario tienda-producto-detalle__boton" disabled>
+            Saldo insuficiente
+          </button>
+          <button type="button" class="boton-primario tienda-producto-detalle__boton" (click)="comprarAhora()">
+            Comprar ahora
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

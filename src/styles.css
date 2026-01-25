@@ -118,7 +118,8 @@
   --ancho-contenedor-pequeno: 768px;
   --ancho-contenedor-base: 1024px;
   --ancho-contenedor-maximo: 1200px;
-  --ancho-contenedor-grande: 1440px;
+  --ancho-contenedor-grande: 1450px;
+
 
   /* ─── Z-Index Escala ─── */
   --z-dropdown: 1000;
@@ -623,6 +624,11 @@ button:focus-visible {
 
 .icono-color-noveno {
   filter: brightness(0) saturate(100%) invert(69%);
+}
+
+/* --color-texto-primario: #ffffff; */
+.icono-color-blanco {
+  filter: brightness(0) saturate(100%) invert(100%);
 }
 
 /* ═══════════════════════════════════════════════════════

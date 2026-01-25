@@ -1,11 +1,122 @@
-import { Component } from '@angular/core';
+import { Component, input, OnDestroy, OnInit, signal } from '@angular/core';
+
+interface SlideCarrusel {
+  id: string;
+  src: string;
+  alt: string;
+}
 
 @Component({
   selector: 'app-seccion-carrusel',
+  standalone: true,
   imports: [],
   templateUrl: './seccion-carrusel.html',
   styleUrl: './seccion-carrusel.css',
 })
-export class SeccionCarrusel {
+export class SeccionCarrusel implements OnInit, OnDestroy {
+  slides = input.required<SlideCarrusel[]>();
 
+  indiceActivo = signal(0);
+  private intervalo!: ReturnType<typeof setInterval>;
+
+  // Variables para control de arrastre con ratón
+  private mouseInicio = 0;
+  private estaArrastrando = false;
+  private umbralArrastre = 50;
+
+  ngOnInit() {
+    this.iniciarIntervalo();
+  }
+
+  ngOnDestroy() {
+    clearInterval(this.intervalo);
+  }
+
+  // Determinar estado de cada slide
+  esAnterior(i: number): boolean {
+    const n = this.indiceActivo();
+    const total = this.slides().length;
+    return i === (n - 1 + total) % total;
+  }
+
+  esActiva(i: number): boolean {
+    return i === this.indiceActivo();
+  }
+
+  esSiguiente(i: number): boolean {
+    const n = this.indiceActivo();
+    const total = this.slides().length;
+    return i === (n + 1) % total;
+  }
+
+  esOculta(i: number): boolean {
+    return !this.esAnterior(i) && !this.esActiva(i) && !this.esSiguiente(i);
+  }
+
+  // Navegación
+  irAnterior() {
+    const total = this.slides().length;
+    this.indiceActivo.update((n) => (n - 1 + total) % total);
+  }
+
+  irSiguiente() {
+    const total = this.slides().length;
+    this.indiceActivo.update((n) => (n + 1) % total);
+  }
+
+  irASlide(indice: number) {
+    this.indiceActivo.set(indice);
+    this.iniciarIntervalo();
+  }
+
+  // Control con ratón
+  iniciarArrastre(evento: MouseEvent) {
+    evento.preventDefault();
+    this.estaArrastrando = false;
+    this.mouseInicio = evento.clientX;
+    clearInterval(this.intervalo);
+  }
+
+  finalizarArrastre(evento: MouseEvent) {
+    const mouseActual = evento.clientX;
+    const diferencia = mouseActual - this.mouseInicio;
+
+    if (Math.abs(diferencia) > this.umbralArrastre) {
+      evento.preventDefault();
+      evento.stopPropagation();
+
+      if (diferencia > 0) {
+        this.irAnterior();
+      } else {
+        this.irSiguiente();
+      }
+      this.estaArrastrando = true;
+    } else {
+      this.estaArrastrando = false;
+    }
+
+    this.iniciarIntervalo();
+  }
+
+  cancelarArrastre() {
+    if (this.mouseInicio !== 0) {
+      this.mouseInicio = 0;
+      this.estaArrastrando = false;
+      this.iniciarIntervalo();
+    }
+  }
+
+  manejarClickImagen(evento: MouseEvent) {
+    if (this.estaArrastrando) {
+      evento.preventDefault();
+      evento.stopPropagation();
+    }
+  }
+
+  private iniciarIntervalo() {
+    clearInterval(this.intervalo);
+    this.intervalo = setInterval(() => {
+      this.irSiguiente();
+    }, 6000);
+  }
 }

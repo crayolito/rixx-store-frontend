@@ -1,1 +1,24 @@
-<p>seccion-productos-oferta works!</p>
+<section class="tienda-ofertas">
+  <div class="tienda-ofertas__header">
+    <h3>OFERTAS ESPECIALES</h3>
+    <div class="tienda-ofertas__botones">
+      <button class="tienda-ofertas__boton-nav" (click)="moverProductosIzquierda()">
+        <img src="/iconos/ico-flecha-izquierda-tabla.svg" alt="Anterior">
+      </button>
+      <button class="tienda-ofertas__boton-nav" (click)="moverProductosDerecha()">
+        <img src="/iconos/ico-flecha-derecha-tabla.svg" alt="Siguiente">
+      </button>
+    </div>
+  </div>
+  <div class="tienda-ofertas__contenedor" #contenedorProductos>
+    <div class="tienda-ofertas__pista" [style.transform]="'translateX(' + desplazamientoProductos() + 'px)'">
+      @for (producto of productos(); track producto.id) {
+      <a class="tienda-ofertas__item" [routerLink]="['/producto', producto.id]">
+        <img class="tienda-ofertas__imagen" [src]="producto.imagen" [alt]="producto.titulo">
+        <h4 class="tienda-ofertas__titulo">{{ producto.titulo }}</h4>
+        <button class="tienda-ofertas__boton">COMPLETAR</button>
+      </a>
+      }
+    </div>
+  </div>
+</section>

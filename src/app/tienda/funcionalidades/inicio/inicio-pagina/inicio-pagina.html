@@ -1,1 +1,6 @@
-<p>inicio-pagina works!</p>
+<app-seccion-carrusel [slides]="slides()"></app-seccion-carrusel>
+<app-seccion-productos-oferta [productos]="productosOferta()"></app-seccion-productos-oferta>
+<app-seccion-productos-categoria [productos]="productosDestacados()"
+  titulo="Juegos Destacados"></app-seccion-productos-categoria>
+<app-seccion-productos-categoria [productos]="productosNuevos()"
+  titulo="Nuevos Lanzamientos"></app-seccion-productos-categoria>

@@ -1,1 +1,19 @@
-<p>layout-tienda works!</p>
+<div class="tienda-contenedor">
+  <app-cabecera-tienda (abrirModal)="modalAutenticacionAbierto.set(true)"
+    (abrirCarrito)="drawerCarritoAbierto.set(true)">
+  </app-cabecera-tienda>
+
+  <main class="tienda-principal">
+    <router-outlet></router-outlet>
+  </main>
+
+  <app-pie-tienda></app-pie-tienda>
+</div>
+
+<app-modal-autenticacion [estaAbierto]="modalAutenticacionAbierto()" (cerrar)="modalAutenticacionAbierto.set(false)">
+</app-modal-autenticacion>
+
+<app-popup-bienvenida></app-popup-bienvenida>
+
+<app-drawer-carrito [estaAbierto]="drawerCarritoAbierto()" (cerrar)="drawerCarritoAbierto.set(false)">
+</app-drawer-carrito>

@@ -1,6 +1,35 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
+  // ===== TIENDA (CLIENTE) - RUTA PRINCIPAL =====
+  {
+    path: '',
+    loadComponent: () =>
+      import('./tienda/diseno-tienda/layout-tienda/layout-tienda').then((m) => m.LayoutTienda),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./tienda/funcionalidades/inicio/inicio-pagina/inicio-pagina').then((m) => m.InicioPagina),
+      },
+      {
+        path: 'categoria/:slug',
+        loadComponent: () =>
+          import('./tienda/funcionalidades/categoria/categoria-pagina/categoria-pagina').then((m) => m.CategoriaPagina),
+      },
+      {
+        path: 'producto/:slug',
+        loadComponent: () =>
+          import('./tienda/funcionalidades/producto-detalle/producto-detalle-pagina/producto-detalle-pagina').then((m) => m.ProductoDetallePagina),
+      },
+      {
+        path: 'perfil',
+        loadComponent: () =>
+          import('./tienda/funcionalidades/perfil/perfil-pagina/perfil-pagina').then((m) => m.PerfilPagina),
+      },
+    ],
+  },
+  // ===== ADMIN =====
   {
     path: 'admin',
     loadComponent: () =>
@@ -134,10 +163,5 @@ export const routes: Routes = [
           ).then((m) => m.MetodosPagoAdminPaginaComponente),
       },
     ],
-  },
-  {
-    path: '',
-    redirectTo: '/admin',
-    pathMatch: 'full',
   },
 ];

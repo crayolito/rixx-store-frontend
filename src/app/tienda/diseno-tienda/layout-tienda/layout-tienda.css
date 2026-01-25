@@ -1,0 +1,24 @@
+/* ═══════════════════════════════════════════════════════════════
+   LAYOUT TIENDA - SOLO CONTENEDOR BASE
+   ═══════════════════════════════════════════════════════════════ */
+
+.tienda-contenedor {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-fondo-secundario);
+}
+
+.tienda-principal {
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: var(--ancho-contenedor-grande);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--espaciado-md);
+  padding-right: var(--espaciado-md);
+  padding-top: 110px;
+  display: flex;
+  flex-direction: column;
+}

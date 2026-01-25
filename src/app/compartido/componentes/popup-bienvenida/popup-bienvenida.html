@@ -1,0 +1,8 @@
+<app-modal [estaAbierto]="estaVisible()" (cerrar)="cerrarPopup()">
+  <div class="popup-contenedor">
+    <button class="popup-cerrar" (click)="cerrarPopup()">
+      <img src="/iconos/ico-cerrar.svg" alt="Cerrar" class="icono-boton icono-boton-mediano">
+    </button>
+    <img src="/imagenes/banner-popup.jpg" alt="Bienvenida" class="popup-imagen">
+  </div>
+</app-modal>

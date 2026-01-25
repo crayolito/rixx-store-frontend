@@ -1,0 +1,99 @@
+/* ═══════════════════════════════════════════════════════
+   POPUP BIENVENIDA - ESTILOS BASE (MÓVIL)
+   ═══════════════════════════════════════════════════════ */
+
+.popup-contenedor {
+  position: relative;
+  padding: 0;
+  background: transparent;
+  border: none;
+  max-width: 90vw;
+  max-height: 80vh;
+  width: 100%;
+}
+
+/* ─── Imagen principal ─── */
+.popup-imagen {
+  width: 100%;
+  height: auto;
+  max-height: 80vh;
+  object-fit: contain;
+  display: block;
+  border-radius: var(--borde-radio-grande);
+}
+
+/* ─── Overlay oscuro en los bordes (para que el botón se vea) ─── */
+.popup-contenedor::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0.6) 0%,
+      rgba(0, 0, 0, 0.3) 50%,
+      transparent 100%);
+  border-radius: var(--borde-radio-grande) var(--borde-radio-grande) 0 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─── Botón cerrar (encima de la imagen) ─── */
+.popup-cerrar {
+  position: absolute;
+  top: var(--espaciado-xxs);
+  right: var(--espaciado-xxs);
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  transition: all var(--transicion-rapida);
+}
+
+.popup-cerrar:active {
+  transform: scale(0.95);
+}
+
+.popup-cerrar img {
+  transform: scale(1);
+  filter: brightness(0) saturate(100%) invert(100%);
+}
+
+.popup-cerrar:hover img {
+  transform: scale(1.1);
+  filter: brightness(0) saturate(100%) invert(67%) sepia(89%) saturate(1200%) hue-rotate(45deg) brightness(1.1);
+}
+
+/* ═══════════════════════════════════════════════════════
+     RESPONSIVE - TABLET (768px en adelante)
+     ═══════════════════════════════════════════════════════ */
+
+@media (min-width: 768px) {
+  .popup-contenedor {
+    max-width: 600px;
+    max-height: 70vh;
+  }
+
+  .popup-imagen {
+    max-height: 70vh;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+     RESPONSIVE - DESKTOP (1280px en adelante)
+     ═══════════════════════════════════════════════════════ */
+
+@media (min-width: 1280px) {
+  .popup-contenedor {
+    max-width: 800px;
+    max-height: 85vh;
+  }
+
+  .popup-imagen {
+    max-height: 85vh;
+  }
+}

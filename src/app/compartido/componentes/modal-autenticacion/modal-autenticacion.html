@@ -1,1 +1,155 @@
-<p>modal-autenticacion works!</p>
+<app-modal [estaAbierto]="estaAbierto()" (cerrar)="cerrar.emit()">
+  <div class="auth-contenedor">
+    <!-- Botón cerrar -->
+    <button class="auth-cerrar" (click)="cerrar.emit()">
+      <img src="/iconos/ico-cerrar.svg" alt="Cerrar">
+    </button>
+
+    <!-- Título dinámico según modo -->
+    <h2 class="auth-titulo">
+      @if (modoActual() === 'login') {
+      Iniciar sesión
+      } @else {
+      Crear cuenta
+      }
+    </h2>
+
+    <!-- Formulario LOGIN -->
+    @if (modoActual() === 'login') {
+    <form class="auth-formulario">
+      <!-- Email -->
+      <div class="auth-campo-grupo">
+        <label class="auth-label">Email</label>
+        <input type="email" class="auth-campo" placeholder="tu@email.com">
+      </div>
+
+      <!-- Contraseña con ojito -->
+      <div class="auth-campo-grupo">
+        <label class="auth-label">Contraseña</label>
+        <div class="auth-campo-contrasena">
+          <input [type]="mostrarContrasena() ? 'text' : 'password'" class="auth-campo" placeholder="Tu contraseña">
+          <button type="button" class="auth-campo-icono" (click)="alternarVisibilidadContrasena()">
+            <img [src]="mostrarContrasena() ? '/iconos/ico-ojo-abierto.svg' : '/iconos/ico-ojo-cerrado.svg'"
+              alt="Mostrar/Ocultar">
+          </button>
+        </div>
+      </div>
+
+      <!-- Link olvidar contraseña -->
+      <a href="#" class="auth-link-secundario">¿Has olvidado tu contraseña?</a>
+
+      <!-- Botón iniciar sesión -->
+      <button type="submit" class="boton-primario auth-boton">Iniciar sesión</button>
+
+      <!-- Link para cambiar a registro -->
+      <p class="auth-texto-cambio">
+        ¿Aún no posees cuenta?
+        <a href="#" (click)="alternarModo(); $event.preventDefault()" class="auth-link-primario">
+          Regístrate
+        </a>
+      </p>
+    </form>
+    }
+
+    <!-- Formulario REGISTRO -->
+    @else {
+    <form class="auth-formulario">
+      <!-- Nombre -->
+      <div class="auth-campo-grupo">
+        <label class="auth-label">Nombre completo</label>
+        <input type="text" class="auth-campo" placeholder="Tu nombre">
+      </div>
+
+      <!-- Email -->
+      <div class="auth-campo-grupo">
+        <label class="auth-label">Email</label>
+        <input type="email" class="auth-campo" placeholder="tu@email.com">
+      </div>
+
+      <!-- Teléfono con selector de país integrado -->
+      <div class="auth-campo-grupo">
+        <label class="auth-label">Número de teléfono</label>
+        <div class="auth-campo-telefono">
+          <div class="auth-telefono-prefijo" (click)="alternarSelectorPais()">
+            <img [src]="paisSeleccionado().bandera" alt="" class="auth-pais-bandera">
+            <span class="auth-telefono-sigla">{{ paisSeleccionado().sigla }}</span>
+            <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="" class="auth-selector-flecha">
+
+            @if (selectorPaisAbierto()) {
+            <div class="auth-selector-opciones" (click)="$event.stopPropagation()">
+              @for (pais of paises; track pais.codigo) {
+              <div class="auth-selector-opcion" (click)="seleccionarPais(pais)">
+                <img [src]="pais.bandera" alt="" class="auth-pais-bandera">
+                <span class="auth-opcion-sigla">{{ pais.sigla }}</span>
+              </div>
+              }
+            </div>
+            }
+          </div>
+          <input type="tel" class="auth-campo auth-campo-telefono-input"
+            [placeholder]="paisSeleccionado().sigla + ' 123 456 7890'">
+        </div>
+      </div>
+
+
+      <!-- Contraseña -->
+      <div class="auth-campo-grupo">
+        <label class="auth-label">Contraseña</label>
+        <div class="auth-campo-contrasena">
+          <input [type]="mostrarContrasena() ? 'text' : 'password'" class="auth-campo"
+            placeholder="Mínimo 8 caracteres">
+          <button type="button" class="auth-campo-icono" (click)="alternarVisibilidadContrasena()">
+            <img [src]="mostrarContrasena() ? '/iconos/ico-ojo-abierto.svg' : '/iconos/ico-ojo-cerrado.svg'"
+              alt="Mostrar/Ocultar">
+          </button>
+        </div>
+      </div>
+
+      <!-- Confirmar contraseña -->
+      <div class="auth-campo-grupo">
+        <label class="auth-label">Confirmar contraseña</label>
+        <div class="auth-campo-contrasena">
+          <input [type]="mostrarConfirmarContrasena() ? 'text' : 'password'" class="auth-campo"
+            placeholder="Repite tu contraseña">
+          <button type="button" class="auth-campo-icono" (click)="alternarVisibilidadConfirmarContrasena()">
+            <img [src]="mostrarConfirmarContrasena() ? '/iconos/ico-ojo-abierto.svg' : '/iconos/ico-ojo-cerrado.svg'"
+              alt="Mostrar/Ocultar">
+          </button>
+        </div>
+      </div>
+
+      <!-- Botón registrarse -->
+      <button type="submit" class="boton-primario auth-boton">Registrarse</button>
+
+      <!-- Link para cambiar a login -->
+      <p class="auth-texto-cambio">
+        ¿Ya tienes cuenta?
+        <a href="#" (click)="alternarModo(); $event.preventDefault()" class="auth-link-primario">
+          Iniciar sesión
+        </a>
+      </p>
+    </form>
+    }
+
+    <!-- Separador -->
+    <div class="auth-separador">
+      <span>o continuar con</span>
+    </div>
+
+    <!-- Botones social login -->
+    <div class="auth-social">
+      <button type="button" class="auth-social-boton">
+        <img src="/imagenes/logo-google.png" alt="Google">
+      </button>
+      <button type="button" class="auth-social-boton">
+        <img src="/imagenes/logo-discord.png" alt="Discord">
+      </button>
+      <button type="button" class="auth-social-boton">
+        <img src="/imagenes/logo-facebook.png" alt="Facebook">
+      </button>
+      <button type="button" class="auth-social-boton">
+        <img src="/imagenes/logo-X.png" alt="X">
+      </button>
+    </div>
+  </div>
+</app-modal>
