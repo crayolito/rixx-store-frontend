@@ -1,1 +1,286 @@
-<p>checkout-pagina works!</p>
+<!-- ═══════════════════════════════════════════════════════════════
+     CHECKOUT - CONTENEDOR PRINCIPAL
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="checkout-pagina">
+  @if (!mostrarQR()) {
+  <!-- ─── VISTA PRINCIPAL: Formulario y resumen ─── -->
+  <div class="checkout-pagina__contenido">
+    <div class="checkout-pagina__header">
+      <button type="button" class="checkout-pagina__boton-volver" (click)="volverAlCatalogo()">
+        <img src="/iconos/ico-flecha-izquierda-tabla.svg" alt="Volver" class="checkout-pagina__icono-volver">
+        <span>Volver</span>
+      </button>
+      <h1 class="checkout-pagina__titulo">Finalizar Compra</h1>
+    </div>
+
+    <div class="checkout-pagina__grid">
+      <!-- ─── COLUMNA IZQUIERDA: Formulario ─── -->
+      <div class="checkout-pagina__izquierda">
+        <!-- Datos del cliente -->
+        <div class="checkout-pagina__seccion">
+          <div class="checkout-pagina__seccion-header">
+            <h2 class="checkout-pagina__seccion-titulo">Datos del Cliente</h2>
+            @if (!estaEditandoDatos()) {
+            <button type="button" class="checkout-pagina__boton-editar" (click)="activarEdicionDatos()">
+              <img src="/iconos/ico-editar.svg" alt="Editar" class="checkout-pagina__icono-editar">
+              Editar
+            </button>
+            }
+          </div>
+
+          @if (!estaEditandoDatos()) {
+          <!-- Vista de solo lectura -->
+          <div class="checkout-pagina__datos-vista">
+            <div class="checkout-pagina__dato-item">
+              <span class="checkout-pagina__dato-label">Nombre completo:</span>
+              <span class="checkout-pagina__dato-valor">{{ datosCliente().nombre }}</span>
+            </div>
+            <div class="checkout-pagina__dato-item">
+              <span class="checkout-pagina__dato-label">Correo electrónico:</span>
+              <span class="checkout-pagina__dato-valor">{{ datosCliente().email }}</span>
+            </div>
+            @if (datosCliente().telefono) {
+            <div class="checkout-pagina__dato-item">
+              <span class="checkout-pagina__dato-label">Teléfono:</span>
+              <span class="checkout-pagina__dato-valor">{{ datosCliente().telefono }}</span>
+            </div>
+            }
+          </div>
+          } @else {
+          <!-- Vista de edición -->
+          <div class="checkout-pagina__formulario">
+            <div class="global-formulario-campo">
+              <label class="global-formulario-campo__etiqueta">Nombre completo</label>
+              <div class="global-formulario-campo__contenedor">
+                <input type="text" class="global-formulario-campo__input" placeholder="Ej: Juan Pérez"
+                  [value]="datosClienteTemporal().nombre"
+                  (input)="actualizarDatosClienteTemporal('nombre', $any($event.target).value)">
+              </div>
+            </div>
+
+            <div class="global-formulario-campo">
+              <label class="global-formulario-campo__etiqueta">Correo electrónico</label>
+              <div class="global-formulario-campo__contenedor">
+                <input type="email" class="global-formulario-campo__input" placeholder="Ej: juan@ejemplo.com"
+                  [value]="datosClienteTemporal().email"
+                  (input)="actualizarDatosClienteTemporal('email', $any($event.target).value)">
+              </div>
+            </div>
+
+            <div class="global-formulario-campo">
+              <label class="global-formulario-campo__etiqueta">
+                Teléfono
+                <span class="checkout-pagina__opcional">(Opcional)</span>
+              </label>
+              <div class="global-formulario-campo__contenedor">
+                <input type="tel" class="global-formulario-campo__input" placeholder="Ej: +591 70000000"
+                  [value]="datosClienteTemporal().telefono || ''"
+                  (input)="actualizarDatosClienteTemporal('telefono', $any($event.target).value)">
+              </div>
+            </div>
+
+            <div class="checkout-pagina__botones-edicion">
+              <button type="button" class="boton-secundario checkout-pagina__boton-cancelar"
+                (click)="cancelarEdicionDatos()">
+                Cancelar
+              </button>
+              <button type="button" class="boton-primario checkout-pagina__boton-guardar"
+                (click)="guardarDatosCliente()">
+                Guardar
+              </button>
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- Métodos de pago -->
+        <div class="checkout-pagina__seccion">
+          <h2 class="checkout-pagina__seccion-titulo">Método de Pago</h2>
+          <div class="checkout-pagina__metodos-pago">
+            @for (metodo of metodosPago(); track metodo.id) {
+            @if (metodo.activo) {
+            <label class="checkout-pagina__metodo-pago"
+              [class.checkout-pagina__metodo-pago--seleccionado]="metodoPagoSeleccionado() === metodo.id">
+              <div class="checkout-pagina__metodo-contenido">
+                <div class="checkout-pagina__metodo-radio"></div>
+                <input type="radio" name="metodo-pago" class="checkout-pagina__radio-input" [value]="metodo.id"
+                  [checked]="metodoPagoSeleccionado() === metodo.id" (change)="seleccionarMetodoPago(metodo.id)">
+                <img [src]="metodo.logo" [alt]="metodo.nombre" class="checkout-pagina__metodo-logo">
+                <div class="checkout-pagina__metodo-info">
+                  <p class="checkout-pagina__metodo-nombre">{{ metodo.nombre }}</p>
+                  <p class="checkout-pagina__metodo-descripcion">{{ metodo.descripcion }}</p>
+                </div>
+              </div>
+            </label>
+            }
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── COLUMNA DERECHA: Resumen del pedido ─── -->
+      <div class="checkout-pagina__derecha">
+        <div class="checkout-pagina__resumen">
+          <h2 class="checkout-pagina__resumen-titulo">Resumen del Pedido</h2>
+
+          <!-- Lista de productos -->
+          <div class="checkout-pagina__productos">
+            @for (item of items(); track item.id) {
+            <div class="checkout-pagina__producto">
+              <img [src]="item.imagen" [alt]="item.titulo" class="checkout-pagina__producto-imagen">
+              <div class="checkout-pagina__producto-info">
+                <h3 class="checkout-pagina__producto-titulo">{{ item.titulo }}</h3>
+                <p class="checkout-pagina__producto-cantidad">Cantidad: {{ item.cantidad }}</p>
+                <p class="checkout-pagina__producto-precio">${{ item.precioTotal | number:'1.2-2' }}</p>
+              </div>
+            </div>
+            }
+          </div>
+
+          <!-- Totales -->
+          <div class="checkout-pagina__totales">
+            <div class="checkout-pagina__total-item">
+              <span>Subtotal:</span>
+              <span>${{ subtotal() | number:'1.2-2' }}</span>
+            </div>
+            <div class="checkout-pagina__total-item checkout-pagina__total-item--final">
+              <span>Total:</span>
+              <span class="checkout-pagina__total-precio">${{ total() | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <!-- Botón procesar pago -->
+          <button type="button" class="boton-primario checkout-pagina__boton-procesar"
+            [disabled]="!formularioValido() || estaProcesando()" (click)="procesarPago()">
+            @if (estaProcesando()) {
+            <span>Generando QR de Pago...</span>
+            } @else {
+            <span>Procesar Pago</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  } @else {
+  <!-- ─── VISTA QR: Información de pago ─── -->
+  <div class="checkout-pagina__qr">
+    <div class="checkout-pagina__qr-contenido">
+      @if (datosPago()?.metodo === 'binance') {
+      <!-- ─── BINANCE PAY ─── -->
+      <div class="checkout-pagina__qr-header">
+        <h2 class="checkout-pagina__qr-titulo">Pago con Binance Pay</h2>
+
+      </div>
+
+      <div class="checkout-pagina__qr-detalles">
+        <div class="checkout-pagina__qr-imagen-contenedor">
+          <img src="/iconos/qr-binance.png" alt="QR Binance" class="checkout-pagina__qr-imagen">
+        </div>
+
+        <div class="checkout-pagina__qr-datos">
+          <div class="checkout-pagina__qr-dato-item">
+            <span class="checkout-pagina__qr-dato-label">Monto a pagar:</span>
+            <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--monto">{{ datosPago()?.monto |
+              number:'1.2-2' }} USDT</span>
+          </div>
+          <div class="checkout-pagina__qr-dato-item checkout-pagina__qr-dato-item--destacado">
+            <span class="checkout-pagina__qr-dato-label">Código de nota (6 dígitos):</span>
+            <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--codigo">{{ datosPago()?.nota
+              }}</span>
+          </div>
+          <div class="checkout-pagina__qr-dato-item">
+            <span class="checkout-pagina__qr-dato-label">Estado:</span>
+            <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--estado">Esperando Pago</span>
+          </div>
+          <div class="checkout-pagina__qr-dato-item">
+            <span class="checkout-pagina__qr-dato-label">Tiempo restante:</span>
+            <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--codigo">{{
+              formatearTiempo(tiempoRestante())
+              }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkout-pagina__qr-instrucciones">
+        <h3 class="checkout-pagina__qr-instrucciones-titulo">Instrucciones de Pago:</h3>
+        <ol class="checkout-pagina__qr-lista">
+          <li>Abre la aplicación de Binance</li>
+          <li>Escanea el código QR mostrado arriba</li>
+          <li>Ingresa el monto exacto: <strong>{{ datosPago()?.monto | number:'1.2-2' }} USDT</strong></li>
+          <li>En el campo "Nota" de Binance Pay, ingresa estos números: <strong>{{ datosPago()?.nota }}</strong>. Esto
+            es obligatorio para identificar tu pago.</li>
+          <li>Después de completar el pago, presiona "Ya pagué" para verificar tu transacción.</li>
+        </ol>
+      </div>
+
+      <div class="checkout-pagina__qr-botones">
+        <button type="button" class="boton-primario checkout-pagina__qr-boton" (click)="verificarPago()">
+          Ya pagué - Verificar transacción
+        </button>
+        <button type="button" class="boton-secundario checkout-pagina__qr-boton" (click)="volverAtras()">
+          Volver Atrás
+        </button>
+      </div>
+      } @else if (datosPago()?.metodo === 'qr-boliviano') {
+      <!-- ─── VERIPAGOS ─── -->
+      <div class="checkout-pagina__qr-header">
+        <h2 class="checkout-pagina__qr-titulo">Pago con QR Boliviano</h2>
+      </div>
+
+      <div class="checkout-pagina__qr-detalles">
+        <div class="checkout-pagina__qr-imagen-contenedor">
+          <img src="/iconos/qr-veripagos.png" alt="QR VeriPagos" class="checkout-pagina__qr-imagen">
+        </div>
+
+        <div class="checkout-pagina__qr-datos">
+          <div class="checkout-pagina__qr-dato-item checkout-pagina__qr-dato-item--destacado">
+            <span class="checkout-pagina__qr-dato-label">Monto a pagar:</span>
+            <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--monto">{{ datosPago()?.monto |
+              number:'1.2-2' }} Bs</span>
+          </div>
+          <div class="checkout-pagina__qr-dato-item">
+            <span class="checkout-pagina__qr-dato-label">Descripción:</span>
+            <span class="checkout-pagina__qr-dato-valor">SIXX STORE</span>
+          </div>
+          <div class="checkout-pagina__qr-dato-item">
+            <span class="checkout-pagina__qr-dato-label">ID de movimiento:</span>
+            <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--codigo">{{
+              datosPago()?.idMovimiento }}</span>
+          </div>
+          <div class="checkout-pagina__qr-dato-item">
+            <span class="checkout-pagina__qr-dato-label">Tiempo restante:</span>
+            <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--codigo">{{
+              formatearTiempo(tiempoRestante())
+              }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkout-pagina__qr-instrucciones">
+        <h3 class="checkout-pagina__qr-instrucciones-titulo">Instrucciones:</h3>
+        <ol class="checkout-pagina__qr-lista">
+          <li>Abre tu app bancaria</li>
+          <li>Busca la opción "Pagar con QR" o "Escanear QR"</li>
+          <li>Escanea el código QR mostrado arriba</li>
+          <li>Confirma el pago en tu banco</li>
+          <li>Espera la confirmación automática</li>
+        </ol>
+      </div>
+
+      <div class="checkout-pagina__qr-advertencia">
+        <span class="checkout-pagina__qr-advertencia-texto">
+          ⚠️ Importante: Paga el monto exacto en Bolivianos. El sistema detectará automáticamente tu pago.
+        </span>
+      </div>
+
+      <div class="checkout-pagina__qr-botones">
+        <button type="button" class="boton-secundario checkout-pagina__qr-boton" (click)="volverAtras()">
+          Volver Atrás
+        </button>
+      </div>
+      }
+    </div>
+  </div>
+  }
+</div>

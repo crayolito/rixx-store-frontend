@@ -1,5 +1,8 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { Modal } from '../modal/modal';
+import { Autenticacion } from '../../../nucleo/servicios/autenticacion';
+import { Sesion } from '../../../nucleo/servicios/sesion';
 
 type Pais = {
   codigo: string;
@@ -10,7 +13,7 @@ type Pais = {
 
 @Component({
   selector: 'app-modal-autenticacion',
-  imports: [Modal],
+  imports: [Modal, RouterLink],
   templateUrl: './modal-autenticacion.html',
   styleUrl: './modal-autenticacion.css',
 })
@@ -18,6 +21,18 @@ export class ModalAutenticacion {
   estaAbierto = input.required<boolean>();
   cerrar = output<void>();
   modoActual = signal<'login' | 'registro'>('login');
+  private router = inject(Router);
+  private autenticacion = inject(Autenticacion);
+  private sesion = inject(Sesion);
+
+  // FASE 1: Estado de los formularios
+  emailLogin = signal('');
+  contrasenaLogin = signal('');
+  nombreRegistro = signal('');
+  emailRegistro = signal('');
+  telefonoRegistro = signal('');
+  contrasenaRegistro = signal('');
+  confirmarContrasenaRegistro = signal('');
 
   mostrarContrasena = signal(false);
   mostrarConfirmarContrasena = signal(false);
@@ -56,5 +71,45 @@ export class ModalAutenticacion {
   seleccionarPais(pais: Pais) {
     this.paisSeleccionado.set({ ...pais });
     this.selectorPaisAbierto.set(false);
+  }
+
+  // FASE 2: Manejar login
+  emitirIniciarSesion() {
+    const usuario = this.autenticacion.iniciarSesion(
+      this.emailLogin(),
+      this.contrasenaLogin()
+    );
+
+    if (usuario) {
+      this.sesion.guardarSesion(usuario);
+      this.cerrar.emit();
+      
+      // FASE 3: Redirigir según rol
+      if (usuario.rol === 'Admin') {
+        this.router.navigate(['/admin/inicio']);
+      } else {
+        this.router.navigate(['/']);
+      }
+    } else {
+      alert('Email o contraseña incorrectos');
+    }
+  }
+
+  // FASE 4: Manejar registro
+  emitirRegistro() {
+    if (this.contrasenaRegistro() !== this.confirmarContrasenaRegistro()) {
+      alert('Las contraseñas no coinciden');
+      return;
+    }
+
+    const usuario = this.autenticacion.registrar(
+      this.nombreRegistro(),
+      this.emailRegistro(),
+      this.contrasenaRegistro()
+    );
+
+    this.sesion.guardarSesion(usuario);
+    this.cerrar.emit();
+    this.router.navigate(['/']);
   }
 }

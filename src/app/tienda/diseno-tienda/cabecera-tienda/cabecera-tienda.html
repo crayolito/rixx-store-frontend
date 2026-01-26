@@ -29,10 +29,10 @@
         </a>
         <nav class="tienda-header__categorias">
           @for (categoria of categorias; track categoria.id) {
-          <div class="categoria-item">
+          <a [routerLink]="['/categoria', categoria.id]" class="categoria-item">
             <span class="categoria-texto">{{ categoria.nombre }}</span>
             <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="categoria-flecha">
-          </div>
+          </a>
           }
         </nav>
       </div>
@@ -42,11 +42,21 @@
           <img src="/iconos/ico-busqueda.svg" alt="Buscar" class="busqueda-icono">
           <input type="text" placeholder="Buscar en RixxStore" class="busqueda-input">
         </div>
+        @if (estaLogueado()) {
+        <a [routerLink]="['/perfil']" class="tienda-header__usuario-logueado">
+          <img src="/iconos/ico-cliente.svg" alt="Usuario" class="usuario-icono">
+          <span class="usuario-email">{{ usuarioActual()?.email }}</span>
+        </a>
+        } @else {
         <button class="tienda-btn-primario" (click)="emitirAbrirModal()">
           Iniciar sesión
         </button>
-        <button (click)="emitirAbrirCarrito()">
+        }
+        <button class="tienda-header__boton-carrito" (click)="emitirAbrirCarrito()">
           <img src="/iconos/ico-carrito.svg" alt="Carrito" class="icono-boton-mediano icono-color-blanco">
+          @if (cantidadItemsCarrito() > 0) {
+          <span class="tienda-header__badge-carrito">{{ cantidadItemsCarrito() }}</span>
+          }
         </button>
       </div>
     </div>

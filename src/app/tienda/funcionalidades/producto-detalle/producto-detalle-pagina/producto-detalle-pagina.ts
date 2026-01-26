@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { CarritoServicio } from '../../../../compartido/servicios/carrito.servicio';
 
 // FASE 1: Definimos los modelos de datos
 interface VarianteProducto {
@@ -28,6 +30,10 @@ interface MetodoPago {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductoDetallePagina {
+  // FASE 2: Servicios
+  private carritoServicio = inject(CarritoServicio);
+  private router = inject(Router);
+
   // FASE 2: Datos del producto
   readonly producto = signal({
     id: '1',
@@ -145,13 +151,18 @@ export class ProductoDetallePagina {
   }
 
   comprarAhora(): void {
-    // TODO: Implementar lógica de compra directa
-    console.log('Comprar ahora:', {
-      variante: this.varianteActual(),
-      cantidad: this.cantidad(),
-      metodoPago: this.metodoPagoSeleccionado(),
-      servidor: this.servidor(),
-      idJugador: this.idJugador()
+    const variante = this.varianteActual();
+    if (!variante) return;
+
+    // Agregar al carrito
+    this.carritoServicio.agregarItem({
+      imagen: this.producto().imagenJuego,
+      titulo: `${this.producto().titulo} - ${variante.nombre}`,
+      precio: variante.precio,
+      cantidad: this.cantidad()
     });
+
+    // Navegar al checkout
+    this.router.navigate(['/checkout']);
   }
 }

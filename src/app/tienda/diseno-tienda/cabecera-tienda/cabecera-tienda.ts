@@ -1,4 +1,7 @@
-import { Component, HostListener, OnInit, output, signal } from '@angular/core';
+import { Component, computed, HostListener, inject, OnInit, output, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { CarritoServicio } from '../../../compartido/servicios/carrito.servicio';
+import { Sesion } from '../../../nucleo/servicios/sesion';
 
 interface Idioma {
   codigo: string;
@@ -19,14 +22,25 @@ interface Categoria {
 @Component({
   selector: 'app-cabecera-tienda',
   standalone: true,
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './cabecera-tienda.html',
   styleUrl: './cabecera-tienda.css',
 })
 export class CabeceraTienda implements OnInit {
+  // Servicios
+  private carritoServicio = inject(CarritoServicio);
+  private sesion = inject(Sesion);
+
   // Outputs para comunicar con el layout
   abrirModal = output<void>();
   abrirCarrito = output<void>();
+
+  // Cantidad de items en el carrito
+  cantidadItemsCarrito = this.carritoServicio.cantidadItems;
+
+  // FASE 1: Estado de autenticación
+  usuarioActual = this.sesion.usuarioActual;
+  estaLogueado = this.sesion.estaLogueado;
 
   // Lógica de scroll
   barraVisible = signal(true);

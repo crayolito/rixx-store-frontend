@@ -16,18 +16,22 @@
 
     <!-- Formulario LOGIN -->
     @if (modoActual() === 'login') {
-    <form class="auth-formulario">
+    <form class="auth-formulario" (submit)="emitirIniciarSesion(); $event.preventDefault()">
       <!-- Email -->
       <div class="auth-campo-grupo">
         <label class="auth-label">Email</label>
-        <input type="email" class="auth-campo" placeholder="tu@email.com">
+        <input type="email" class="auth-campo" placeholder="tu@email.com" 
+          [value]="emailLogin()" 
+          (input)="emailLogin.set($any($event.target).value)">
       </div>
 
       <!-- Contraseña con ojito -->
       <div class="auth-campo-grupo">
         <label class="auth-label">Contraseña</label>
         <div class="auth-campo-contrasena">
-          <input [type]="mostrarContrasena() ? 'text' : 'password'" class="auth-campo" placeholder="Tu contraseña">
+          <input [type]="mostrarContrasena() ? 'text' : 'password'" class="auth-campo" placeholder="Tu contraseña"
+            [value]="contrasenaLogin()"
+            (input)="contrasenaLogin.set($any($event.target).value)">
           <button type="button" class="auth-campo-icono" (click)="alternarVisibilidadContrasena()">
             <img [src]="mostrarContrasena() ? '/iconos/ico-ojo-abierto.svg' : '/iconos/ico-ojo-cerrado.svg'"
               alt="Mostrar/Ocultar">
@@ -40,7 +44,6 @@
 
       <!-- Botón iniciar sesión -->
       <button type="submit" class="boton-primario auth-boton">Iniciar sesión</button>
-
       <!-- Link para cambiar a registro -->
       <p class="auth-texto-cambio">
         ¿Aún no posees cuenta?
@@ -53,17 +56,21 @@
 
     <!-- Formulario REGISTRO -->
     @else {
-    <form class="auth-formulario">
+    <form class="auth-formulario" (submit)="emitirRegistro(); $event.preventDefault()">
       <!-- Nombre -->
       <div class="auth-campo-grupo">
         <label class="auth-label">Nombre completo</label>
-        <input type="text" class="auth-campo" placeholder="Tu nombre">
+        <input type="text" class="auth-campo" placeholder="Tu nombre"
+          [value]="nombreRegistro()"
+          (input)="nombreRegistro.set($any($event.target).value)">
       </div>
 
       <!-- Email -->
       <div class="auth-campo-grupo">
         <label class="auth-label">Email</label>
-        <input type="email" class="auth-campo" placeholder="tu@email.com">
+        <input type="email" class="auth-campo" placeholder="tu@email.com"
+          [value]="emailRegistro()"
+          (input)="emailRegistro.set($any($event.target).value)">
       </div>
 
       <!-- Teléfono con selector de país integrado -->
@@ -87,7 +94,9 @@
             }
           </div>
           <input type="tel" class="auth-campo auth-campo-telefono-input"
-            [placeholder]="paisSeleccionado().sigla + ' 123 456 7890'">
+            [placeholder]="paisSeleccionado().sigla + ' 123 456 7890'"
+            [value]="telefonoRegistro()"
+            (input)="telefonoRegistro.set($any($event.target).value)">
         </div>
       </div>
 
@@ -97,7 +106,9 @@
         <label class="auth-label">Contraseña</label>
         <div class="auth-campo-contrasena">
           <input [type]="mostrarContrasena() ? 'text' : 'password'" class="auth-campo"
-            placeholder="Mínimo 8 caracteres">
+            placeholder="Mínimo 8 caracteres"
+            [value]="contrasenaRegistro()"
+            (input)="contrasenaRegistro.set($any($event.target).value)">
           <button type="button" class="auth-campo-icono" (click)="alternarVisibilidadContrasena()">
             <img [src]="mostrarContrasena() ? '/iconos/ico-ojo-abierto.svg' : '/iconos/ico-ojo-cerrado.svg'"
               alt="Mostrar/Ocultar">
@@ -110,7 +121,9 @@
         <label class="auth-label">Confirmar contraseña</label>
         <div class="auth-campo-contrasena">
           <input [type]="mostrarConfirmarContrasena() ? 'text' : 'password'" class="auth-campo"
-            placeholder="Repite tu contraseña">
+            placeholder="Repite tu contraseña"
+            [value]="confirmarContrasenaRegistro()"
+            (input)="confirmarContrasenaRegistro.set($any($event.target).value)">
           <button type="button" class="auth-campo-icono" (click)="alternarVisibilidadConfirmarContrasena()">
             <img [src]="mostrarConfirmarContrasena() ? '/iconos/ico-ojo-abierto.svg' : '/iconos/ico-ojo-cerrado.svg'"
               alt="Mostrar/Ocultar">

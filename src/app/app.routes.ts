@@ -29,6 +29,12 @@ export const routes: Routes = [
       },
     ],
   },
+  // ===== CHECKOUT (SIN HEADER/FOOTER) =====
+  {
+    path: 'checkout',
+    loadComponent: () =>
+      import('./tienda/funcionalidades/checkout/checkout-pagina/checkout-pagina').then((m) => m.CheckoutPagina),
+  },
   // ===== ADMIN =====
   {
     path: 'admin',

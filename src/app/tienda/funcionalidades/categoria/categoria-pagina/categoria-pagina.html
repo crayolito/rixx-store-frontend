@@ -1,1 +1,64 @@
-<p>categoria-pagina works!</p>
+<div class="tienda-categoria-pagina">
+  <aside class="tienda-categoria-pagina__sidebar">
+    <h3 class="tienda-categoria-pagina__titulo-sidebar">Categorías</h3>
+    <div class="tienda-categoria-pagina__categorias">
+      @for (categoria of categorias(); track categoria.id) {
+      <button type="button" class="tienda-categoria-pagina__boton-categoria"
+        [class.tienda-categoria-pagina__boton-categoria--activo]="categoriaSeleccionada() === categoria.id"
+        (click)="seleccionarCategoria(categoria.id)">
+        <span class="tienda-categoria-pagina__nombre-categoria">{{ categoria.nombre }}</span>
+        <span class="tienda-categoria-pagina__cantidad-productos">({{ categoria.cantidadProductos }})</span>
+      </button>
+      }
+    </div>
+  </aside>
+
+  <div class="tienda-categoria-pagina__contenido-principal">
+    <div class="tienda-categoria-pagina__productos">
+      <div class="tienda-categoria-pagina__grid">
+        @for (producto of productosPaginados(); track producto.id) {
+        <a class="tienda-categoria-pagina__tarjeta" [routerLink]="['/producto', producto.id]">
+          <div class="tienda-categoria-pagina__imagen-contenedor">
+            <img class="tienda-categoria-pagina__imagen" [src]="producto.imagen" [alt]="producto.titulo">
+          </div>
+          <div class="tienda-categoria-pagina__contenido">
+            <h4 class="tienda-categoria-pagina__titulo">{{ producto.titulo }}</h4>
+          </div>
+        </a>
+        }
+      </div>
+    </div>
+
+    <div class="tienda-categoria-pagina__paginacion">
+      <div class="tienda-categoria-pagina__paginacion-controles">
+        <button class="tienda-categoria-pagina__paginacion-boton tienda-categoria-pagina__paginacion-boton--anterior"
+          (click)="paginaAnterior()" [disabled]="paginaActual() === 1">
+          <img src="/iconos/ico-flecha-izquierda-tabla.svg" alt="Icono flecha izquierda"
+            class="icono-boton icono-color-blanco">
+        </button>
+        <div class="tienda-categoria-pagina__paginacion-numeros">
+          @for (pagina of paginasAMostrar(); track pagina) {
+          @if (pagina === -1) {
+          <span class="tienda-categoria-pagina__paginacion-separador">...</span>
+          } @else {
+          <button class="tienda-categoria-pagina__paginacion-numero"
+            [class.tienda-categoria-pagina__paginacion-numero--activa]="pagina === paginaActual()"
+            (click)="irAPagina(pagina)" type="button">
+            {{ pagina }}
+          </button>
+          }
+          }
+        </div>
+        <button class="tienda-categoria-pagina__paginacion-boton tienda-categoria-pagina__paginacion-boton--siguiente"
+          (click)="paginaSiguiente()" [disabled]="paginaActual() === totalPaginas()">
+          <img src="/iconos/ico-flecha-derecha-tabla.svg" alt="Icono flecha derecha"
+            class="icono-boton icono-color-blanco ">
+        </button>
+      </div>
+      <p class="tienda-categoria-pagina__paginacion-info">
+        {{ (paginaActual() - 1) * productosPorPagina() + 1 }}-{{ Math.min(paginaActual() * productosPorPagina(),
+        totalProductos()) }} de {{ totalProductos() }}
+      </p>
+    </div>
+  </div>
+</div>
