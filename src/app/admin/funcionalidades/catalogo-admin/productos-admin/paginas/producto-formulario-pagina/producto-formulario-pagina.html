@@ -195,31 +195,30 @@
                   class="icono-boton-mediano icono-color-secundario">
                 <p class="precio-agregado__nombre">{{ precio.nombre }}</p>
                 <div class="precio-agregado__estados">
-                  <span class="precio-agregado__badge"
-                    [class.precio-agregado__badge--activo]="precio.estado === 'activo'"
-                    [class.precio-agregado__badge--inactivo]="precio.estado === 'inactivo'"
-                    [class.precio-agregado__badge--agotado]="precio.estado === 'agotado'">
-                    {{ precio.estado === 'activo' ? 'Activo' : precio.estado === 'inactivo' ? 'Inactivo' : 'Agotado' }}
+                  <span class="precio-agregado__badge" [class.precio-agregado__badge--activo]="precio.precioActivo"
+                    [class.precio-agregado__badge--inactivo]="!precio.precioActivo">
+                    {{ precio.precioActivo ? 'Activo' : 'Inactivo' }}
                   </span>
                 </div>
               </div>
             </div>
             <div class="precio-agregado__detalles">
               <div class="precio-agregado__detalle-item">
-                <span class="precio-agregado__detalle-etiqueta">Costo</span>
-                <span class="precio-agregado__detalle-valor">${{ precio.costoCompra | number:'1.2-2' }}</span>
+                <span class="precio-agregado__detalle-etiqueta">Precio base</span>
+                <span class="precio-agregado__detalle-valor">${{ precio.precioBase | number:'1.2-2' }}</span>
               </div>
               <div class="precio-agregado__detalle-item">
                 <span class="precio-agregado__detalle-etiqueta">Descuento</span>
                 <span class="precio-agregado__detalle-valor">{{ precio.porcentajeDescuento }}%</span>
               </div>
               <div class="precio-agregado__detalle-item">
-                <span class="precio-agregado__detalle-etiqueta">Margen</span>
-                <span class="precio-agregado__detalle-valor">{{ precio.margenFinalCliente }}%</span>
+                <span class="precio-agregado__detalle-etiqueta">Margen Cliente</span>
+                <span class="precio-agregado__detalle-valor">{{ precio.margenClienteFinal }}%</span>
               </div>
               <div class="precio-agregado__detalle-item precio-agregado__detalle-item--destacado">
-                <span class="precio-agregado__detalle-etiqueta">Precio</span>
-                <span class="precio-agregado__detalle-valor">${{ precio.precioFinal | number:'1.2-2' }}</span>
+                <span class="precio-agregado__detalle-etiqueta">Precio Cliente Final</span>
+                <span class="precio-agregado__detalle-valor">${{ (precio.precioBase * (1 +
+                  precio.margenClienteFinal/100)) | number:'1.2-2' }}</span>
               </div>
             </div>
 
@@ -403,78 +402,98 @@
 
 <!-- Modal: Precio -->
 <app-modal [estaAbierto]="modalPrecioAbierto()" (cerrar)="cerrarModalPrecio()">
-  <div class="global-modal global-modal--ancho">
+  <div class="global-modal global-modal--ancho modal-precio">
     <div class="global-modal__cabecera">
       <h3 class="global-modal__titulo">{{ precioEditando() ? 'Editar Precio' : 'Agregar Precio' }}</h3>
       <button type="button" class="global-modal__boton-cerrar" (click)="cerrarModalPrecio()" aria-label="Cerrar modal">
         <img src="/iconos/ico-cerrar.svg" alt="Cerrar" class="icono-boton icono-color-secundario">
       </button>
     </div>
-    <div class="global-modal__contenido global-modal__contenido--grid">
-      <div class="global-formulario-campo">
-        <label class="global-formulario-campo__etiqueta">Nombre</label>
-        <div class="global-formulario-campo__contenedor">
-          <input type="text" class="global-formulario-campo__input" placeholder="Ej: Precio estándar"
-            [value]="nombrePrecio()" (input)="nombrePrecio.set($any($event.target).value)">
+    <div class="global-modal__contenido modal-precio__contenido">
+      <!-- Fila 1: Solo Nombre de precio -->
+      <div class="modal-precio__fila">
+        <div class="global-formulario-campo">
+          <label class="global-formulario-campo__etiqueta">Nombre de precio</label>
+          <div class="global-formulario-campo__contenedor">
+            <input type="text" class="global-formulario-campo__input" placeholder="Ej: Precio estándar"
+              [value]="nombrePrecio()" (input)="nombrePrecio.set($any($event.target).value)">
+          </div>
         </div>
       </div>
-
-      <div class="global-formulario-campo">
-        <label class="global-formulario-campo__etiqueta">Costo de compra</label>
-        <div class="global-formulario-campo__contenedor">
-          <input type="number" class="global-formulario-campo__input" placeholder="0.00" step="0.01" min="0"
-            [value]="costoCompra()" (input)="costoCompra.set($any($event.target).valueAsNumber || 0)">
+      <!-- Fila 2: Precio base -->
+      <div class="modal-precio__fila">
+        <div class="global-formulario-campo">
+          <label class="global-formulario-campo__etiqueta">Precio base</label>
+          <div class="global-formulario-campo__contenedor">
+            <input type="number" class="global-formulario-campo__input" placeholder="0.00" step="0.01" min="0"
+              [value]="precioBase()" (input)="precioBase.set($any($event.target).valueAsNumber || 0)">
+          </div>
         </div>
       </div>
-
-      <div class="global-formulario-campo">
-        <label class="global-formulario-campo__etiqueta">Porcentaje de descuento (%)</label>
-        <div class="global-formulario-campo__contenedor">
-          <input type="number" class="global-formulario-campo__input" placeholder="0" step="0.01" min="0" max="100"
-            [value]="porcentajeDescuento()" (input)="porcentajeDescuento.set($any($event.target).valueAsNumber || 0)">
+      <!-- Fila 3: 3 inputs en una fila - Márgenes -->
+      <div class="modal-precio__fila modal-precio__fila--tres">
+        <div class="global-formulario-campo">
+          <label class="global-formulario-campo__etiqueta">Margen Cliente %</label>
+          <div class="global-formulario-campo__contenedor">
+            <input type="number" class="global-formulario-campo__input" placeholder="0" step="0.01" min="0"
+              [value]="margenClienteFinal()" (input)="margenClienteFinal.set($any($event.target).valueAsNumber || 0)">
+          </div>
+        </div>
+        <div class="global-formulario-campo">
+          <label class="global-formulario-campo__etiqueta">Margen Revendedor %</label>
+          <div class="global-formulario-campo__contenedor">
+            <input type="number" class="global-formulario-campo__input" placeholder="0" step="0.01" min="0"
+              [value]="margenRevendedor()" (input)="margenRevendedor.set($any($event.target).valueAsNumber || 0)">
+          </div>
+        </div>
+        <div class="global-formulario-campo">
+          <label class="global-formulario-campo__etiqueta">Margen Mayorista %</label>
+          <div class="global-formulario-campo__contenedor">
+            <input type="number" class="global-formulario-campo__input" placeholder="0" step="0.01" min="0"
+              [value]="margenMayorista()" (input)="margenMayorista.set($any($event.target).valueAsNumber || 0)">
+          </div>
         </div>
       </div>
-
-      <div class="global-formulario-campo">
-        <label class="global-formulario-campo__etiqueta">Margen final del cliente (%)</label>
-        <div class="global-formulario-campo__contenedor">
-          <input type="number" class="global-formulario-campo__input" placeholder="0" step="0.01" min="0"
-            [value]="margenFinalCliente()" (input)="margenFinalCliente.set($any($event.target).valueAsNumber || 0)">
+      <!-- Fila 4: Solo cálculos (precio base × cada porcentaje), sin inputs -->
+      <div class="modal-precio__fila modal-precio__fila--tres modal-precio__fila--calculos">
+        <div class="modal-precio__calculo">
+          <span class="modal-precio__calculo-etiqueta">Precio Cliente Final</span>
+          <span class="modal-precio__calculo-valor">{{ precioClienteFinalCalculado() | number:'1.2-2' }}</span>
         </div>
-        <label class="global-formulario-campo__ayuda">
-          Porcentaje de margen que se aplicará sobre el costo de compra
-        </label>
-      </div>
-
-      <div class="global-formulario-campo">
-        <label class="global-formulario-campo__etiqueta">Precio final</label>
-        <div class="global-formulario-campo__contenedor">
-          <input type="text" class="global-formulario-campo__inputformulario-campo__input--readonly"
-            [value]="precioFinalCalculado() | number:'1.2-2'" readonly>
+        <div class="modal-precio__calculo">
+          <span class="modal-precio__calculo-etiqueta">Precio Revendedor</span>
+          <span class="modal-precio__calculo-valor">{{ precioRevendedorCalculado() | number:'1.2-2' }}</span>
         </div>
-        <label class="global-formulario-campo__ayuda">
-          Se calcula automáticamente: Costo de compra × (1 + Margen final del cliente (%))
-        </label>
+        <div class="modal-precio__calculo">
+          <span class="modal-precio__calculo-etiqueta">Precio Mayorista</span>
+          <span class="modal-precio__calculo-valor">{{ precioMayoristaCalculado() | number:'1.2-2' }}</span>
+        </div>
       </div>
-
-      <div class="global-formulario-campo">
-        <label class="global-formulario-campo__etiqueta">Estado</label>
-        <div class="global-formulario-opciones-radio">
-          <label class="global-formulario-opciones-radio__opcion">
-            <input type="radio" name="estado-precio" value="activo" [checked]="estadoPrecio() === 'activo'"
-              (change)="estadoPrecio.set('activo')" class="global-radio__input">
-            <span class="global-formulario-opciones-radio__label">Activo</span>
-          </label>
-          <label class="global-formulario-opciones-radio__opcion">
-            <input type="radio" name="estado-precio" value="inactivo" [checked]="estadoPrecio() === 'inactivo'"
-              (change)="estadoPrecio.set('inactivo')" class="global-radio__input">
-            <span class="global-formulario-opciones-radio__label">Inactivo</span>
-          </label>
-          <label class="global-formulario-opciones-radio__opcion">
-            <input type="radio" name="estado-precio" value="agotado" [checked]="estadoPrecio() === 'agotado'"
-              (change)="estadoPrecio.set('agotado')" class="global-radio__input">
-            <span class="global-formulario-opciones-radio__label">Agotado</span>
-          </label>
+      <!-- Fila 5: Porcentaje de Descuento % + Solo Cliente Final, con nota del cálculo debajo -->
+      <div class="modal-precio__fila">
+        <div class="modal-precio__fila-campos">
+          <div class="global-formulario-campo">
+            <label class="global-formulario-campo__etiqueta">Porcentaje de Descuento %</label>
+            <div class="global-formulario-campo__contenedor">
+              <input type="number" class="global-formulario-campo__input" placeholder="0" step="0.01" min="0" max="100"
+                [value]="porcentajeDescuento()"
+                (input)="porcentajeDescuento.set($any($event.target).valueAsNumber || 0)">
+            </div>
+          </div>
+        </div>
+        <p class="modal-precio__nota">Precio con descuento = Precio base × (1 − Descuento % / 100). Si «Solo Cliente
+          Final» está marcado, el descuento aplica solo al precio cliente final.</p>
+      </div>
+      <!-- Fila 6: Un solo checkbox Precio Activo -->
+      <div class="modal-precio__fila">
+        <div class="global-formulario-campo global-formulario-campo--checkbox">
+          <div class="global-checkbox">
+            <input type="checkbox" id="modal-precio-activo" class="global-checkbox__input" [checked]="precioActivo()"
+              (change)="precioActivo.set($any($event.target).checked)">
+            <label for="modal-precio-activo" class="global-checkbox__contenido">
+              <p class="global-checkbox__titulo">Precio Activo</p>
+            </label>
+          </div>
         </div>
       </div>
     </div>
@@ -483,7 +502,7 @@
         <p>Cancelar</p>
       </button>
       <button type="button" class="boton-primario" (click)="guardarPrecio()">
-        <p>{{ precioEditando() ? 'Guardar Cambios' : 'Agregar' }}</p>
+        <p>{{ precioEditando() ? 'Actualizar' : 'Agregar' }}</p>
       </button>
     </div>
   </div>

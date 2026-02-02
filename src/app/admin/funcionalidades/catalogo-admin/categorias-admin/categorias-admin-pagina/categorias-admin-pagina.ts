@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { Modal } from '../../../../../compartido/componentes/modal/modal';
 
 // FASE 1: Modelo de categoría
@@ -17,7 +16,7 @@ interface Categoria {
 @Component({
   selector: 'app-categorias-admin-pagina',
   standalone: true,
-  imports: [CommonModule, RouterLink, Modal],
+  imports: [CommonModule, Modal],
   templateUrl: './categorias-admin-pagina.html',
   styleUrl: './categorias-admin-pagina.css',
 })

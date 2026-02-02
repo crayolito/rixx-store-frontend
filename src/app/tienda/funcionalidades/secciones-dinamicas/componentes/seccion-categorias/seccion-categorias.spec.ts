@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RenderizadorSecciones } from './renderizador-secciones';
+import { SeccionCategorias } from './seccion-categorias';
 
-describe('RenderizadorSecciones', () => {
-  let component: RenderizadorSecciones;
-  let fixture: ComponentFixture<RenderizadorSecciones>;
+describe('SeccionCategorias', () => {
+  let component: SeccionCategorias;
+  let fixture: ComponentFixture<SeccionCategorias>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RenderizadorSecciones]
+      imports: [SeccionCategorias]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(RenderizadorSecciones);
+    fixture = TestBed.createComponent(SeccionCategorias);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -6,14 +6,16 @@
   width: 100%;
   min-height: 100vh;
   background-color: var(--color-fondo-quinario);
-  padding: var(--espaciado-md);
+  padding: var(--espaciado-sm);
+  box-sizing: border-box;
 }
 
 /* ─── Contenido principal ─── */
 .checkout-pagina__contenido {
   max-width: var(--ancho-contenedor-pequeno);
-  width: var(--ancho-contenedor-pequeno);
+  width: 100%;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 /* ─── Header con botón volver ─── */
@@ -51,11 +53,13 @@
 }
 
 .checkout-pagina__titulo {
-  font-size: clamp(1.1rem, 2.5vw + 0.5rem, var(--texto-h3));
+  font-size: clamp(1rem, 2.5vw + 0.5rem, var(--texto-h3));
   font-weight: var(--peso-bold);
   color: var(--color-fondo-base);
   margin: 0;
   flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 /* ─── Grid principal ─── */
@@ -73,10 +77,11 @@
 /* ─── Secciones ─── */
 .checkout-pagina__seccion {
   background-color: var(--color-fondo-cuaternario);
-  padding: var(--espaciado-md);
+  padding: var(--espaciado-sm);
   border-radius: var(--borde-radio-grande);
   margin-bottom: var(--espaciado-md);
   box-shadow: var(--sombra-base-fina-2);
+  box-sizing: border-box;
 }
 
 .checkout-pagina__seccion:last-child {
@@ -401,21 +406,25 @@
   font-size: var(--texto-pequeno);
 }
 
-/* ─── Vista QR ─── */
+/* ─── Vista QR (móvil: ancho completo, contenido legible) ─── */
 .checkout-pagina__qr {
-  width: fit-content;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
+  padding: 0;
 }
 
 .checkout-pagina__qr-contenido {
   background: linear-gradient(180deg, var(--color-fondo-cuaternario) 0%, var(--color-fondo-noveno) 100%);
-  padding: var(--espaciado-md);
+  padding: var(--espaciado-sm);
   border-radius: var(--borde-radio-grande);
   box-shadow: var(--sombra-base-fina-2), 0 6px 24px rgba(15, 20, 25, 0.06);
   border: 1px solid var(--color-borde-suave);
   display: flex;
   flex-direction: column;
-  gap: var(--espaciado-md);
+  gap: var(--espaciado-sm);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .checkout-pagina__qr-header {
@@ -459,12 +468,7 @@
 .checkout-pagina__qr-detalles {
   display: flex;
   flex-direction: column;
-  gap: var(--espaciado-md);
-  /* padding: var(--espaciado-md); */
-  /* background: var(--color-fondo-cuaternario); */
-  /* border-radius: var(--borde-radio-grande); */
-  /* border: 1px solid var(--color-borde-suave); */
-  /* box-shadow: 0 2px 8px rgba(15, 20, 25, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8); */
+  gap: var(--espaciado-sm);
 }
 
 /* ─── Imagen QR ─── */
@@ -479,19 +483,17 @@
 }
 
 .checkout-pagina__qr-imagen {
-  max-width: 180px;
+  max-width: 160px;
   width: 100%;
   height: auto;
   border-radius: var(--borde-radio);
   filter: drop-shadow(0 1px 4px rgba(15, 20, 25, 0.06));
 }
 
-/* ─── Datos del pago ─── */
+/* ─── Datos del pago (móvil: una columna para que no se aplasten) ─── */
 .checkout-pagina__qr-datos {
-  /* display: flex; */
-  /* flex-direction: column; */
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: var(--espaciado-xs);
 }
 
@@ -505,6 +507,7 @@
   border-radius: var(--borde-radio);
   border: 1px solid var(--color-borde-suave);
   transition: border-color var(--transicion-rapida), box-shadow var(--transicion-rapida);
+  min-width: 0;
 }
 
 .checkout-pagina__qr-dato-item:hover {
@@ -593,9 +596,10 @@
   border: 1px solid var(--color-primario);
   border-radius: var(--borde-radio);
   box-shadow: 0 2px 6px rgba(164, 196, 57, 0.1);
-  width: fit-content;
+  width: 100%;
   max-width: 100%;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .checkout-pagina__qr-advertencia-texto {
@@ -608,14 +612,15 @@
 
 /* ─── Instrucciones ─── */
 .checkout-pagina__qr-instrucciones {
-  padding: var(--espaciado-md);
+  padding: var(--espaciado-sm);
   background: var(--color-fondo-cuaternario);
   border-radius: var(--borde-radio-grande);
   border: 1px solid var(--color-borde-suave);
   border-left: 3px solid var(--color-primario);
   box-shadow: 0 2px 8px rgba(15, 20, 25, 0.04);
-  max-width: 600px;
+  max-width: 100%;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .checkout-pagina__qr-instrucciones-titulo {
@@ -642,8 +647,9 @@
   counter-increment: paso;
   font-size: var(--texto-pequeno);
   line-height: 1.5;
-  padding: var(--espaciado-xs) 0 var(--espaciado-xs) calc(var(--espaciado-md) + var(--espaciado-sm));
+  padding: var(--espaciado-xs) 0 var(--espaciado-xs) calc(var(--espaciado-md) + var(--espaciado-xs));
   position: relative;
+  word-break: break-word;
 }
 
 .checkout-pagina__qr-lista li::before {
@@ -726,6 +732,22 @@
     height: 48px;
   }
 
+  .checkout-pagina__seccion,
+  .checkout-pagina__resumen {
+    padding: var(--espaciado-md);
+  }
+
+  /* Vista QR: en tablet/desktop recupera layout horizontal y ancho contenido */
+  .checkout-pagina__qr {
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .checkout-pagina__qr-contenido {
+    padding: var(--espaciado-md);
+    gap: var(--espaciado-md);
+  }
+
   .checkout-pagina__qr-detalles {
     flex-direction: row;
     justify-content: center;
@@ -733,7 +755,12 @@
     gap: var(--espaciado-md);
   }
 
+  .checkout-pagina__qr-datos {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .checkout-pagina__qr-instrucciones {
+    padding: var(--espaciado-md);
     max-width: 678px;
   }
 
@@ -743,6 +770,10 @@
 
   .checkout-pagina__qr-boton {
     flex: 1;
+  }
+
+  .checkout-pagina__qr-advertencia {
+    width: fit-content;
   }
 
   .checkout-pagina__qr-advertencia-texto {

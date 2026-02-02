@@ -1,10 +1,6 @@
-import { Component, input, OnDestroy, OnInit, signal } from '@angular/core';
-
-interface SlideCarrusel {
-  id: string;
-  src: string;
-  alt: string;
-}
+import { Component, inject, input, OnDestroy, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { SlideCarrusel } from '../../../../../compartido/modelos/configuracion.modelo';
 
 @Component({
   selector: 'app-seccion-carrusel',
@@ -14,6 +10,8 @@ interface SlideCarrusel {
   styleUrl: './seccion-carrusel.css',
 })
 export class SeccionCarrusel implements OnInit, OnDestroy {
+  private router = inject(Router);
+
   slides = input.required<SlideCarrusel[]>();
 
   indiceActivo = signal(0);
@@ -23,6 +21,11 @@ export class SeccionCarrusel implements OnInit, OnDestroy {
   private mouseInicio = 0;
   private estaArrastrando = false;
   private umbralArrastre = 50;
+
+  // Detectar si es móvil
+  get esMovil(): boolean {
+    return window.innerWidth < 768;
+  }
 
   ngOnInit() {
     this.iniciarIntervalo();
@@ -106,10 +109,29 @@ export class SeccionCarrusel implements OnInit, OnDestroy {
     }
   }
 
-  manejarClickImagen(evento: MouseEvent) {
+  // NUEVA FUNCIONALIDAD: Manejar click en imagen con destinos
+  manejarClickImagen(evento: MouseEvent, slide: SlideCarrusel) {
+    // Si está arrastrando, no navegar
     if (this.estaArrastrando) {
       evento.preventDefault();
       evento.stopPropagation();
+      return;
+    }
+
+    // Navegar según el tipo de destino
+    this.navegarADestino(slide);
+  }
+
+  // NUEVA FUNCIONALIDAD: Navegar según el destino del slide
+  private navegarADestino(slide: SlideCarrusel): void {
+    if (slide.tipoDestino === 'ninguno' || !slide.destinoHandle) {
+      return; // No hace nada
+    }
+
+    if (slide.tipoDestino === 'producto') {
+      this.router.navigate(['/producto', slide.destinoHandle]);
+    } else if (slide.tipoDestino === 'categoria') {
+      this.router.navigate(['/categoria', slide.destinoHandle]);
     }
   }
 

@@ -100,6 +100,21 @@ export const routes: Routes = [
             './admin/funcionalidades/catalogo-admin/billetera-admin/billetera-admin-pagina/billetera-admin-pagina'
           ).then((m) => m.BilleteraAdminPagina),
       },
+      // ===== CATÁLOGO - IMPORTAR VEMPER =====
+      {
+        path: 'catalogo/importar-vemper',
+        loadComponent: () =>
+          import(
+            './admin/funcionalidades/catalogo-admin/importar-vemper-admin/importar-vemper-admin-pagina/importar-vemper-admin-pagina'
+          ).then((m) => m.ImportarVemperAdminPagina),
+      },
+      {
+        path: 'catalogo/importar-vemper/categoria/:id/productos',
+        loadComponent: () =>
+          import(
+            './admin/funcionalidades/catalogo-admin/importar-vemper-admin/productos-veemper-pagina/productos-veemper-pagina'
+          ).then((m) => m.ProductosVemperPagina),
+      },
       // ===== PEDIDOS =====
       {
         path: 'pedidos',

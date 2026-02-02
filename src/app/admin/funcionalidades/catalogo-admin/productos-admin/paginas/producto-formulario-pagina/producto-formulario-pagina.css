@@ -447,7 +447,8 @@
   flex-wrap: wrap;
 }
 
-.campo-adicional-agregado__badge {
+.campo-adicional-agregado__badge,
+.precio-agregado__badge {
   display: inline-flex;
   align-items: center;
   padding: var(--espaciado-xxs) var(--espaciado-xs);
@@ -458,6 +459,18 @@
   border: var(--borde-grosor) solid var(--color-borde-suave);
   border-radius: var(--borde-radio);
   white-space: nowrap;
+}
+
+.precio-agregado__badge--activo {
+  color: var(--color-fondo-base);
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+}
+
+.precio-agregado__badge--inactivo {
+  color: var(--color-fondo-septimo);
+  background-color: var(--color-fondo-quinario);
+  border-color: var(--color-borde-suave);
 }
 
 .campo-adicional-agregado__badge--numero {
@@ -495,6 +508,107 @@
 .campo-adicional-agregado__boton:hover,
 .precio-agregado__boton:hover {
   background-color: var(--color-fondo-sexto);
+}
+
+/* ═══════════════════════════════════════════════════════
+   MODAL PRECIO - LAYOUT POR FILAS
+   ═══════════════════════════════════════════════════════ */
+
+.modal-precio__contenido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-sm);
+}
+
+.modal-precio__fila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+}
+
+.modal-precio__fila--tres {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--espaciado-sm);
+}
+
+.modal-precio__fila--calculos {
+  align-items: stretch;
+}
+
+.modal-precio__calculo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xxs);
+  padding: var(--espaciado-xs) var(--espaciado-sm);
+  background-color: var(--color-fondo-quinario);
+  border: var(--borde-grosor) solid var(--color-borde-suave);
+  border-radius: var(--borde-radio);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-precio__calculo-etiqueta {
+  font-size: var(--texto-mini);
+  /* color: var(--color-texto-secundario); */
+  color: var(--color-fondo-base);
+  font-weight: var(--peso-medium);
+}
+
+.modal-precio__calculo-valor {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  color: var(--color-primario);
+  font-family: var(--fuente-mono);
+}
+
+.modal-precio__fila--cinco {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+}
+
+.modal-precio__fila-cinco-campos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-sm);
+}
+
+.modal-precio__fila-cinco-campos .global-formulario-campo:first-child {
+  max-width: 12rem;
+}
+
+.modal-precio__fila-cinco-campos .global-formulario-campo--checkbox {
+  align-self: flex-start;
+}
+
+.modal-precio__nota {
+  font-size: var(--texto-pequeno);
+  color: var(--color-texto-secundario);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.global-formulario-campo--checkbox .global-checkbox {
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .modal-precio__fila-cinco-campos {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: var(--espaciado-md);
+  }
+}
+
+@media (max-width: 767px) {
+  .modal-precio__fila--tres {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-precio__fila-cinco-campos .global-formulario-campo:first-child {
+    max-width: 100%;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════

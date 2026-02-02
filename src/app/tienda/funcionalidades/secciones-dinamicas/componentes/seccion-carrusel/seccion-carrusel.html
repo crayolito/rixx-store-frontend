@@ -7,14 +7,17 @@
         [class.tienda-carrusel__slide--oculta]="esOculta(i)" (click)="irASlide(i)">
 
         @if (esActiva(i)) {
-        <!-- Imagen activa con eventos de arrastre -->
-        <a (click)="manejarClickImagen($event)" (mousedown)="iniciarArrastre($event)"
+        <!-- Imagen activa con eventos de arrastre y navegación -->
+        <a [style.cursor]="slide.tipoDestino !== 'ninguno' ? 'pointer' : 'default'"
+          (click)="manejarClickImagen($event, slide)" (mousedown)="iniciarArrastre($event)"
           (mouseup)="finalizarArrastre($event)" (mouseleave)="cancelarArrastre()">
-          <img [src]="slide.src" [alt]="slide.alt" class="tienda-carrusel__imagen">
+          <img [src]="esMovil ? slide.imagenMovil : slide.imagenDesktop" [alt]="'Banner ' + slide.id"
+            class="tienda-carrusel__imagen">
         </a>
         } @else {
         <!-- Imágenes laterales sin eventos de arrastre -->
-        <img [src]="slide.src" [alt]="slide.alt" class="tienda-carrusel__imagen">
+        <img [src]="esMovil ? slide.imagenMovil : slide.imagenDesktop" [alt]="'Banner ' + slide.id"
+          class="tienda-carrusel__imagen">
         }
       </div>
       }

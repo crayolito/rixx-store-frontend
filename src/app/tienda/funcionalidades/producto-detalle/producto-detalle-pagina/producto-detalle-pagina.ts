@@ -44,7 +44,8 @@ export class ProductoDetallePagina {
     descripcion: 'Entrega inmediata de Steam - Activación Steam',
     descripcionCompleta: 'Mobile Legends: Bang Bang es un MOBA épico con más de 100 héroes únicos, batallas 5v5 en tiempo real y gráficos impresionantes. Compite en ranked, participa en eventos especiales y domina el campo de batalla.',
     instrucciones: '1. Ingresa tu ID de jugador y servidor\n2. Selecciona la variante deseada\n3. Realiza el pago\n4. Recibirás el código en tu correo electrónico\n5. Canjea el código en el juego',
-    terminos: 'Los códigos son no reembolsables. El tiempo de entrega puede variar entre 5-30 minutos. Asegúrate de ingresar correctamente tu ID de jugador y servidor.'
+    terminos: 'Los códigos son no reembolsables. El tiempo de entrega puede variar entre 5-30 minutos. Asegúrate de ingresar correctamente tu ID de jugador y servidor.',
+    tipoEntrega: 'manual' as 'manual' | 'automatico'
   });
 
   // FASE 3: Variantes del producto
@@ -88,10 +89,11 @@ export class ProductoDetallePagina {
   servidor = signal<string>('LATAM');
   idJugador = signal<string>('');
 
-  // FASE 6: Estados de dropdowns
+  // FASE 6: Estados de dropdowns y bottom sheet (móvil)
   descripcionAbierta = signal<boolean>(false);
   instruccionesAbierta = signal<boolean>(false);
   terminosAbierta = signal<boolean>(false);
+  bottomSheetVariantesAbierto = signal<boolean>(false);
 
   // FASE 7: Cálculos computados
   varianteActual = computed(() => {
@@ -127,6 +129,18 @@ export class ProductoDetallePagina {
 
   alternarTerminos(): void {
     this.terminosAbierta.update(abierto => !abierto);
+  }
+
+  abrirBottomSheetVariantes(): void {
+    this.bottomSheetVariantesAbierto.set(true);
+  }
+
+  cerrarBottomSheetVariantes(): void {
+    this.bottomSheetVariantesAbierto.set(false);
+  }
+
+  confirmarPaquete(): void {
+    this.bottomSheetVariantesAbierto.set(false);
   }
 
   incrementarCantidad(): void {

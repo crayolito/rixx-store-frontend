@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core'; // ← agregar inject
 import { Modal } from '../../../../compartido/componentes/modal/modal';
 import { NotificacionServicio } from '../../../../compartido/servicios/notificacion'; // ← NUEVA LÍNEA
-// Estado del pedido
-type EstadoPedido = 'completado' | 'cancelado' | 'procesando' | 'pendiente';
+// Estado del pedido (solo 4)
+type EstadoPedido = 'completado' | 'reembolsado' | 'cancelado' | 'pendiente';
 
 // Método de pago
 type MetodoPago = 'tarjeta' | 'paypal' | 'transferencia' | 'efectivo';
@@ -61,9 +61,9 @@ export class PedidosAdminPagina {
 
   Math = Math;
 
-  // Control de modales y visibilidad
   modalDetallesAbierto = signal(false);
   pedidoSeleccionado = signal<Pedido | null>(null);
+  pedidoProcesandoId = signal<string | null>(null);
   filtrosVisibles = signal(true);
 
   // Filtros superiores (badges)
@@ -77,10 +77,9 @@ export class PedidosAdminPagina {
   estadoActivoFiltro = signal<string | null>(null);
 
   // Filtros de búsqueda
-  textoBusqueda = signal<string>(''); // ID, usuario, producto
+  textoBusqueda = signal<string>('');
   estadoSeleccionado = signal<string>('');
-  fechaInicio = signal<string>('');
-  fechaFin = signal<string>('');
+  fechaCompra = signal<string>('');
 
   // Datos de pedidos
   pedidos = signal<Pedido[]>([
@@ -127,7 +126,7 @@ export class PedidosAdminPagina {
         }
       ],
       total_compra: 350.00,
-      estado: 'procesando',
+      estado: 'pendiente',
       metodo_pago: 'paypal',
       estado_pago: 'pendiente',
       fecha_compra: '2026-01-21T14:15:00',
@@ -155,7 +154,7 @@ export class PedidosAdminPagina {
         }
       ],
       total_compra: 100.00,
-      estado: 'cancelado',
+      estado: 'reembolsado',
       metodo_pago: 'transferencia',
       estado_pago: 'reembolsado',
       fecha_compra: '2026-01-19T08:45:00',
@@ -253,9 +252,82 @@ export class PedidosAdminPagina {
         ganancia_total: 15.00
       }
     },
-    // ... y así 9 más
-    // ... necesitas 10 pedidos más siguiendo este patrón
-    // ... necesitas agregar 14 pedidos más con variedad de estados
+    {
+      id: 'ped-007-abc111',
+      usuario_email: 'lucia.martinez@gmail.com',
+      usuario_nombre: 'Lucía Martínez',
+      productos: [
+        { id: 'prod-007', nombre: 'Google Play $25', precio_unitario: 25.00, cantidad: 2, subtotal: 50.00 }
+      ],
+      total_compra: 50.00,
+      estado: 'pendiente',
+      metodo_pago: 'tarjeta',
+      estado_pago: 'pagado',
+      fecha_compra: '2026-01-22T10:00:00',
+      informacion_adicional: { 'Cuenta Google': 'lucia.martinez@gmail.com' },
+      resumen_financiero: { subtotal: 50.00, costo_total: 42.00, ganancia_total: 8.00 }
+    },
+    {
+      id: 'ped-008-def222',
+      usuario_email: 'roberto.diaz@hotmail.com',
+      usuario_nombre: 'Roberto Díaz',
+      productos: [
+        { id: 'prod-008', nombre: 'Steam Wallet $50', precio_unitario: 50.00, cantidad: 1, subtotal: 50.00 },
+        { id: 'prod-008b', nombre: 'Steam Wallet $20', precio_unitario: 20.00, cantidad: 1, subtotal: 20.00 }
+      ],
+      total_compra: 70.00,
+      estado: 'completado',
+      metodo_pago: 'paypal',
+      estado_pago: 'pagado',
+      fecha_compra: '2026-01-22T12:30:00',
+      informacion_adicional: { 'Steam ID': '76561198012345678' },
+      resumen_financiero: { subtotal: 70.00, costo_total: 58.00, ganancia_total: 12.00 }
+    },
+    {
+      id: 'ped-009-ghi333',
+      usuario_email: 'carmen.sanchez@yahoo.com',
+      usuario_nombre: 'Carmen Sánchez',
+      productos: [
+        { id: 'prod-009', nombre: 'Recarga Claro $30', precio_unitario: 30.00, cantidad: 3, subtotal: 90.00 }
+      ],
+      total_compra: 90.00,
+      estado: 'pendiente',
+      metodo_pago: 'transferencia',
+      estado_pago: 'pendiente',
+      fecha_compra: '2026-01-23T08:45:00',
+      informacion_adicional: { 'Teléfono': '9988776655', 'Operadora': 'Claro' },
+      resumen_financiero: { subtotal: 90.00, costo_total: 75.00, ganancia_total: 15.00 }
+    },
+    {
+      id: 'ped-010-jkl444',
+      usuario_email: 'diego.ramirez@gmail.com',
+      usuario_nombre: 'Diego Ramírez',
+      productos: [
+        { id: 'prod-010', nombre: 'HBO Max 6 Meses', precio_unitario: 280.00, cantidad: 1, subtotal: 280.00 }
+      ],
+      total_compra: 280.00,
+      estado: 'cancelado',
+      metodo_pago: 'tarjeta',
+      estado_pago: 'reembolsado',
+      fecha_compra: '2026-01-23T14:20:00',
+      informacion_adicional: { 'Email': 'diego.ramirez@gmail.com' },
+      resumen_financiero: { subtotal: 280.00, costo_total: 240.00, ganancia_total: 0.00 }
+    },
+    {
+      id: 'ped-011-mno555',
+      usuario_email: 'patricia.gomez@outlook.com',
+      usuario_nombre: 'Patricia Gómez',
+      productos: [
+        { id: 'prod-011', nombre: 'iTunes $15', precio_unitario: 15.00, cantidad: 2, subtotal: 30.00 }
+      ],
+      total_compra: 30.00,
+      estado: 'pendiente',
+      metodo_pago: 'efectivo',
+      estado_pago: 'pendiente',
+      fecha_compra: '2026-01-24T09:15:00',
+      informacion_adicional: { 'Apple ID': 'patricia.gomez@outlook.com' },
+      resumen_financiero: { subtotal: 30.00, costo_total: 25.00, ganancia_total: 5.00 }
+    }
   ]);
 
   // Paginación
@@ -287,24 +359,13 @@ export class PedidosAdminPagina {
       resultado = resultado.filter(p => p.estado === this.estadoSeleccionado());
     }
 
-    // Filtrar por fecha
-    if (this.fechaInicio() || this.fechaFin()) {
+    if (this.fechaCompra()) {
+      const fechaBusqueda = new Date(this.fechaCompra());
       resultado = resultado.filter(p => {
         const fechaPedido = new Date(p.fecha_compra);
-
-        // Solo fecha inicio: mostrar desde esa fecha en adelante
-        if (this.fechaInicio() && !this.fechaFin()) {
-          return fechaPedido >= new Date(this.fechaInicio());
-        }
-
-        // Solo fecha fin: mostrar hasta esa fecha
-        if (!this.fechaInicio() && this.fechaFin()) {
-          return fechaPedido <= new Date(this.fechaFin());
-        }
-
-        // Ambas fechas: mostrar rango completo
-        return fechaPedido >= new Date(this.fechaInicio()) &&
-          fechaPedido <= new Date(this.fechaFin());
+        return fechaPedido.getFullYear() === fechaBusqueda.getFullYear() &&
+          fechaPedido.getMonth() === fechaBusqueda.getMonth() &&
+          fechaPedido.getDate() === fechaBusqueda.getDate();
       });
     }
 
@@ -339,23 +400,57 @@ export class PedidosAdminPagina {
     this.pedidoSeleccionado.set(null);
   }
 
-  // Completar pedido (validación de estado)
-  completarPedido(pedido: Pedido) {
-    // FASE 1: Validar que no esté cancelado
+  reembolsarPedido(pedido: Pedido) {
+    if (pedido.estado !== 'completado') return;
+    const pedidosActualizados = this.pedidos().map(p =>
+      p.id === pedido.id
+        ? { ...p, estado: 'reembolsado' as EstadoPedido, estado_pago: 'reembolsado' as EstadoPago }
+        : p
+    );
+    this.pedidos.set(pedidosActualizados);
+    this.notificacionServicio.exito('Pedido reembolsado');
+  }
+
+  marcarCompletado(pedido: Pedido) {
     if (pedido.estado === 'cancelado') {
-      // Mostrar notificación de error
-      this.notificacionServicio.error('No se puede completar un pedido cancelado'); // ← CAMBIO
+      this.notificacionServicio.error('No se puede completar un pedido cancelado');
       return;
     }
-
-    // FASE 2: Cambiar estado a completado
     const pedidosActualizados = this.pedidos().map(p =>
       p.id === pedido.id ? { ...p, estado: 'completado' as EstadoPedido } : p
     );
     this.pedidos.set(pedidosActualizados);
+    this.notificacionServicio.exito('Pedido marcado como completado');
+  }
 
-    // FASE 3: Mostrar notificación de éxito
-    this.notificacionServicio.exito(`Pedido ${pedido.id} completado exitosamente`); // ← CAMBIO
+  marcarPendiente(pedido: Pedido) {
+    if (pedido.estado === 'cancelado') {
+      this.notificacionServicio.error('No se puede marcar como pendiente un pedido cancelado');
+      return;
+    }
+    const pedidosActualizados = this.pedidos().map(p =>
+      p.id === pedido.id ? { ...p, estado: 'pendiente' as EstadoPedido } : p
+    );
+    this.pedidos.set(pedidosActualizados);
+    this.notificacionServicio.exito('Pedido marcado como pendiente');
+  }
+
+  completarPedidoConEspera(pedido: Pedido) {
+    if (pedido.estado !== 'pendiente') return;
+    if (this.pedidoProcesandoId()) return;
+    this.pedidoProcesandoId.set(pedido.id);
+    setTimeout(() => {
+      const pedidosActualizados = this.pedidos().map(p =>
+        p.id === pedido.id ? { ...p, estado: 'completado' as EstadoPedido } : p
+      );
+      this.pedidos.set(pedidosActualizados);
+      this.pedidoProcesandoId.set(null);
+      this.notificacionServicio.exito('Pedido completado');
+    }, 3000);
+  }
+
+  estaProcesando(pedido: Pedido): boolean {
+    return this.pedidoProcesandoId() === pedido.id;
   }
 
   // Filtrar por estado badge
@@ -372,8 +467,7 @@ export class PedidosAdminPagina {
   limpiarFiltros() {
     this.textoBusqueda.set('');
     this.estadoSeleccionado.set('');
-    this.fechaInicio.set('');
-    this.fechaFin.set('');
+    this.fechaCompra.set('');
     this.estadoActivoFiltro.set(null);
     this.paginaActual.set(1);
   }
@@ -397,7 +491,10 @@ export class PedidosAdminPagina {
     }
   }
 
-  // Utilidad para truncar texto
+  cantidadTotalProductos(pedido: Pedido): number {
+    return pedido.productos.reduce((suma, p) => suma + p.cantidad, 0);
+  }
+
   truncarTexto(texto: string, limite: number): string {
     if (texto.length <= limite) {
       return texto;
@@ -458,8 +555,13 @@ export class PedidosAdminPagina {
   // Obtener nombre para mostrar en dropdown
   obtenerNombreEstadoFiltro(): string {
     if (!this.estadoSeleccionado()) return 'Todos los estados';
-    const estado = this.estadoSeleccionado();
-    return estado.charAt(0).toUpperCase() + estado.slice(1);
+    const map: Record<string, string> = {
+      completado: 'Completado',
+      reembolsado: 'Reembolsado',
+      cancelado: 'Cancelado',
+      pendiente: 'Pendiente'
+    };
+    return map[this.estadoSeleccionado()] ?? this.estadoSeleccionado();
   }
 
   // Cerrar todos los dropdowns

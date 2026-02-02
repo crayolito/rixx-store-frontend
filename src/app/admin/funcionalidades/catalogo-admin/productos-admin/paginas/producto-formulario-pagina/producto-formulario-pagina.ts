@@ -22,11 +22,13 @@ interface CampoAdicional {
 interface Precio {
   id: string;
   nombre: string;
-  costoCompra: number;
+  precioBase: number;
+  margenClienteFinal: number;
+  margenRevendedor: number;
+  margenMayorista: number;
   porcentajeDescuento: number;
-  margenFinalCliente: number;
-  precioFinal: number;
-  estado: 'activo' | 'inactivo' | 'agotado';
+  soloClienteFinal: boolean;
+  precioActivo: boolean;
 }
 
 @Component({
@@ -82,10 +84,13 @@ export class ProductoFormularioPagina {
   modalPrecioAbierto = signal<boolean>(false);
   precioEditando = signal<Precio | null>(null);
   nombrePrecio = signal<string>('');
-  costoCompra = signal<number>(0);
+  precioBase = signal<number>(0);
   porcentajeDescuento = signal<number>(0);
-  margenFinalCliente = signal<number>(0);
-  estadoPrecio = signal<'activo' | 'inactivo' | 'agotado'>('activo');
+  margenClienteFinal = signal<number>(0);
+  margenRevendedor = signal<number>(0);
+  margenMayorista = signal<number>(0);
+  soloClienteFinal = signal<boolean>(false);
+  precioActivo = signal<boolean>(true);
 
   // FASE 8: Drag and Drop
   elementoArrastrando = signal<string | null>(null);
@@ -109,10 +114,22 @@ export class ProductoFormularioPagina {
     this.categoriasFiltradas().length > 0
   );
 
-  precioFinalCalculado = computed(() => {
-    const costo = this.costoCompra();
-    const margen = this.margenFinalCliente() / 100;
-    return costo * (1 + margen);
+  precioClienteFinalCalculado = computed(() => {
+    const base = this.precioBase();
+    const margen = this.margenClienteFinal() / 100;
+    return base * (1 + margen);
+  });
+
+  precioRevendedorCalculado = computed(() => {
+    const base = this.precioBase();
+    const margen = this.margenRevendedor() / 100;
+    return base * (1 + margen);
+  });
+
+  precioMayoristaCalculado = computed(() => {
+    const base = this.precioBase();
+    const margen = this.margenMayorista() / 100;
+    return base * (1 + margen);
   });
 
   constructor(private router: Router) { }
@@ -225,20 +242,26 @@ export class ProductoFormularioPagina {
   abrirModalAgregarPrecio() {
     this.precioEditando.set(null);
     this.nombrePrecio.set('');
-    this.costoCompra.set(0);
+    this.precioBase.set(0);
     this.porcentajeDescuento.set(0);
-    this.margenFinalCliente.set(0);
-    this.estadoPrecio.set('activo');
+    this.margenClienteFinal.set(0);
+    this.margenRevendedor.set(0);
+    this.margenMayorista.set(0);
+    this.soloClienteFinal.set(false);
+    this.precioActivo.set(true);
     this.modalPrecioAbierto.set(true);
   }
 
   abrirModalEditarPrecio(precio: Precio) {
     this.precioEditando.set(precio);
     this.nombrePrecio.set(precio.nombre);
-    this.costoCompra.set(precio.costoCompra);
+    this.precioBase.set(precio.precioBase);
     this.porcentajeDescuento.set(precio.porcentajeDescuento);
-    this.margenFinalCliente.set(precio.margenFinalCliente);
-    this.estadoPrecio.set(precio.estado);
+    this.margenClienteFinal.set(precio.margenClienteFinal);
+    this.margenRevendedor.set(precio.margenRevendedor);
+    this.margenMayorista.set(precio.margenMayorista);
+    this.soloClienteFinal.set(precio.soloClienteFinal);
+    this.precioActivo.set(precio.precioActivo);
     this.modalPrecioAbierto.set(true);
   }
 
@@ -253,21 +276,21 @@ export class ProductoFormularioPagina {
       return;
     }
 
-    if (this.costoCompra() <= 0) {
-      alert('El costo de compra debe ser mayor a 0');
+    if (this.precioBase() <= 0) {
+      alert('El precio base debe ser mayor a 0');
       return;
     }
-
-    const precioFinal = this.precioFinalCalculado();
 
     const nuevoPrecio: Precio = {
       id: Date.now().toString(),
       nombre,
-      costoCompra: this.costoCompra(),
+      precioBase: this.precioBase(),
+      margenClienteFinal: this.margenClienteFinal(),
+      margenRevendedor: this.margenRevendedor(),
+      margenMayorista: this.margenMayorista(),
       porcentajeDescuento: this.porcentajeDescuento(),
-      margenFinalCliente: this.margenFinalCliente(),
-      precioFinal,
-      estado: this.estadoPrecio(),
+      soloClienteFinal: this.soloClienteFinal(),
+      precioActivo: this.precioActivo(),
     };
 
     if (this.precioEditando()) {

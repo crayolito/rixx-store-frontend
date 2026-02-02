@@ -10,7 +10,7 @@
           <img src="/imagenes/foto-perfil1.png" alt="Foto por defecto" class="perfil-banner__foto">
           }
           <div class="perfil-banner__foto-overlay">
-            <img src="/iconos/foto-perfil1.svg" alt="Editar" class="perfil-banner__foto-icono">
+            <img src="/iconos/ico-editar.svg" alt="Editar" class="perfil-banner__foto-icono">
           </div>
         </label>
         <input type="file" id="input-foto-perfil" accept="image/*" (change)="manejarCambioFoto($event)"
@@ -155,6 +155,13 @@
                     <div class="global-formulario-campo">
                       <div class="global-formulario-campo__contenedor">
                         <input type="password" class="global-formulario-campo__input" placeholder="••••••••">
+                        <button type="button" class="global-formulario-campo__boton-icono"
+                          (click)="toggleMostrarContrasena()">
+                          <img
+                            [src]="mostrarContrasena() ? '/iconos/ico-ojo-cerrado.svg' : '/iconos/ico-ojo-abierto.svg'"
+                            [alt]="mostrarContrasena() ? 'Ocultar' : 'Mostrar'" class="icono-boton icono-color-blanco">
+
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -172,6 +179,7 @@
                           <img
                             [src]="mostrarContrasena() ? '/iconos/ico-ojo-cerrado.svg' : '/iconos/ico-ojo-abierto.svg'"
                             [alt]="mostrarContrasena() ? 'Ocultar' : 'Mostrar'" class="icono-boton icono-color-blanco">
+
                         </button>
                       </div>
                     </div>
@@ -189,94 +197,213 @@
       }
 
       <!-- ═══════════════════════════════════════════════════════
-           SECCIÓN: HISTORIAL DE PEDIDOS
+           SECCIÓN: MIS PEDIDOS (Automáticos + Gift Cards)
            ═══════════════════════════════════════════════════════ -->
       @if (seccionActiva() === 'pedidos') {
-      <section class="perfil-seccion">
+      <section class="perfil-seccion perfil-seccion--pedidos">
         <div class="perfil-seccion__header">
-          <h2 class="perfil-seccion__titulo">Historial de Pedidos</h2>
-          <p class="perfil-seccion__subtitulo">Revisa tus compras anteriores</p>
+          <h2 class="perfil-seccion__titulo">Mis Pedidos</h2>
+          <p class="perfil-seccion__subtitulo">Revisa tus compras y códigos Gift Card</p>
         </div>
 
-        <div class="perfil-pedidos">
-          @for (pedido of pedidos(); track pedido.id) {
-          <div class="perfil-pedido-card">
-            <!-- Header del pedido -->
-            <div class="perfil-pedido-card__header">
-              <div class="perfil-pedido-card__header-info">
-                <p class="perfil-pedido-card__id">Pedido #{{ truncarTexto(pedido.id, 12) }}</p>
-                <p class="perfil-pedido-card__fecha">{{ pedido.fecha_compra | date:'d MMM yyyy, h:mm a' }}</p>
-              </div>
-              <span class="perfil-pedido-card__badge perfil-pedido-card__badge--{{pedido.estado}}">
-                {{ pedido.estado }}
-              </span>
-            </div>
+        <!-- Switch: ver ambos tipos a la vez o uno -->
+        <div class="perfil-pedidos-switch">
+          <button type="button" class="perfil-pedidos-switch__btn"
+            [class.perfil-pedidos-switch__btn--activo]="tipoPedidoVista() === 'automaticos'"
+            (click)="tipoPedidoVista.set('automaticos')">Automáticos</button>
+          <button type="button" class="perfil-pedidos-switch__btn"
+            [class.perfil-pedidos-switch__btn--activo]="tipoPedidoVista() === 'gift_cards'"
+            (click)="tipoPedidoVista.set('gift_cards')">Gift Cards</button>
+        </div>
 
-            <!-- Productos con imagen y cantidad -->
-            <div class="perfil-pedido-card__productos">
-              @for (prod of pedido.productos; track prod.id; let index = $index) {
-              @if (index < 4 || mostrarTodosProductos(pedido.id)) { <div class="perfil-pedido-card__producto">
-                <img [src]="prod.imagen || '/imagenes/producto-default.png'" [alt]="prod.nombre"
-                  class="perfil-pedido-card__producto-imagen">
-                <div class="perfil-pedido-card__producto-info">
-                  <p class="perfil-pedido-card__producto-nombre">{{ prod.nombre }}</p>
-                  <p class="perfil-pedido-card__producto-cantidad">Cantidad: {{ prod.cantidad }}</p>
+        <!-- Filtros comunes -->
+        <div class="perfil-pedidos-filtros">
+          <div class="perfil-pedidos-filtros__grupo perfil-pedidos-filtros__grupo--nombre">
+            <label class="perfil-pedidos-filtros__label">Nombre producto</label>
+            <input type="text" class="perfil-pedidos-filtros__input" placeholder="Buscar por nombre"
+              [value]="filtroNombreProducto()" (input)="filtroNombreProducto.set($any($event.target).value)">
+          </div>
+          <div class="perfil-pedidos-filtros__grupo">
+            <label class="perfil-pedidos-filtros__label">Desde</label>
+            <input type="date" class="perfil-pedidos-filtros__input" [value]="filtroFechaDesde()"
+              (input)="filtroFechaDesde.set($any($event.target).value)">
+          </div>
+          <div class="perfil-pedidos-filtros__grupo">
+            <label class="perfil-pedidos-filtros__label">Hasta</label>
+            <input type="date" class="perfil-pedidos-filtros__input" [value]="filtroFechaHasta()"
+              (input)="filtroFechaHasta.set($any($event.target).value)">
+          </div>
+        </div>
+
+        <!-- Apartado 1: Pedidos automáticos (visible si Todos o Automáticos) -->
+        @if (tipoPedidoVista() === 'todos' || tipoPedidoVista() === 'automaticos') {
+        <div class="perfil-pedidos-apartado">
+          <h3 class="perfil-pedidos-apartado__titulo">Pedidos automáticos / Compra directa</h3>
+          <div class="perfil-pedidos">
+            @for (pedido of pedidosAutomaticosFiltrados(); track pedido.id) {
+            <div class="perfil-pedido-card">
+              <div class="perfil-pedido-card__header">
+                <div class="perfil-pedido-card__header-info">
+                  <p class="perfil-pedido-card__fecha">{{ pedido.fecha_compra | date:'d MMM yyyy, h:mm a' }}</p>
                 </div>
+                <button class="boton-primario perfil-billetera__boton" (click)="reordenar(pedido)"
+                  type="button">Reordenar</button>
+                <span class="perfil-pedido-card__badge perfil-pedido-card__badge--{{pedido.estado}}">{{ pedido.estado
+                  }}</span>
+              </div>
+              <div class="perfil-pedido-card__productos">
+                @for (prod of pedido.productos; track prod.id; let index = $index) {
+                @if (index < limiteProductosVisibles || mostrarTodosProductos(pedido.id)) { <div
+                  class="perfil-pedido-card__producto">
+                  <img [src]="prod.imagen || '/imagenes/producto-default.png'" [alt]="prod.nombre"
+                    class="perfil-pedido-card__producto-imagen">
+                  <div class="perfil-pedido-card__producto-info">
+                    <p class="perfil-pedido-card__producto-nombre">{{ prod.nombre }}</p>
+                    <p class="perfil-pedido-card__producto-cantidad">Cantidad: {{ prod.cantidad }}</p>
+                  </div>
+              </div>
+              }
+              }
+              @if (pedido.productos.length > limiteProductosVisibles && !mostrarTodosProductos(pedido.id)) {
+              <button class="perfil-pedido-card__producto-mas" (click)="mostrarMasProductos(pedido.id)" type="button">
+                <span>+{{ pedido.productos.length - limiteProductosVisibles }} más</span>
+              </button>
+              }
+            </div>
+            @if (pedido.datosEntrega && (pedido.datosEntrega.idJugador || pedido.datosEntrega.idServer) &&
+            mostrarTodosProductos(pedido.id)) {
+            <div class="perfil-pedido-card__detalle">
+              @if (pedido.datosEntrega.idJugador) {
+              <p class="perfil-pedido-card__detalle-item"><strong>ID Jugador:</strong> {{ pedido.datosEntrega.idJugador
+                }}</p>
+              }
+              @if (pedido.datosEntrega.idServer) {
+              <p class="perfil-pedido-card__detalle-item"><strong>ID Servidor:</strong> {{ pedido.datosEntrega.idServer
+                }}</p>
+              }
             </div>
             }
-            }
-            @if (pedido.productos.length > 4 && !mostrarTodosProductos(pedido.id)) {
-            <button class="perfil-pedido-card__producto-mas" (click)="mostrarMasProductos(pedido.id)" type="button">
-              <span>+{{ pedido.productos.length - 4 }} más</span>
-            </button>
-            }
-          </div>
-
-          <!-- Resumen y Total -->
-          <div class="perfil-pedido-card__footer">
-            <div class="perfil-pedido-card__resumen">
-              <div class="perfil-pedido-card__resumen-item">
-                <span class="perfil-pedido-card__resumen-label">Productos:</span>
-                <span class="perfil-pedido-card__resumen-valor">{{ pedido.productos.length }}</span>
-              </div>
-              <div class="perfil-pedido-card__resumen-item">
-                <span class="perfil-pedido-card__resumen-label">Fecha:</span>
-                <span class="perfil-pedido-card__resumen-valor">{{ pedido.fecha_compra | date:'d MMM yyyy' }}</span>
-              </div>
-              <div class="perfil-pedido-card__resumen-item perfil-pedido-card__resumen-item--total">
-                <span class="perfil-pedido-card__resumen-label">Total:</span>
-                <span class="perfil-pedido-card__total-monto">${{ pedido.total_compra }} USD</span>
+            <div class="perfil-pedido-card__footer">
+              <div class="perfil-pedido-card__resumen">
+                <div class="perfil-pedido-card__resumen-item">
+                  <span class="perfil-pedido-card__resumen-label">Productos:</span>
+                  <span class="perfil-pedido-card__resumen-valor">{{ pedido.productos.length }}</span>
+                </div>
+                <div class="perfil-pedido-card__resumen-item perfil-pedido-card__resumen-item--total">
+                  <span class="perfil-pedido-card__resumen-label">Total:</span>
+                  <span class="perfil-pedido-card__total-monto">${{ pedido.total_compra }} USD</span>
+                </div>
               </div>
             </div>
           </div>
+          } @empty {
+          <div class="perfil-pedidos-vacio">
+            <img src="/iconos/ico-orden.svg" alt="Sin pedidos" class="perfil-pedidos-vacio__icono">
+            <p class="perfil-pedidos-vacio__texto">No tienes pedidos automáticos</p>
+          </div>
+          }
         </div>
-        } @empty {
-        <div class="perfil-pedidos-vacio">
-          <img src="/iconos/ico-orden.svg" alt="Sin pedidos" class="perfil-pedidos-vacio__icono">
-          <h3 class="perfil-pedidos-vacio__titulo">No tienes pedidos aún</h3>
-          <p class="perfil-pedidos-vacio__texto">Explora nuestro catálogo y realiza tu primera compra</p>
-        </div>
-        }
   </div>
+  }
+
+  <!-- Apartado 2: Pedidos Gift Card (visible si Todos o Gift Cards) -->
+  @if (tipoPedidoVista() === 'todos' || tipoPedidoVista() === 'gift_cards') {
+  <div class="perfil-pedidos-apartado">
+    <h3 class="perfil-pedidos-apartado__titulo">Pedidos Gift Card (códigos manuales)</h3>
+    @if (!identidadVerificada()) {
+    <div class="perfil-pedidos-gift-bloque">
+      <p class="perfil-pedidos-gift-aviso">Para ver tus códigos PIN debes verificar tu identidad.</p>
+      <button class="perfil-pedidos-gift-boton" (click)="verCodigosGiftCard()" type="button">
+        <img src="/iconos/ico-codigo.svg" alt="" class="perfil-pedidos-gift-boton__icono"> Ver códigos Gift Card
+      </button>
+    </div>
+    }
+    @if (identidadVerificada()) {
+    <div class="perfil-pedidos">
+      @for (pedido of pedidosGiftCardFiltrados(); track pedido.id) {
+      <div class="perfil-gift-card">
+        <div class="perfil-gift-card__header">
+          <h4 class="perfil-gift-card__nombre">{{ pedido.nombre }}</h4>
+          <p class="perfil-gift-card__fecha">Fecha de emisión: {{ pedido.fechaEmision | date:'d MMM yyyy, h:mm a' }}</p>
+        </div>
+        <div class="perfil-gift-card__codigos">
+          @for (codigo of pedido.codigos; track $index) {
+          <div class="perfil-gift-card__codigo-fila">
+            <span class="perfil-gift-card__codigo-serial">Serial: {{ codigo.serial ?? 'N/A' }}</span>
+            <span class="perfil-gift-card__codigo-pin">PIN: {{ codigo.pin ?? 'N/A' }}</span>
+            <button type="button" class="perfil-gift-card__copiar"
+              (click)="copiarCodigoIndividual((codigo.serial ?? '') + ' ' + (codigo.pin ?? ''))" title="Copiar">
+              <img src="/iconos/ico-copiar.svg" alt="Copiar" class="perfil-gift-card__copiar-icono">
+            </button>
+          </div>
+          }
+        </div>
+        <div class="perfil-gift-card__valor">Valor total: ${{ pedido.valorTotal }} USD</div>
+        <div class="perfil-gift-card__instrucciones-bloque">
+          <span class="perfil-gift-card__instrucciones-label">Instrucciones</span>
+          <p class="perfil-gift-card__instrucciones">{{ pedido.instrucciones || 'Sin instrucciones específicas.' }}</p>
+        </div>
+        <button type="button" class="perfil-gift-card__copiar-todo" (click)="copiarTodoGiftCard(pedido)"
+          title="Copia todos los códigos, valor e instrucciones">
+          <img src="/iconos/ico-copiar.svg" alt="Copiar todo" class="perfil-gift-card__copiar-icono"> Copiar todo
+        </button>
+      </div>
+      } @empty {
+      <div class="perfil-pedidos-vacio">
+        <p class="perfil-pedidos-vacio__texto">No tienes pedidos con Gift Card</p>
+      </div>
+      }
+    </div>
+    }
+  </div>
+  }
   </section>
   }
+
+  <!-- Modal Verificar Identidad (Gift Cards) - UI/UX mejorado -->
+  <app-modal [estaAbierto]="modalVerificarIdentidadAbierto()" (cerrar)="cerrarModalVerificarIdentidad()">
+    <div class="perfil-modal-verificar">
+      <div class="perfil-modal-verificar__icono">
+        <img src="/iconos/ico-configuracion.svg" alt="" aria-hidden="true">
+      </div>
+      <h3 class="perfil-modal-verificar__titulo">Verificar Identidad</h3>
+      <p class="perfil-modal-verificar__descripcion">Para acceder a tus códigos PIN de forma segura, ingresa la
+        contraseña de tu cuenta.</p>
+      <label class="perfil-modal-verificar__label">Contraseña</label>
+      <div class="global-formulario-campo">
+        <div class="global-formulario-campo__contenedor">
+          <input type="password" class="global-formulario-campo__input" placeholder="Ingresa tu contraseña"
+            [value]="contrasenaVerificacion()" (input)="actualizarContrasenaVerificacion($event)">
+        </div>
+      </div>
+      <div class="perfil-modal-verificar__acciones">
+        <button type="button" class="perfil-modal-verificar__cancelar"
+          (click)="cerrarModalVerificarIdentidad()">Cancelar</button>
+        <button type="button" class="perfil-modal-verificar__verificar"
+          (click)="verificarIdentidad()">Verificar</button>
+      </div>
+    </div>
+  </app-modal>
 
   <!-- ═══════════════════════════════════════════════════════
            SECCIÓN: BILLETERA
            ═══════════════════════════════════════════════════════ -->
   @if (seccionActiva() === 'billetera') {
-  <section class="perfil-seccion">
+  <section class="perfil-seccion perfil-seccion--billetera">
     <div class="perfil-seccion__header">
       <h2 class="perfil-seccion__titulo">Mi Billetera</h2>
-      <p class="perfil-seccion__subtitulo">Administra tu saldo y recargas</p>
+      <p class="perfil-seccion__subtitulo">Saldo, recargas e historial de movimientos</p>
     </div>
 
     <!-- Tarjeta de Saldo -->
     <div class="perfil-billetera-saldo">
       <div class="perfil-billetera-saldo__contenido">
-        <p class="perfil-billetera-saldo__etiqueta">Saldo Disponible</p>
+        <div class="perfil-billetera-saldo__icono">
+          <img src="/iconos/ico-billetera.svg" alt="" aria-hidden="true">
+        </div>
+        <p class="perfil-billetera-saldo__etiqueta">Saldo disponible</p>
         <p class="perfil-billetera-saldo__monto">${{ saldoActual() }}</p>
-        <p class="perfil-billetera-saldo__moneda">US Dollars</p>
+        <p class="perfil-billetera-saldo__moneda">USD</p>
       </div>
       <div class="perfil-billetera-saldo__decoracion"></div>
     </div>
@@ -329,10 +456,38 @@
     </div>
 
     <!-- Botón recargar -->
-    <button class="boton-primario perfil-billetera__boton" (click)="recargarBilletera()" [disabled]="!puedeRecargar()"
-      type="button">
-      <p>Recargar Ahora</p>
+    <button class="perfil-billetera-recargar" (click)="recargarBilletera()" [disabled]="!puedeRecargar()" type="button">
+      Recargar
     </button>
+
+    <!-- Historial de transacciones -->
+    <div class="perfil-billetera-historial">
+      <h3 class="perfil-billetera-historial__titulo">
+        <img src="/iconos/ico-opcion-cronologia.svg" alt="" class="perfil-billetera-historial__icono"> Historial de
+        transacciones
+      </h3>
+      <div class="perfil-billetera-historial__lista">
+        @for (tx of transaccionesBilletera(); track tx.id) {
+        <div class="perfil-billetera-transaccion">
+          <div class="perfil-billetera-transaccion__info">
+            <span class="perfil-billetera-transaccion__fecha">{{ tx.fecha | date:'d MMM yyyy, H:mm' }}</span>
+            <span class="perfil-billetera-transaccion__tipo perfil-billetera-transaccion__tipo--{{ tx.tipo }}">{{
+              tx.tipo }}</span>
+            <span class="perfil-billetera-transaccion__descripcion">{{ tx.descripcion }}</span>
+          </div>
+          <div class="perfil-billetera-transaccion__monto"
+            [class.perfil-billetera-transaccion__monto--negativo]="tx.monto < 0">
+            {{ tx.monto >= 0 ? '+' : '' }}${{ tx.monto }} USD
+          </div>
+          @if (tx.saldoResultante != null) {
+          <span class="perfil-billetera-transaccion__saldo">Saldo: ${{ tx.saldoResultante }} USD</span>
+          }
+        </div>
+        } @empty {
+        <p class="perfil-billetera-historial__vacio">No hay transacciones aún</p>
+        }
+      </div>
+    </div>
   </section>
   }
   </main>

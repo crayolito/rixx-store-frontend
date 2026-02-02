@@ -1,0 +1,57 @@
+<div class="contenedor-pagina">
+  <section class="destacados-admin-seccion destacados-admin-tarjeta">
+    <div class="destacados-admin-cabecera-principal">
+      <h2 class="destacados-admin-titulo">Destacados</h2>
+      <div class="destacados-admin-botones-cabecera">
+        @if (mensajeGuardado()) {
+        <span class="destacados-admin-mensaje">{{ mensajeGuardado() }}</span>
+        }
+        <button type="button" class="boton-secundario" (click)="volver()">Volver</button>
+        <button type="button" class="boton-primario" (click)="guardarConfiguracion()">Guardar cambios</button>
+      </div>
+    </div>
+
+    <div class="global-formulario-campo">
+      <label class="global-formulario-campo__etiqueta">Título de la sección</label>
+      <div class="global-formulario-campo__contenedor">
+        <input type="text" class="global-formulario-campo__input"
+          placeholder="Ej: Productos destacados" [value]="titulo()"
+          (input)="titulo.set($any($event.target).value)">
+      </div>
+    </div>
+
+    <div class="destacados-admin-seccion-cabecera">
+      <h3 class="destacados-admin-titulo-secundario">Ítems destacados</h3>
+      <button type="button" class="boton-primario" (click)="agregarItem()">Agregar ítem</button>
+    </div>
+
+    @for (item of items(); track $index; let i = $index) {
+    <div class="destacados-admin-item">
+      <div class="destacados-admin-item-cabecera">
+        <span class="destacados-admin-item-numero">Ítem {{ i + 1 }}</span>
+        <button type="button" class="boton-secundario" (click)="quitarItem(i)">Quitar</button>
+      </div>
+      <div class="destacados-admin-item-campos">
+        <div class="global-formulario-campo">
+          <label class="global-formulario-campo__etiqueta">Seleccionar producto</label>
+          <div class="global-formulario-campo__contenedor">
+            <select class="global-formulario-campo__input" [value]="item.handle"
+              (change)="alCambiarProducto(i, $any($event.target).value)">
+              <option value="">Elegir un producto...</option>
+              @for (p of productosDisponibles; track p.id) {
+              <option [value]="p.id">{{ p.nombre }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        @if (productoParaItem(item)) {
+        <div class="destacados-admin-item-vista-producto">
+          <img [src]="productoParaItem(item)!.imagen" alt="" class="destacados-admin-item-imagen">
+          <span class="destacados-admin-item-nombre">{{ productoParaItem(item)!.nombre }}</span>
+        </div>
+        }
+      </div>
+    </div>
+    }
+  </section>
+</div>

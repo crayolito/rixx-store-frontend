@@ -1,5 +1,380 @@
 .contenedor-pagina {
-  padding: var(--espaciado-medio);
-  color: black;
-  background-color: var(--color-fondo-base);
+  width: 100%;
+  padding: var(--espaciado-md) 0;
+  color: var(--color-fondo-base);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-lg);
+  margin: 0 auto;
+  max-width: var(--ancho-contenedor-maximo);
+  min-width: 0;
+}
+
+.categorias-marketing-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-md);
+  min-width: 0;
+}
+
+.categorias-marketing-tarjeta {
+  background-color: var(--color-fondo-cuaternario);
+  border-radius: var(--borde-radio);
+  padding: var(--espaciado-lg);
+  border: 1px solid var(--color-borde-suave);
+}
+
+.categorias-marketing-cabecera {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espaciado-sm);
+}
+
+.categorias-marketing-botones {
+  display: flex;
+  flex-direction: row;
+  gap: var(--espaciado-sm);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.categorias-marketing-titulo {
+  font-size: var(--texto-h2);
+  font-weight: var(--peso-semibold);
+  margin: 0;
+  color: var(--color-fondo-base);
+}
+
+.categorias-marketing-ayuda {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.categorias-marketing-paneles {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espaciado-lg);
+  margin-top: var(--espaciado-sm);
+  min-width: 0;
+}
+
+.categorias-marketing-panel-izq {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-sm);
+  min-width: 0;
+}
+
+.categorias-marketing-panel-der {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-md);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.categorias-marketing-panel-vacio {
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
+  color: var(--color-fondo-septimo);
+}
+
+.categorias-marketing-titulo-secundario {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  margin: 0 0 var(--espaciado-sm) 0;
+  color: var(--color-fondo-base);
+}
+
+.categorias-marketing-titulo-terciario {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-medio);
+  margin: var(--espaciado-md) 0 var(--espaciado-sm) 0;
+  color: var(--color-fondo-base);
+}
+
+.categorias-marketing-hint {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+  margin: 0 0 var(--espaciado-xs) 0;
+}
+
+.categorias-marketing-lista-categorias {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+}
+
+.categorias-marketing-boton-categoria {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--espaciado-sm) var(--espaciado-md);
+  background-color: var(--color-fondo-quinario);
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--borde-radio-pequeno);
+  cursor: pointer;
+  font-size: var(--texto-base);
+  color: var(--color-fondo-base);
+  text-align: left;
+}
+
+.categorias-marketing-boton-categoria:hover {
+  border-color: var(--color-primario);
+  background-color: var(--color-fondo-sexto);
+}
+
+.categorias-marketing-boton-categoria--activo {
+  border-color: var(--color-primario);
+  background-color: var(--color-primario-claro);
+  color: var(--color-fondo-base);
+}
+
+.categorias-marketing-cat-nombre {
+  font-weight: var(--peso-medio);
+}
+
+.categorias-marketing-cat-cantidad {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+}
+
+.categorias-marketing-buscador-contenedor {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  padding: var(--espaciado-xs) var(--espaciado-sm);
+  background-color: var(--color-fondo-cuaternario);
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--borde-radio-pequeno);
+}
+
+.categorias-marketing-buscador-icono {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.categorias-marketing-buscador-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: var(--espaciado-xs) 0;
+  color: var(--color-fondo-base);
+}
+
+.categorias-marketing-lista-productos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+  max-height: 16rem;
+  overflow-y: auto;
+  padding: var(--espaciado-sm);
+  background-color: var(--color-fondo-quinario);
+  border-radius: var(--borde-radio-pequeno);
+  border: 1px solid var(--color-borde-suave);
+}
+
+.categorias-marketing-fila-producto {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  padding: var(--espaciado-sm);
+  border-radius: var(--borde-radio-pequeno);
+  background-color: var(--color-fondo-cuaternario);
+  min-width: 0;
+}
+
+.categorias-marketing-checkbox {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.categorias-marketing-checkbox input[type="checkbox"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--color-primario);
+  cursor: pointer;
+}
+
+.categorias-marketing-fila-imagen {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: cover;
+  border-radius: var(--borde-radio-pequeno);
+  flex-shrink: 0;
+}
+
+.categorias-marketing-fila-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.categorias-marketing-fila-titulo {
+  font-size: var(--texto-base);
+  color: var(--color-fondo-base);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categorias-marketing-fila-precios {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+}
+
+.categorias-marketing-sin-resultados {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+  padding: var(--espaciado-sm);
+  margin: 0;
+}
+
+.categorias-marketing-alerta {
+  font-size: var(--texto-pequeno);
+  color: var(--color-error, #c0392b);
+  margin: 0 0 var(--espaciado-sm) 0;
+}
+
+.categorias-marketing-lista-elegidos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-sm);
+  min-width: 0;
+}
+
+.categorias-marketing-item-elegido {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  padding: var(--espaciado-sm);
+  background-color: var(--color-fondo-quinario);
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--borde-radio-pequeno);
+  cursor: grab;
+  min-width: 0;
+}
+
+.categorias-marketing-item-elegido:active {
+  cursor: grabbing;
+}
+
+.categorias-marketing-item-elegido--arrastrando {
+  opacity: 0.6;
+  border-style: dashed;
+}
+
+.categorias-marketing-item-arrastrar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: grab;
+}
+
+.categorias-marketing-icono-arrastrar {
+  width: 1.25rem;
+  height: 1.25rem;
+  opacity: 0.6;
+}
+
+.categorias-marketing-item-imagen {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: cover;
+  border-radius: var(--borde-radio-pequeno);
+  flex-shrink: 0;
+}
+
+.categorias-marketing-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.categorias-marketing-item-titulo {
+  font-size: var(--texto-base);
+  color: var(--color-fondo-base);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categorias-marketing-item-precio {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+}
+
+.categorias-marketing-item-precio-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaciado-sm);
+  align-items: center;
+}
+
+.categorias-marketing-select-label {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-base);
+}
+
+.categorias-marketing-select {
+  font-size: var(--texto-pequeno);
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--borde-radio-pequeno);
+  background-color: var(--color-fondo-cuaternario);
+  color: var(--color-fondo-base);
+  max-width: 100%;
+}
+
+.categorias-marketing-radio {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-xs);
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-base);
+  cursor: pointer;
+}
+
+.categorias-marketing-radio input[type="radio"] {
+  accent-color: var(--color-primario);
+  cursor: pointer;
+}
+
+.categorias-marketing-boton-quitar {
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .categorias-marketing-paneles {
+    grid-template-columns: minmax(180px, 240px) 1fr;
+  }
+
+  .categorias-marketing-panel-der {
+    min-width: 0;
+  }
+
+  .categorias-marketing-item-elegido {
+    flex-wrap: nowrap;
+  }
+
+  .categorias-marketing-item-info {
+    flex: 1;
+    min-width: 0;
+  }
 }

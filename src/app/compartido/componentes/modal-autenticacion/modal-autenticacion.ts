@@ -1,8 +1,8 @@
 import { Component, inject, input, output, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { Modal } from '../modal/modal';
+import { Router } from '@angular/router';
 import { Autenticacion } from '../../../nucleo/servicios/autenticacion';
 import { Sesion } from '../../../nucleo/servicios/sesion';
+import { Modal } from '../modal/modal';
 
 type Pais = {
   codigo: string;
@@ -13,7 +13,7 @@ type Pais = {
 
 @Component({
   selector: 'app-modal-autenticacion',
-  imports: [Modal, RouterLink],
+  imports: [Modal],
   templateUrl: './modal-autenticacion.html',
   styleUrl: './modal-autenticacion.css',
 })
@@ -38,8 +38,9 @@ export class ModalAutenticacion {
   mostrarConfirmarContrasena = signal(false);
 
   selectorPaisAbierto = signal(false);
-  paisSeleccionado = signal<Pais>({ codigo: 'mx', nombre: 'México', bandera: '/imagenes/mexico.png', sigla: '+52' });
+  paisSeleccionado = signal<Pais>({ codigo: 'bo', nombre: 'Bolivia', bandera: '/imagenes/bolivia.png', sigla: '+591' });
   readonly paises: Pais[] = [
+    { codigo: 'bo', nombre: 'Bolivia', bandera: '/imagenes/bolivia.png', sigla: '+591' },
     { codigo: 'mx', nombre: 'México', bandera: '/imagenes/mexico.png', sigla: '+52' },
     { codigo: 'ar', nombre: 'Argentina', bandera: '/imagenes/argentina.png', sigla: '+54' },
     { codigo: 'co', nombre: 'Colombia', bandera: '/imagenes/colombia.png', sigla: '+57' },
@@ -47,7 +48,6 @@ export class ModalAutenticacion {
     { codigo: 'cl', nombre: 'Chile', bandera: '/imagenes/chile.png', sigla: '+56' },
     { codigo: 'ec', nombre: 'Ecuador', bandera: '/imagenes/ecuador.png', sigla: '+593' },
     { codigo: 've', nombre: 'Venezuela', bandera: '/imagenes/venezuela.png', sigla: '+58' },
-    { codigo: 'bo', nombre: 'Bolivia', bandera: '/imagenes/bolivia.png', sigla: '+591' },
     { codigo: 'gt', nombre: 'Guatemala', bandera: '/imagenes/guatemala.png', sigla: '+502' },
     { codigo: 'br', nombre: 'Brasil', bandera: '/imagenes/brasil.png', sigla: '+55' },
   ];
@@ -83,7 +83,7 @@ export class ModalAutenticacion {
     if (usuario) {
       this.sesion.guardarSesion(usuario);
       this.cerrar.emit();
-      
+
       // FASE 3: Redirigir según rol
       if (usuario.rol === 'Admin') {
         this.router.navigate(['/admin/inicio']);

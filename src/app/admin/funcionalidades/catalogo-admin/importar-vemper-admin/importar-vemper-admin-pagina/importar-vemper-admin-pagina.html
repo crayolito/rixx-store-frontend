@@ -1,0 +1,83 @@
+<div class="contenedor-flex">
+
+  <section class="titulo-opciones-contenedor">
+    <div class="titulo-contenedor">
+      <img src="/iconos/ico-categorias.svg" alt="Icono categorías" class="icono-boton icono-color-base">
+      <h3>Importar Vemper</h3>
+    </div>
+    <div class="opciones-contenedor">
+      <button class="boton-secundario" (click)="alternarFiltros()" type="button">
+        <p>{{ filtrosVisibles() ? 'Ocultar Filtros' : 'Mostrar Filtros' }}</p>
+      </button>
+    </div>
+  </section>
+
+  @if (filtrosVisibles()) {
+  <section class="global-filtros">
+    <div class="global-filtros__item">
+      <p class="global-filtros__titulo">Buscador</p>
+      <div class="global-filtros__busqueda">
+        <img src="/iconos/ico-busqueda.svg" alt="Icono busqueda" class="icono-boton icono-color-base">
+        <input type="text" placeholder="Nombre de la categoría..." class="global-filtros__input"
+          [value]="textoBusqueda()" (input)="actualizarBusqueda($any($event.target).value)">
+      </div>
+    </div>
+    <div class="global-filtros__item">
+      <button class="boton-secundario global-filtros__boton-icono" (click)="limpiarFiltros()" type="button"
+        aria-label="Limpiar filtros">
+        <img src="/iconos/ico-limpiar.svg" alt="Icono limpiar filtros" class="icono-boton icono-color-base">
+      </button>
+    </div>
+  </section>
+  }
+
+  <section class="seccion-grid">
+    @if (categoriasPaginadas().length === 0) {
+    <p class="grid-categorias__vacio">No se encontraron categorías</p>
+    } @else {
+    <div class="grid-categorias">
+      @for (categoria of categoriasPaginadas(); track categoria.id) {
+      <button type="button" class="tarjeta-categoria" (click)="verProductos(categoria)"
+        [attr.aria-label]="'Ver productos de ' + categoria.nombre">
+        <span class="tarjeta-categoria__nombre">{{ categoria.nombre }}</span>
+        <span class="tarjeta-categoria__cantidad">{{ categoria.productos }} productos</span>
+      </button>
+      }
+    </div>
+
+    @if (totalPaginas() > 0) {
+    <div class="global-paginacion">
+      <div class="global-paginacion__controles">
+        <button class="global-paginacion__boton global-paginacion__boton--anterior" (click)="paginaAnterior()"
+          [disabled]="paginaActual() === 1">
+          <img src="/iconos/ico-flecha-izquierda-tabla.svg" alt="Icono flecha izquierda"
+            class="icono-boton icono-color-base">
+        </button>
+        <div class="global-paginacion__numeros">
+          @for (pagina of paginasAMostrar(); track pagina) {
+          @if (pagina === -1) {
+          <span class="global-paginacion__separador">...</span>
+          } @else {
+          <button class="global-paginacion__numero"
+            [class.global-paginacion__numero--activa]="pagina === paginaActual()" (click)="irAPagina(pagina)"
+            type="button">
+            {{ pagina }}
+          </button>
+          }
+          }
+        </div>
+        <button class="global-paginacion__boton global-paginacion__boton--siguiente" (click)="paginaSiguiente()"
+          [disabled]="paginaActual() === totalPaginas()">
+          <img src="/iconos/ico-flecha-derecha-tabla.svg" alt="Icono flecha derecha"
+            class="icono-boton icono-color-base">
+        </button>
+      </div>
+      <p class="global-paginacion__info">
+        {{ (paginaActual() - 1) * categoriasPorPagina() + 1 }}-{{ Math.min(paginaActual() * categoriasPorPagina(),
+        totalCategorias()) }} de {{ totalCategorias() }}
+      </p>
+    </div>
+    }
+    }
+  </section>
+</div>

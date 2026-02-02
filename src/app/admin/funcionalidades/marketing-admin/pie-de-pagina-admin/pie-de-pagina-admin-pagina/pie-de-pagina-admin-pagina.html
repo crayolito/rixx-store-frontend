@@ -1,3 +1,197 @@
 <div class="contenedor-pagina">
-  <h1>Hola soy Pie de Página</h1>
+  <section class="pie-de-pagina-admin-seccion pie-de-pagina-admin-tarjeta">
+    <div class="pie-de-pagina-admin-cabecera-principal">
+      <h2 class="pie-de-pagina-admin-titulo">Pie de página</h2>
+      <div class="pie-de-pagina-admin-botones-cabecera">
+        @if (mensajeGuardado()) {
+        <span class="pie-de-pagina-admin-mensaje" [class.pie-de-pagina-admin-mensaje--error]="mensajeGuardado() !== 'Configuración guardada correctamente.'">{{
+          mensajeGuardado() }}</span>
+        }
+        <button type="button" class="boton-secundario" (click)="volver()">Volver</button>
+        <button type="button" class="boton-primario" (click)="guardarConfiguracion()">Guardar</button>
+      </div>
+    </div>
+
+    <h3 class="pie-de-pagina-admin-titulo-secundario">Redes sociales</h3>
+    <p class="pie-de-pagina-admin-ayuda">Hasta 5 redes. Si dejas la URL vacía, no se mostrará en la tienda.</p>
+    <div class="pie-de-pagina-admin-redes">
+      @for (red of redesSociales(); track red.id; let i = $index) {
+      <div class="global-formulario-campo pie-de-pagina-admin-campo-red">
+        <label class="global-formulario-campo__etiqueta">{{ etiquetasRedes[red.id] }}</label>
+        <div class="global-formulario-campo__contenedor">
+          <input type="url" class="global-formulario-campo__input" placeholder="https://..."
+            [value]="red.url" (input)="actualizarUrlRed(i, $any($event.target).value)">
+        </div>
+      </div>
+      }
+    </div>
+
+    <h3 class="pie-de-pagina-admin-titulo-secundario">Logo del pie (único)</h3>
+    <p class="pie-de-pagina-admin-ayuda">Solo hay un logo en todo el pie de página. Si lo dejas vacío, no se muestra.</p>
+    <div class="formulario-imagenes pie-de-pagina-admin-campo-logo">
+      <label class="global-formulario-campo__etiqueta">Logo único del pie (opcional)</label>
+      <div class="formulario-imagenes__contenedor-imagenes">
+        <label for="input-logo-pie"
+          class="global-formulario-imagenes__contenedor global-formulario-imagenes__contenedor--clickeable">
+          @if (logoUrl()) {
+          <img [src]="logoUrl()" alt="Logo" class="global-formulario-imagenes__preview">
+          } @else {
+          <img src="/iconos/ico-imagen.svg" alt="Icono imagen" class="icono-boton icono-color-secundario">
+          <span class="global-formulario-imagenes__etiqueta1">Haz clic para subir el logo</span>
+          <span class="global-formulario-imagenes__etiqueta2">PNG, JPG, SVG hasta 5MB</span>
+          }
+        </label>
+        <input type="file" id="input-logo-pie" accept="image/*" (change)="manejarCambioLogo($event)"
+          style="display: none;">
+      </div>
+    </div>
+  </section>
+
+  <section class="pie-de-pagina-admin-seccion pie-de-pagina-admin-tarjeta">
+    <h2 class="pie-de-pagina-admin-titulo">Secciones del pie (4 fijas)</h2>
+    <p class="pie-de-pagina-admin-ayuda">Siempre hay 4 secciones. Puedes cambiar el título de cada una. El orden de las opciones dentro de cada sección se puede cambiar con las flechas.</p>
+
+    @for (seccion of secciones(); track seccion.id; let i = $index) {
+    <div class="pie-de-pagina-admin-seccion-item">
+      <div class="pie-de-pagina-admin-seccion-item-cabecera">
+        <span class="pie-de-pagina-admin-seccion-item-numero">{{ titulosSeccionPorDefecto[tipoSeccion(i)] }}</span>
+      </div>
+
+      <div class="global-formulario-campo">
+        <label class="global-formulario-campo__etiqueta">Título (editable)</label>
+        <div class="global-formulario-campo__contenedor">
+          <input type="text" class="global-formulario-campo__input"
+            [placeholder]="titulosSeccionPorDefecto[tipoSeccion(i)]"
+            [value]="seccion.titulo" (input)="actualizarTitulo(i, $any($event.target).value)">
+        </div>
+      </div>
+
+      @if (tipoSeccion(i) === 'acerca') {
+        <div class="global-formulario-campo">
+          <label class="global-formulario-campo__etiqueta">Descripción</label>
+          <p class="pie-de-pagina-admin-ayuda pie-de-pagina-admin-ayuda--campo">Puedes escribir HTML: enlaces, listas, párrafos.</p>
+          <div class="global-formulario-campo__contenedor">
+            <textarea class="global-formulario-campo__input pie-de-pagina-admin-textarea pie-de-pagina-admin-textarea--html" rows="4"
+              placeholder="Texto sobre la tienda..."
+              [value]="seccion.descripcion" (input)="actualizarDescripcion(i, $any($event.target).value)"></textarea>
+          </div>
+        </div>
+      }
+
+      @if (soloEnlaces(i)) {
+        <h4 class="pie-de-pagina-admin-titulo-opciones">Enlaces (puedes cambiar el orden)</h4>
+        <div class="pie-de-pagina-admin-lista-opciones">
+          @for (opcion of seccion.opciones; track opcion.id; let j = $index) {
+          <div class="pie-de-pagina-admin-opcion-item" [class.pie-de-pagina-admin-opcion-item--invalida]="!opcionValida(opcion)">
+            <div class="pie-de-pagina-admin-opcion-cabecera">
+              <div class="pie-de-pagina-admin-opcion-orden">
+                <button type="button" class="boton-secundario pie-de-pagina-admin-boton-orden" title="Subir"
+                  [disabled]="j === 0" (click)="moverOpcionArriba(i, j)">↑</button>
+                <button type="button" class="boton-secundario pie-de-pagina-admin-boton-orden" title="Bajar"
+                  [disabled]="j === seccion.opciones.length - 1" (click)="moverOpcionAbajo(i, j)">↓</button>
+              </div>
+              <button type="button" class="boton-secundario pie-de-pagina-admin-boton-quitar-opcion"
+                (click)="quitarOpcion(i, j)">Quitar</button>
+            </div>
+            <div class="global-formulario-campo">
+              <label class="global-formulario-campo__etiqueta">Texto visible (etiqueta)</label>
+              <div class="global-formulario-campo__contenedor">
+                <input type="text" class="global-formulario-campo__input" placeholder="Ej: Inicio, Mi perfil"
+                  [value]="opcion.etiqueta" (input)="actualizarOpcion(i, j, 'etiqueta', $any($event.target).value)">
+              </div>
+            </div>
+            <div class="global-formulario-campo">
+              <label class="global-formulario-campo__etiqueta">Página (vista cliente)</label>
+              <div class="global-formulario-campo__contenedor">
+                <select class="global-formulario-campo__input"
+                  [value]="getTipoEnlace(opcion.path)" (change)="actualizarPathEnlace(i, j, $any($event.target).value, '')">
+                  @for (pag of paginasTienda; track pag.id) {
+                  <option [value]="pag.id">{{ pag.titulo }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+            @if (getTipoEnlace(opcion.path) === 'categoria') {
+              <div class="global-formulario-campo">
+                <label class="global-formulario-campo__etiqueta">Slug de la categoría</label>
+                <div class="global-formulario-campo__contenedor">
+                  <input type="text" class="global-formulario-campo__input" placeholder="Ej: free-fire"
+                    [value]="getSlugOPathParaEnlace(opcion.path)" (input)="actualizarPathEnlace(i, j, 'categoria', $any($event.target).value)">
+                </div>
+              </div>
+            }
+            @if (getTipoEnlace(opcion.path) === 'producto') {
+              <div class="global-formulario-campo">
+                <label class="global-formulario-campo__etiqueta">Slug del producto</label>
+                <div class="global-formulario-campo__contenedor">
+                  <input type="text" class="global-formulario-campo__input" placeholder="Ej: 1 o nombre-producto"
+                    [value]="getSlugOPathParaEnlace(opcion.path)" (input)="actualizarPathEnlace(i, j, 'producto', $any($event.target).value)">
+                </div>
+              </div>
+            }
+            @if (getTipoEnlace(opcion.path) === 'otra') {
+              <div class="global-formulario-campo">
+                <label class="global-formulario-campo__etiqueta">URL o ruta</label>
+                <div class="global-formulario-campo__contenedor">
+                  <input type="text" class="global-formulario-campo__input" placeholder="Ej: /privacidad"
+                    [value]="getSlugOPathParaEnlace(opcion.path)" (input)="actualizarPathEnlace(i, j, 'otra', $any($event.target).value)">
+                </div>
+              </div>
+            }
+          </div>
+          }
+        </div>
+        <button type="button" class="boton-secundario pie-de-pagina-admin-boton-anadir-opcion"
+          (click)="agregarOpcion(i)">Añadir enlace</button>
+      }
+
+      @if (soloAyuda(i)) {
+        <h4 class="pie-de-pagina-admin-titulo-opciones">Teléfonos y correos</h4>
+        <div class="pie-de-pagina-admin-lista-opciones">
+          @for (opcion of seccion.opciones; track opcion.id; let j = $index) {
+          <div class="pie-de-pagina-admin-opcion-item" [class.pie-de-pagina-admin-opcion-item--invalida]="!opcionValida(opcion)">
+            <div class="pie-de-pagina-admin-opcion-cabecera">
+              <select class="global-formulario-campo__input pie-de-pagina-admin-select-tipo"
+                [value]="opcion.tipo" (change)="actualizarTipoOpcion(i, j, $any($event.target).value)">
+                @for (t of tiposOpcionParaSeccion(i); track t) {
+                <option [value]="t">{{ etiquetaTipo(t) }}</option>
+                }
+              </select>
+              <button type="button" class="boton-secundario pie-de-pagina-admin-boton-quitar-opcion"
+                (click)="quitarOpcion(i, j)">Quitar</button>
+            </div>
+            <div class="global-formulario-campo">
+              <label class="global-formulario-campo__etiqueta">Texto visible (etiqueta)</label>
+              <div class="global-formulario-campo__contenedor">
+                <input type="text" class="global-formulario-campo__input" placeholder="Ej: Teléfono, Contacto"
+                  [value]="opcion.etiqueta" (input)="actualizarOpcion(i, j, 'etiqueta', $any($event.target).value)">
+              </div>
+            </div>
+            @if (opcion.tipo === 'telefono') {
+              <div class="global-formulario-campo">
+                <label class="global-formulario-campo__etiqueta">Número</label>
+                <div class="global-formulario-campo__contenedor">
+                  <input type="tel" class="global-formulario-campo__input" placeholder="+34 600 000 000"
+                    [value]="opcion.numero" (input)="actualizarOpcion(i, j, 'numero', $any($event.target).value)">
+                </div>
+              </div>
+            }
+            @if (opcion.tipo === 'correo') {
+              <div class="global-formulario-campo">
+                <label class="global-formulario-campo__etiqueta">Correo</label>
+                <div class="global-formulario-campo__contenedor">
+                  <input type="email" class="global-formulario-campo__input" placeholder="contacto@ejemplo.com"
+                    [value]="opcion.correo" (input)="actualizarOpcion(i, j, 'correo', $any($event.target).value)">
+                </div>
+              </div>
+            }
+          </div>
+          }
+        </div>
+        <button type="button" class="boton-secundario pie-de-pagina-admin-boton-anadir-opcion"
+          (click)="agregarOpcion(i)">Añadir teléfono o correo</button>
+      }
+    </div>
+    }
+  </section>
 </div>

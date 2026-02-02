@@ -1,6 +1,8 @@
 import { Component, computed, HostListener, inject, OnInit, output, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { SeccionEncabezado } from '../../../compartido/modelos/configuracion.modelo';
 import { CarritoServicio } from '../../../compartido/servicios/carrito.servicio';
+import { ConfiguracionServicio } from '../../../compartido/servicios/configuracion.servicio';
 import { Sesion } from '../../../nucleo/servicios/sesion';
 
 interface Idioma {
@@ -14,9 +16,11 @@ interface Pais {
   bandera: string;
 }
 
-interface Categoria {
+interface ItemBusqueda {
   id: string;
-  nombre: string;
+  imagen: string;
+  titulo: string;
+  categoria: string;
 }
 
 @Component({
@@ -27,35 +31,31 @@ interface Categoria {
   styleUrl: './cabecera-tienda.css',
 })
 export class CabeceraTienda implements OnInit {
-  // Servicios
   private carritoServicio = inject(CarritoServicio);
   private sesion = inject(Sesion);
+  private router = inject(Router);
+  private configuracion = inject(ConfiguracionServicio);
 
-  // Outputs para comunicar con el layout
   abrirModal = output<void>();
   abrirCarrito = output<void>();
 
-  // Cantidad de items en el carrito
   cantidadItemsCarrito = this.carritoServicio.cantidadItems;
-
-  // FASE 1: Estado de autenticación
   usuarioActual = this.sesion.usuarioActual;
-  estaLogueado = this.sesion.estaLogueado;
+  estaLogeado = this.sesion.estaLogueado;
 
-  // Lógica de scroll
+  dropdownCategoriaAbierto = signal<string | null>(null);
   barraVisible = signal(true);
   blurActivo = signal(false);
   paddingTopBarra = signal('var(--espaciado-xxs)');
 
-  // Idiomas
   readonly idiomas: Idioma[] = [
     { codigo: 'es', etiqueta: 'ES' },
     { codigo: 'en', etiqueta: 'EN' },
   ];
   idiomaActivo = signal<string>('es');
 
-  // Países
   readonly paises: Pais[] = [
+    { codigo: 'bo', nombre: 'Bolivia', bandera: '/imagenes/bolivia.png' },
     { codigo: 'mx', nombre: 'México', bandera: '/imagenes/mexico.png' },
     { codigo: 'ar', nombre: 'Argentina', bandera: '/imagenes/argentina.png' },
     { codigo: 'co', nombre: 'Colombia', bandera: '/imagenes/colombia.png' },
@@ -63,20 +63,34 @@ export class CabeceraTienda implements OnInit {
     { codigo: 'cl', nombre: 'Chile', bandera: '/imagenes/chile.png' },
     { codigo: 'ec', nombre: 'Ecuador', bandera: '/imagenes/ecuador.png' },
     { codigo: 've', nombre: 'Venezuela', bandera: '/imagenes/venezuela.png' },
-    { codigo: 'bo', nombre: 'Bolivia', bandera: '/imagenes/bolivia.png' },
     { codigo: 'gt', nombre: 'Guatemala', bandera: '/imagenes/guatemala.png' },
     { codigo: 'br', nombre: 'Brasil', bandera: '/imagenes/brasil.png' },
   ];
-  paisActivo = signal<string>('mx');
+  paisActivo = signal<string>('bo');
 
-  // Categorías
-  readonly categorias: Categoria[] = [
-    { id: '1', nombre: 'Categorías' },
-    { id: '2', nombre: 'Ofertas' },
-    { id: '3', nombre: 'Nuevos' },
+  readonly encabezado = this.configuracion.encabezadoActual;
+  promoTexto = computed(() => this.encabezado()?.tituloPromocion ?? '');
+  seccionesNav = computed((): SeccionEncabezado[] => {
+    const enc = this.encabezado();
+    if (!enc?.secciones?.length) {
+      return [];
+    }
+    return enc.secciones.filter((s) => {
+      if (s.esDinamico) return !!s.categorias?.length;
+      return !!s.redireccionCategoria?.handle;
+    });
+  });
+  logoUrl = computed(() => this.encabezado()?.logoUrl ?? '/logo.png');
+
+  textoBusqueda = signal('');
+  busquedaDropdownVisible = signal(false);
+  readonly resultadosBusqueda: ItemBusqueda[] = [
+    { id: '1', imagen: '/imagenes/juego1.png', titulo: 'Pines Free Fire 1200 Diamantes', categoria: 'Juegos' },
+    { id: '2', imagen: '/imagenes/juego2.png', titulo: 'Diamantes Mobile Legends 500', categoria: 'Juegos' },
+    { id: '3', imagen: '/imagenes/juego3.png', titulo: 'Netflix Premium 3 Meses', categoria: 'Streaming' },
+    { id: '4', imagen: '/imagenes/juego4.png', titulo: 'Spotify Premium 6 Meses', categoria: 'Streaming' },
   ];
-
-  readonly promoTexto = '¡RECARGA INSTANTÁNEA! ¡JUEGO INSTANTÁNEO!';
+  menuUsuarioAbierto = signal(false);
 
   ngOnInit() {
     this.manejarScroll();
@@ -85,7 +99,6 @@ export class CabeceraTienda implements OnInit {
   @HostListener('window:scroll')
   manejarScroll() {
     const scrollY = window.scrollY || document.documentElement.scrollTop;
-
     if (scrollY > 50) {
       this.barraVisible.set(false);
       this.blurActivo.set(true);
@@ -115,5 +128,75 @@ export class CabeceraTienda implements OnInit {
 
   emitirAbrirCarrito() {
     this.abrirCarrito.emit();
+  }
+
+  onBusquedaFocus() {
+    this.busquedaDropdownVisible.set(true);
+  }
+
+  onBusquedaInput(event: Event) {
+    const valor = (event.target as HTMLInputElement).value;
+    this.textoBusqueda.set(valor);
+    this.busquedaDropdownVisible.set(true);
+  }
+
+  cerrarBusquedaDropdown() {
+    this.busquedaDropdownVisible.set(false);
+  }
+
+  seleccionarResultado(item: ItemBusqueda) {
+    this.router.navigate(['/producto', item.id]);
+    this.cerrarBusquedaDropdown();
+    this.textoBusqueda.set('');
+  }
+
+  alternarMenuUsuario() {
+    this.menuUsuarioAbierto.update((v) => !v);
+  }
+
+  cerrarMenuUsuario() {
+    this.menuUsuarioAbierto.set(false);
+  }
+
+  irAPerfil(seccion?: 'perfil' | 'pedidos' | 'billetera') {
+    this.cerrarMenuUsuario();
+    if (seccion && seccion !== 'perfil') {
+      this.router.navigate(['/perfil'], { queryParams: { seccion } });
+    } else {
+      this.router.navigate(['/perfil']);
+    }
+  }
+
+  alternarDropdownCategoria(id: string) {
+    this.dropdownCategoriaAbierto.update((actual) => (actual === id ? null : id));
+  }
+
+  cerrarDropdownCategoria() {
+    this.dropdownCategoriaAbierto.set(null);
+  }
+
+  irACategoria(handle: string) {
+    this.router.navigate(['/categoria', handle]);
+    this.cerrarDropdownCategoria();
+  }
+
+  cerrarSesion() {
+    this.sesion.cerrarSesion();
+    this.cerrarMenuUsuario();
+    this.router.navigate(['/']);
+  }
+
+  @HostListener('document:click', ['$event'])
+  cerrarDropdownsAlClickExterior(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.tienda-header__busqueda-contenedor')) {
+      this.cerrarBusquedaDropdown();
+    }
+    if (!target.closest('.tienda-header__usuario-contenedor')) {
+      this.cerrarMenuUsuario();
+    }
+    if (!target.closest('.tienda-header__categoria-dropdown')) {
+      this.cerrarDropdownCategoria();
+    }
   }
 }

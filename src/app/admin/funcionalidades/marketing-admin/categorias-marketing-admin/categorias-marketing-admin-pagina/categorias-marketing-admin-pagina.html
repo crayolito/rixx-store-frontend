@@ -1,3 +1,140 @@
 <div class="contenedor-pagina">
-  <h1>Hola soy Categorías Marketing</h1>
+  <section class="categorias-marketing-seccion categorias-marketing-tarjeta">
+    <div class="categorias-marketing-cabecera">
+      <h2 class="categorias-marketing-titulo">Categorías Marketing</h2>
+      <div class="categorias-marketing-botones">
+        <button type="button" class="boton-secundario" (click)="volver()">Volver</button>
+        <button type="button" class="boton-primario" (click)="guardarConfiguracion()">Guardar cambios</button>
+      </div>
+    </div>
+
+    <p class="categorias-marketing-ayuda">
+      Selecciona una categoría, elige al menos {{ minProductos }} productos, indica qué precio mostrar y arrastra para ordenar.
+    </p>
+
+    <div class="categorias-marketing-paneles">
+      <aside class="categorias-marketing-panel-izq">
+        <h3 class="categorias-marketing-titulo-secundario">Categorías</h3>
+        <div class="categorias-marketing-lista-categorias">
+          @for (cat of categoriasConCantidad(); track cat.nombre) {
+          <button type="button" class="categorias-marketing-boton-categoria"
+            [class.categorias-marketing-boton-categoria--activo]="categoriaSeleccionada() === cat.nombre"
+            (click)="seleccionarCategoria(cat.nombre)">
+            <span class="categorias-marketing-cat-nombre">{{ cat.nombre }}</span>
+            <span class="categorias-marketing-cat-cantidad">({{ cat.cantidad }})</span>
+          </button>
+          }
+        </div>
+      </aside>
+
+      @if (categoriaSeleccionada(); as catNombre) {
+      <div class="categorias-marketing-panel-der">
+        <h3 class="categorias-marketing-titulo-secundario">Productos de {{ catNombre }}</h3>
+        <div class="categorias-marketing-buscador-contenedor">
+          <img src="/iconos/ico-busqueda.svg" alt="" class="categorias-marketing-buscador-icono">
+          <input type="text" class="global-formulario-campo__input categorias-marketing-buscador-input"
+            placeholder="Buscar producto..." [value]="textoBusqueda()"
+            (input)="setBusqueda($any($event.target).value)">
+        </div>
+        <div class="categorias-marketing-lista-productos">
+          @for (p of productosDeCategoria(); track p.id) {
+          <div class="categorias-marketing-fila-producto">
+            <label class="categorias-marketing-checkbox">
+              <input type="checkbox" [checked]="estaSeleccionado(p)"
+                [disabled]="estaSeleccionado(p) && !puedeQuitarSeleccion()"
+                (change)="toggleSeleccion(p)">
+            </label>
+            <img [src]="p.imagen" alt="" class="categorias-marketing-fila-imagen">
+            <div class="categorias-marketing-fila-info">
+              <span class="categorias-marketing-fila-titulo">{{ p.nombre }}</span>
+              <span class="categorias-marketing-fila-precios">
+                {{ preciosDelProducto(p).length }} precio(s)
+              </span>
+            </div>
+          </div>
+          }
+          @if (productosDeCategoria().length === 0) {
+          <p class="categorias-marketing-sin-resultados">Ningún producto coincide.</p>
+          }
+        </div>
+
+        <h4 class="categorias-marketing-titulo-terciario">Productos elegidos ({{ items().length }})</h4>
+        @if (items().length < minProductos) {
+        <p class="categorias-marketing-alerta">Selecciona al menos {{ minProductos }} productos.</p>
+        }
+        <p class="categorias-marketing-hint">Arrastra un ítem para cambiar su orden.</p>
+        <div class="categorias-marketing-lista-elegidos">
+          @for (item of items(); track item.handle; let i = $index) {
+          <div class="categorias-marketing-item-elegido"
+            [class.categorias-marketing-item-elegido--arrastrando]="estaArrastrando(i)"
+            draggable="true"
+            (dragstart)="iniciarArrastre($event, i)"
+            (dragover)="permitirSoltar($event)"
+            (drop)="soltar($event, i)"
+            (dragend)="finArrastre()">
+            <div class="categorias-marketing-item-arrastrar" title="Arrastra para ordenar">
+              <img src="/iconos/icon-opciones.svg" alt="" class="categorias-marketing-icono-arrastrar">
+            </div>
+            <img [src]="item.imagen" alt="" class="categorias-marketing-item-imagen">
+            <div class="categorias-marketing-item-info">
+              <span class="categorias-marketing-item-titulo">{{ item.titulo }}</span>
+              @if (preciosParaItem(item).length > 1) {
+              <div class="categorias-marketing-item-precio-selector">
+                <label class="categorias-marketing-select-label">Precio:</label>
+                <select class="categorias-marketing-select"
+                  [value]="item.precioId"
+                  (change)="cambiarPrecioVariante(i, $any($event.target).value); $event.stopPropagation()">
+                  @for (pr of preciosParaItem(item); track pr.id) {
+                  <option [value]="pr.id">{{ pr.nombre }} - ${{ pr.precioBase }}{{ pr.precioOferta != null ? ' (Oferta: $' + pr.precioOferta + ')' : '' }}</option>
+                  }
+                </select>
+              </div>
+              @if (item.precioOferta != null) {
+              <div class="categorias-marketing-item-precio-selector">
+                <label class="categorias-marketing-radio">
+                  <input type="radio" [name]="'precio-' + item.handle" [checked]="!item.usarPrecioOferta"
+                    (change)="cambiarPrecioMostrar(i, false)">
+                  Base: ${{ item.precioBase }}
+                </label>
+                <label class="categorias-marketing-radio">
+                  <input type="radio" [name]="'precio-' + item.handle" [checked]="item.usarPrecioOferta"
+                    (change)="cambiarPrecioMostrar(i, true)">
+                  Oferta: ${{ item.precioOferta }}
+                </label>
+              </div>
+              }
+              } @else {
+              @if (item.precioOferta != null) {
+              <div class="categorias-marketing-item-precio-selector">
+                <label class="categorias-marketing-radio">
+                  <input type="radio" [name]="'precio-' + item.handle" [checked]="!item.usarPrecioOferta"
+                    (change)="cambiarPrecioMostrar(i, false)">
+                  Base: ${{ item.precioBase }}
+                </label>
+                <label class="categorias-marketing-radio">
+                  <input type="radio" [name]="'precio-' + item.handle" [checked]="item.usarPrecioOferta"
+                    (change)="cambiarPrecioMostrar(i, true)">
+                  Oferta: ${{ item.precioOferta }}
+                </label>
+              </div>
+              } @else {
+              <span class="categorias-marketing-item-precio">${{ item.precioBase }}</span>
+              }
+              }
+            </div>
+            <button type="button" class="boton-secundario categorias-marketing-boton-quitar"
+              [disabled]="items().length <= minProductos" (click)="quitarItem(i)">
+              Quitar
+            </button>
+          </div>
+          }
+        </div>
+      </div>
+      } @else {
+      <div class="categorias-marketing-panel-der categorias-marketing-panel-vacio">
+        <p>Selecciona una categoría para configurar sus productos.</p>
+      </div>
+      }
+    </div>
+  </section>
 </div>

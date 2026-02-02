@@ -16,13 +16,24 @@
   <div class="tienda-categoria-pagina__contenido-principal">
     <div class="tienda-categoria-pagina__productos">
       <div class="tienda-categoria-pagina__grid">
-        @for (producto of productosPaginados(); track producto.id) {
-        <a class="tienda-categoria-pagina__tarjeta" [routerLink]="['/producto', producto.id]">
+        @for (producto of productosPaginados(); track producto.handle) {
+        <a class="tienda-categoria-pagina__tarjeta" [routerLink]="['/producto', producto.handle]">
           <div class="tienda-categoria-pagina__imagen-contenedor">
             <img class="tienda-categoria-pagina__imagen" [src]="producto.imagen" [alt]="producto.titulo">
           </div>
           <div class="tienda-categoria-pagina__contenido">
             <h4 class="tienda-categoria-pagina__titulo">{{ producto.titulo }}</h4>
+            @if (producto.descripcion) {
+            <p class="tienda-categoria-pagina__descripcion">{{ producto.descripcion }}</p>
+            }
+            <div class="tienda-categoria-pagina__precios">
+              @if (mostrarOferta(producto)) {
+              <span class="tienda-categoria-pagina__precio-base">${{ producto.precioBase }}</span>
+              <span class="tienda-categoria-pagina__precio-oferta">${{ producto.precioOferta }}</span>
+              } @else {
+              <span class="tienda-categoria-pagina__precio-oferta">${{ precioAMostrar(producto) }}</span>
+              }
+            </div>
           </div>
         </a>
         }

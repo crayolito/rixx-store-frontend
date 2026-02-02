@@ -14,7 +14,10 @@
     <div class="tienda-producto-detalle__header">
       <img [src]="producto().imagenJuego" [alt]="producto().titulo" class="tienda-producto-detalle__imagen-juego">
       <div class="tienda-producto-detalle__contenido-header">
-        <h3 class="tienda-producto-detalle__titulo">{{ producto().titulo }}</h3>
+        <div class="tienda-producto-detalle__titulo-fila">
+          <h3 class="tienda-producto-detalle__titulo">{{ producto().titulo }}</h3>
+
+        </div>
         <p class="tienda-producto-detalle__info">
           <img src="/iconos/ico-server.svg" alt="Server" class="icono-boton icono-color-blanco">
           <span class="tienda-producto-detalle__server">{{ producto().servidor }}</span>
@@ -23,6 +26,11 @@
           <img src="/iconos/ico-informacion.svg" alt="Descripción" class="icono-boton icono-color-blanco">
           <span>{{ producto().descripcion }}</span>
         </p>
+        <span class="tienda-producto-detalle__badge-tipo"
+          [class.tienda-producto-detalle__badge-tipo--manual]="producto().tipoEntrega === 'manual'"
+          [class.tienda-producto-detalle__badge-tipo--automatico]="producto().tipoEntrega === 'automatico'">
+          {{ producto().tipoEntrega === 'manual' ? 'MANUAL' : 'AUTOMÁTICO' }}
+        </span>
       </div>
     </div>
 
@@ -32,7 +40,8 @@
       <!-- ─── COLUMNA IZQUIERDA: Variantes del producto ─── -->
       <div class="tienda-producto-detalle__izquierda">
         <div class="tienda-producto-detalle__variantes">
-          <div class="tienda-producto-detalle__variantes-lista">
+          <!-- En desktop: lista de variantes visible -->
+          <div class="tienda-producto-detalle__variantes-lista tienda-producto-detalle__variantes-lista--desktop">
             @for (variante of variantes(); track variante.id) {
             <button type="button" class="tienda-producto-detalle__variante" [disabled]="!variante.disponible"
               (click)="seleccionarVariante(variante.id)">
@@ -45,6 +54,11 @@
             </button>
             }
           </div>
+          <!-- En móvil: botón que abre bottom sheet -->
+          <button type="button" class="tienda-producto-detalle__boton-seleccionar-paquete"
+            (click)="abrirBottomSheetVariantes()">
+            SELECCIONAR PAQUETE
+          </button>
 
           <!-- ─── Dropdowns: Descripción, Instrucciones, Términos ─── -->
           <div class="tienda-producto-detalle__dropdowns">
@@ -147,7 +161,7 @@
           <div class="tienda-producto-detalle__resumen">
             <div class="tienda-producto-detalle__resumen-item">
               <span class="tienda-producto-detalle__resumen-label">Variante:</span>
-              <span class="tienda-producto-detalle__resumen-valor">{{ varianteActual()?.nombre }}</span>
+              <span class="tienda-producto-detalle__resumen-valor">{{ varianteActual().nombre }}</span>
             </div>
             <div class="tienda-producto-detalle__resumen-item">
               <span class="tienda-producto-detalle__resumen-label">Cantidad:</span>
@@ -183,4 +197,39 @@
       </div>
     </div>
   </div>
+
+  <!-- Bottom sheet móvil: selección de paquete/variante -->
+  @if (bottomSheetVariantesAbierto()) {
+  <div class="tienda-producto-detalle__bottom-sheet-overlay" (click)="cerrarBottomSheetVariantes()" role="button"
+    tabindex="-1" aria-label="Cerrar selección de paquete"></div>
+  <div class="tienda-producto-detalle__bottom-sheet-panel" role="dialog" tabindex="0"
+    (keydown.escape)="cerrarBottomSheetVariantes()" aria-label="Seleccionar paquete o variante">
+    <div class="tienda-producto-detalle__bottom-sheet-cabecera">
+      <h4 class="tienda-producto-detalle__bottom-sheet-titulo">Seleccionar paquete</h4>
+      <button type="button" class="tienda-producto-detalle__bottom-sheet-cerrar" (click)="cerrarBottomSheetVariantes()"
+        aria-label="Cerrar">
+        <img src="/iconos/ico-cerrar.svg" alt="" class="icono-boton icono-color-secundario">
+      </button>
+    </div>
+    <div class="tienda-producto-detalle__bottom-sheet-lista">
+      @for (variante of variantes(); track variante.id) {
+      <button type="button" class="tienda-producto-detalle__variante tienda-producto-detalle__variante--sheet"
+        [disabled]="!variante.disponible" (click)="seleccionarVariante(variante.id)">
+        <input type="radio" name="variante-sheet" class="global-radio__input" [value]="variante.id"
+          [checked]="varianteSeleccionada() === variante.id" (change)="seleccionarVariante(variante.id)">
+        <span class="tienda-producto-detalle__variante-nombre">{{ variante.nombre }}</span>
+        <div class="tienda-producto-detalle__variante-contenido">
+          <span class="tienda-producto-detalle__variante-precio">{{ variante.precio | number:'1.2-2' }} Bs</span>
+        </div>
+      </button>
+      }
+    </div>
+    <div class="tienda-producto-detalle__bottom-sheet-acciones">
+      <button type="button" class="boton-primario tienda-producto-detalle__bottom-sheet-confirmar"
+        (click)="confirmarPaquete()">
+        Confirmar paquete
+      </button>
+    </div>
+  </div>
+  }
 </div>

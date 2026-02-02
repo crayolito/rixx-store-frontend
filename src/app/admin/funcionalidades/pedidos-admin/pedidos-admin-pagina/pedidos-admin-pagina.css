@@ -44,6 +44,11 @@
 
 /* ─── Tablet ─── */
 @media (min-width: 768px) {
+  .detalle-pedido-modal {
+    min-width: 32rem;
+    max-width: 42rem;
+  }
+
   .contenedor-base {
     padding: var(--espaciado-md) var(--espaciado-lg);
   }
@@ -63,6 +68,11 @@
 
 /* ─── Laptop ─── */
 @media (min-width: 1024px) {
+  .detalle-pedido-modal {
+    min-width: 36rem;
+    max-width: 48rem;
+  }
+
   .contenedor-base {
     padding: var(--espaciado-md) var(--espaciado-xl);
   }
@@ -94,6 +104,11 @@
 /* ═══════════════════════════════════════════════════════
    MODAL DETALLES - CLASES LIMPIAS
    ═══════════════════════════════════════════════════════ */
+
+.detalle-pedido-modal {
+  min-width: 28rem;
+  max-width: 36rem;
+}
 
 .detalle-pedido__contenido {
   display: flex;
@@ -137,51 +152,63 @@
   color: var(--color-fondo-base);
 }
 
-.detalle-pedido__productos {
+.detalle-pedido__productos-tabla {
   display: flex;
   flex-direction: column;
-  gap: var(--espaciado-xs);
+  gap: 0;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--borde-radio);
+  overflow: hidden;
 }
 
-.detalle-pedido__producto {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--espaciado-xs);
+.detalle-pedido__productos-cabecera {
+  display: grid;
+  grid-template-columns: 1fr 3rem 4.5rem 4.5rem;
+  gap: var(--espaciado-sm);
+  padding: var(--espaciado-sm) var(--espaciado-md);
   background: var(--color-fondo-cuaternario);
-  border: 1px solid var(--color-borde-suave);
-  border-radius: var(--borde-radio-pequeno);
+  font-size: var(--texto-codigo);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-septimo);
+}
+
+.detalle-pedido__productos-th {
+  text-align: right;
+}
+
+.detalle-pedido__productos-th--nombre {
+  text-align: left;
+}
+
+.detalle-pedido__producto-fila {
+  display: grid;
+  grid-template-columns: 1fr 3rem 4.5rem 4.5rem;
+  gap: var(--espaciado-sm);
+  align-items: center;
+  padding: var(--espaciado-sm) var(--espaciado-md);
+  border-top: 1px solid var(--color-borde-suave);
+  background: var(--color-fondo-quinario);
+  font-size: var(--texto-base);
 }
 
 .detalle-pedido__producto-nombre {
   font-weight: var(--peso-medium);
-  margin: 0;
   color: var(--color-fondo-base);
 }
 
-.detalle-pedido__producto-id {
-  font-size: var(--texto-codigo);
-  color: var(--color-fondo-septimo);
-  margin: 0;
-}
-
-.detalle-pedido__producto-precios {
-  display: flex;
-  gap: var(--espaciado-xs);
-  align-items: center;
-}
-
 .detalle-pedido__producto-cantidad {
-  font-size: var(--texto-pequeno);
-  color: var(--color-fondo-septimo);
+  text-align: right;
+  color: var(--color-fondo-base);
 }
 
 .detalle-pedido__producto-precio {
+  text-align: right;
   font-weight: var(--peso-medium);
   color: var(--color-fondo-base);
 }
 
 .detalle-pedido__producto-total {
+  text-align: right;
   font-weight: var(--peso-bold);
   color: var(--color-primario);
 }
@@ -244,4 +271,21 @@
 .detalle-pedido__resumen-valor--ganancia {
   color: #28a745;
   font-size: var(--texto-grande);
+}
+
+.global-tabla__lista-acciones--iconos {
+  gap: var(--espaciado-xxs);
+}
+
+.global-tabla__lista-acciones--iconos li {
+  flex-shrink: 0;
+}
+
+.global-tabla__boton-procesando {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.global-tabla__boton-procesando img {
+  pointer-events: none;
 }

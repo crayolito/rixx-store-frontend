@@ -1,3 +1,55 @@
 <div class="contenedor-pagina">
-  <h1>Hola soy Promoción</h1>
+  <section class="promocion-admin-seccion promocion-admin-tarjeta">
+    <div class="promocion-admin-cabecera-principal">
+      <h2 class="promocion-admin-titulo">Promoción</h2>
+      <div class="promocion-admin-botones-cabecera">
+        <a routerLink="/admin/inicio" class="boton-secundario">Volver</a>
+        <button type="button" class="boton-primario" (click)="guardarConfiguracion()">Guardar cambios</button>
+      </div>
+    </div>
+
+    <div class="global-formulario-campo">
+      <label class="global-formulario-campo__etiqueta">Título de la sección</label>
+      <div class="global-formulario-campo__contenedor">
+        <input type="text" class="global-formulario-campo__input"
+          placeholder="Ej: Productos en promoción" [value]="titulo()"
+          (input)="titulo.set($any($event.target).value)">
+      </div>
+    </div>
+
+    <p class="promocion-admin-ayuda">Mínimo {{ minItems }} ítems, máximo {{ maxItems }}.</p>
+
+    <h3 class="promocion-admin-titulo-secundario">Productos</h3>
+    <div class="promocion-admin-buscador-contenedor">
+      <img src="/iconos/ico-busqueda.svg" alt="" class="promocion-admin-buscador-icono">
+      <input type="text" class="global-formulario-campo__input promocion-admin-buscador-input"
+        placeholder="Buscar producto..." [value]="textoBusqueda()"
+        (input)="setBusqueda($any($event.target).value)">
+    </div>
+    <div class="promocion-admin-lista-productos">
+      @for (p of productosPaginados(); track p.id) {
+      <div class="promocion-admin-fila-producto">
+        <label class="promocion-admin-checkbox">
+          <input type="checkbox" [checked]="estaSeleccionado(p)"
+            [disabled]="(!estaSeleccionado(p) && !puedeSeleccionarMas()) || (estaSeleccionado(p) && !puedeQuitarSeleccion())"
+            (change)="toggleSeleccion(p)">
+        </label>
+        <img [src]="p.imagen" alt="" class="promocion-admin-fila-imagen">
+        <span class="promocion-admin-fila-titulo">{{ p.nombre }}</span>
+      </div>
+      }
+      @if (productosPaginados().length === 0) {
+      <p class="promocion-admin-sin-resultados">Ningún producto coincide con la búsqueda.</p>
+      }
+    </div>
+    <div class="promocion-admin-paginacion">
+      <button type="button" class="boton-secundario" [disabled]="paginaActual() <= 1"
+        (click)="irAPagina(paginaActual() - 1)">Anterior</button>
+      <span class="promocion-admin-paginacion-info">
+        Página {{ paginaActual() }} de {{ totalPaginas() }}
+      </span>
+      <button type="button" class="boton-secundario" [disabled]="paginaActual() >= totalPaginas()"
+        (click)="irAPagina(paginaActual() + 1)">Siguiente</button>
+    </div>
+  </section>
 </div>

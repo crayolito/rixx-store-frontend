@@ -72,6 +72,6 @@
 /* ─── Desktop ─── */
 @media (min-width: 1280px) {
   .modal-contenido {
-    max-width: 600px;
+    max-width: 620px;
   }
 }

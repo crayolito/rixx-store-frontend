@@ -3,7 +3,7 @@
   <div class="header-transparente" [class.con-blur]="blurActivo()">
     <!-- Barra superior promocional -->
     <div class="tienda-header__barra-superior" [style.display]="barraVisible() ? 'flex' : 'none'">
-      <h3 class="tienda-header__promocion">{{ promoTexto }}</h3>
+      <h3 class="tienda-header__promocion">{{ promoTexto() }}</h3>
       <div class="tienda-header__controles-superior">
         <div class="tienda-header__selector-pais">
           <img [src]="paisPorCodigo(paisActivo())?.bandera" alt="Bandera" class="bandera-icono">
@@ -25,28 +25,96 @@
     <div class="tienda-header__barra-principal" [style.padding-top]="paddingTopBarra()">
       <div class="tienda-header__izquierda">
         <a href="/" class="tienda-header__logo">
-          <img src="/logo.png" alt="RixxStore Logo" class="logo-imagen">
+          <img [src]="logoUrl()" alt="RixxStore Logo" class="logo-imagen">
         </a>
         <nav class="tienda-header__categorias">
-          @for (categoria of categorias; track categoria.id) {
-          <a [routerLink]="['/categoria', categoria.id]" class="categoria-item">
-            <span class="categoria-texto">{{ categoria.nombre }}</span>
-            <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="categoria-flecha">
+          @for (seccion of seccionesNav(); track seccion.id) {
+          @if (seccion.esDinamico && seccion.categorias?.length) {
+          <div class="tienda-header__categoria-dropdown">
+            <button type="button" class="categoria-item categoria-item--dropdown"
+              [class.menu-abierto]="dropdownCategoriaAbierto() === seccion.id"
+              (click)="alternarDropdownCategoria(seccion.id)">
+              <span class="categoria-texto">{{ seccion.tituloBase }}</span>
+              <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="categoria-flecha">
+            </button>
+            @if (dropdownCategoriaAbierto() === seccion.id) {
+            <div class="tienda-header__categoria-dropdown-menu">
+              @for (opcion of seccion.categorias; track opcion.handle) {
+              <button type="button" class="tienda-header__categoria-dropdown-item"
+                (click)="irACategoria(opcion.handle)">
+                {{ opcion.titulo }}
+              </button>
+              }
+            </div>
+            }
+          </div>
+          } @else if (seccion.redireccionCategoria) {
+          <a [routerLink]="['/categoria', seccion.redireccionCategoria!.handle]" class="categoria-item">
+            <span class="categoria-texto">{{ seccion.tituloBase }}</span>
           </a>
+          }
           }
         </nav>
       </div>
 
       <div class="tienda-header__derecha">
-        <div class="tienda-header__busqueda">
-          <img src="/iconos/ico-busqueda.svg" alt="Buscar" class="busqueda-icono">
-          <input type="text" placeholder="Buscar en RixxStore" class="busqueda-input">
+        <div class="tienda-header__busqueda-contenedor">
+          <div class="tienda-header__busqueda">
+            <img src="/iconos/ico-busqueda.svg" alt="Buscar" class="busqueda-icono">
+            <input type="text" placeholder="Buscar en RixxStore" class="busqueda-input" [value]="textoBusqueda()"
+              (input)="onBusquedaInput($event)" (focus)="onBusquedaFocus()">
+          </div>
+          @if (busquedaDropdownVisible()) {
+          <div class="tienda-header__busqueda-dropdown">
+            @for (item of resultadosBusqueda; track item.id) {
+            <button type="button" class="tienda-header__busqueda-item" (click)="seleccionarResultado(item)">
+              <img [src]="item.imagen" [alt]="item.titulo" class="tienda-header__busqueda-item-imagen">
+              <div class="tienda-header__busqueda-item-datos">
+                <span class="tienda-header__busqueda-item-titulo">{{ item.titulo }}</span>
+                <span class="tienda-header__busqueda-item-categoria">{{ item.categoria }}</span>
+              </div>
+            </button>
+            }
+          </div>
+          }
         </div>
-        @if (estaLogueado()) {
-        <a [routerLink]="['/perfil']" class="tienda-header__usuario-logueado">
-          <img src="/iconos/ico-cliente.svg" alt="Usuario" class="usuario-icono">
-          <span class="usuario-email">{{ usuarioActual()?.email }}</span>
-        </a>
+        @if (estaLogeado()) {
+        <div class="tienda-header__usuario-contenedor">
+          <button type="button" class="tienda-header__usuario-logueado" (click)="alternarMenuUsuario()"
+            [class.menu-abierto]="menuUsuarioAbierto()">
+            <img [src]="usuarioActual()?.fotoPerfil || '/iconos/ico-cliente.svg'" alt="Usuario" class="usuario-icono">
+            <span class="usuario-email">{{ usuarioActual()?.email }}</span>
+            <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="" class="tienda-header__usuario-flecha">
+          </button>
+          @if (menuUsuarioAbierto()) {
+          <div class="tienda-header__menu-usuario">
+            <div class="tienda-header__menu-usuario-cabecera">
+              <img [src]="usuarioActual()?.fotoPerfil || '/imagenes/foto-perfil1.png'" alt="Foto"
+                class="tienda-header__menu-usuario-foto">
+              <div class="tienda-header__menu-usuario-info">
+                <span class="tienda-header__menu-usuario-nombre">{{ usuarioActual()?.nombre }}</span>
+                <span class="tienda-header__menu-usuario-correo">{{ usuarioActual()?.email }}</span>
+              </div>
+            </div>
+            <nav class="tienda-header__menu-usuario-opciones">
+              <button type="button" class="tienda-header__menu-usuario-opcion" (click)="irAPerfil('perfil')">
+                <img src="/iconos/ico-cliente.svg" alt=""> Mi cuenta
+              </button>
+              <button type="button" class="tienda-header__menu-usuario-opcion" (click)="irAPerfil('pedidos')">
+                <img src="/iconos/ico-orden.svg" alt=""> Mis pedidos
+              </button>
+              <button type="button" class="tienda-header__menu-usuario-opcion" (click)="irAPerfil('billetera')">
+                <img src="/iconos/ico-billetera.svg" alt=""> Billetera
+              </button>
+            </nav>
+            <div class="tienda-header__menu-usuario-pie">
+              <button type="button" class="tienda-header__menu-usuario-cerrar" (click)="cerrarSesion()">
+                <img src="/iconos/ico-cerrar-sesion.svg" alt=""> Cerrar sesión
+              </button>
+            </div>
+          </div>
+          }
+        </div>
         } @else {
         <button class="tienda-btn-primario" (click)="emitirAbrirModal()">
           Iniciar sesión
