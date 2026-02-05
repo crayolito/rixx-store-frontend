@@ -4,8 +4,9 @@ export interface ConfGeneral {
   carrusel?: ConfCarrusel;
   promocion?: ConfPromocion;
   categoria?: ConfCategorias;
+  categorias?: CategoriaDestacada[];
   categoriasMarketing?: { categorias: CategoriaMarketing[] };
-  destacados?: { titulo: string; items: ItemDestacado[] };
+  destacados?: ConfiguracionDestacados;
   pieDePagina?: ConfPieDePagina;
 }
 
@@ -120,8 +121,20 @@ export interface ConfCategorias {
 export interface CategoriaDestacada {
   handle: string;
   titulo: string;
-  productos?: ProductoDestacado[];
+  productos?: ProductoCategoria[];
   productosOrdenados?: ProductoDestacado[];
+}
+
+export interface ProductoCategoria {
+  handle: string;
+  titulo: string;
+  imagen: string;
+  descripcion: string;
+  precioId: string;
+  fechaCreacion: string;
+  nombrePrecio: string;
+  precioBase: number;
+  precioOferta: number | null;
 }
 
 // Alias para categorias marketing (admin)
@@ -142,7 +155,7 @@ export interface ProductoDestacado {
   nombrePrecio: string;
   precioBase: number;
   precioOferta: number | null;
-  usarPrecioOferta: boolean;
+  usarPrecioOferta?: boolean;
 }
 
 // Interfaz de la configuracion del Pie de Pagina

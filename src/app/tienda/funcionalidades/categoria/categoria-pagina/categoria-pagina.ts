@@ -84,7 +84,7 @@ export class CategoriaPagina implements OnInit {
 
   private cargarConfiguracion(slugDesdeRuta?: string): void {
     const aplicar = (global: ConfiguracionGlobal) => {
-      const cm = global?.categoria?.categorias;
+      const cm = global?.categorias ?? global?.categoria?.categorias;
       if (Array.isArray(cm) && cm.length > 0) {
         this.categoriasMarketing.set(cm);
         this.categorias.set(
@@ -171,7 +171,7 @@ export class CategoriaPagina implements OnInit {
   }
 
   mostrarOferta(p: ProductoCategoriaMarketing): boolean {
-    return p.usarPrecioOferta && p.precioOferta != null;
+    return Boolean(p.usarPrecioOferta && p.precioOferta != null);
   }
 
   irAPagina(pagina: number): void {

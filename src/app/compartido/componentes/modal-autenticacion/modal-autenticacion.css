@@ -302,8 +302,10 @@
 
 /* ─── Botones social login ─── */
 .auth-social {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  justify-content: center;
+  /* display: grid; */
+  /* grid-template-columns: repeat(4, 1fr); */
   gap: var(--espaciado-md);
 }
 

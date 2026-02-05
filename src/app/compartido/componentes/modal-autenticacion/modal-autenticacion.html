@@ -1,7 +1,7 @@
-<app-modal [estaAbierto]="estaAbierto()" (cerrar)="cerrar.emit()">
+<app-modal [estaAbierto]="estaAbierto()" (cerrar)="cerrarModal()">
   <div class="auth-contenedor">
     <!-- Botón cerrar -->
-    <button class="auth-cerrar" (click)="cerrar.emit()">
+    <button class="auth-cerrar" (click)="cerrarModal()">
       <img src="/iconos/ico-cerrar.svg" alt="Cerrar">
     </button>
 
@@ -20,8 +20,7 @@
       <!-- Email -->
       <div class="auth-campo-grupo">
         <label class="auth-label">Email</label>
-        <input type="email" class="auth-campo" placeholder="tu@email.com" 
-          [value]="emailLogin()" 
+        <input type="email" class="auth-campo" placeholder="tu@email.com" [value]="emailLogin()"
           (input)="emailLogin.set($any($event.target).value)">
       </div>
 
@@ -30,8 +29,7 @@
         <label class="auth-label">Contraseña</label>
         <div class="auth-campo-contrasena">
           <input [type]="mostrarContrasena() ? 'text' : 'password'" class="auth-campo" placeholder="Tu contraseña"
-            [value]="contrasenaLogin()"
-            (input)="contrasenaLogin.set($any($event.target).value)">
+            [value]="contrasenaLogin()" (input)="contrasenaLogin.set($any($event.target).value)">
           <button type="button" class="auth-campo-icono" (click)="alternarVisibilidadContrasena()">
             <img [src]="mostrarContrasena() ? '/iconos/ico-ojo-abierto.svg' : '/iconos/ico-ojo-cerrado.svg'"
               alt="Mostrar/Ocultar">
@@ -43,7 +41,9 @@
       <a href="#" class="auth-link-secundario">¿Has olvidado tu contraseña?</a>
 
       <!-- Botón iniciar sesión -->
-      <button type="submit" class="boton-primario auth-boton">Iniciar sesión</button>
+      <button type="submit" class="boton-primario auth-boton" [disabled]="enviando()">
+        {{ enviando() ? 'Procesando...' : 'Iniciar sesión' }}
+      </button>
       <!-- Link para cambiar a registro -->
       <p class="auth-texto-cambio">
         ¿Aún no posees cuenta?
@@ -59,23 +59,21 @@
     <form class="auth-formulario" (submit)="emitirRegistro(); $event.preventDefault()">
       <!-- Nombre -->
       <div class="auth-campo-grupo">
-        <label class="auth-label">Nombre completo</label>
-        <input type="text" class="auth-campo" placeholder="Tu nombre"
-          [value]="nombreRegistro()"
+        <label class="auth-label">Nombre</label>
+        <input type="text" class="auth-campo" placeholder="Tu nombre" [value]="nombreRegistro()"
           (input)="nombreRegistro.set($any($event.target).value)">
       </div>
 
       <!-- Email -->
       <div class="auth-campo-grupo">
         <label class="auth-label">Email</label>
-        <input type="email" class="auth-campo" placeholder="tu@email.com"
-          [value]="emailRegistro()"
+        <input type="email" class="auth-campo" placeholder="tu@email.com" [value]="emailRegistro()"
           (input)="emailRegistro.set($any($event.target).value)">
       </div>
 
-      <!-- Teléfono con selector de país integrado -->
+      <!-- Teléfono / Región (prefijo = región; opcional) -->
       <div class="auth-campo-grupo">
-        <label class="auth-label">Número de teléfono</label>
+        <label class="auth-label">Teléfono y región</label>
         <div class="auth-campo-telefono">
           <div class="auth-telefono-prefijo" (click)="alternarSelectorPais()">
             <img [src]="paisSeleccionado().bandera" alt="" class="auth-pais-bandera">
@@ -93,22 +91,18 @@
             </div>
             }
           </div>
-          <input type="tel" class="auth-campo auth-campo-telefono-input"
-            [placeholder]="paisSeleccionado().sigla + ' 123 456 7890'"
-            [value]="telefonoRegistro()"
-            (input)="telefonoRegistro.set($any($event.target).value)">
+          <input type="tel" class="auth-campo auth-campo-telefono-input" inputmode="numeric"
+            [placeholder]="paisSeleccionado().sigla + ' 1234567890'" [value]="telefonoRegistro()"
+            (input)="onTelefonoInput($event)">
         </div>
       </div>
-
 
       <!-- Contraseña -->
       <div class="auth-campo-grupo">
         <label class="auth-label">Contraseña</label>
         <div class="auth-campo-contrasena">
-          <input [type]="mostrarContrasena() ? 'text' : 'password'" class="auth-campo"
-            placeholder="Mínimo 8 caracteres"
-            [value]="contrasenaRegistro()"
-            (input)="contrasenaRegistro.set($any($event.target).value)">
+          <input [type]="mostrarContrasena() ? 'text' : 'password'" class="auth-campo" placeholder="Mínimo 8 caracteres"
+            [value]="contrasenaRegistro()" (input)="contrasenaRegistro.set($any($event.target).value)">
           <button type="button" class="auth-campo-icono" (click)="alternarVisibilidadContrasena()">
             <img [src]="mostrarContrasena() ? '/iconos/ico-ojo-abierto.svg' : '/iconos/ico-ojo-cerrado.svg'"
               alt="Mostrar/Ocultar">
@@ -121,8 +115,7 @@
         <label class="auth-label">Confirmar contraseña</label>
         <div class="auth-campo-contrasena">
           <input [type]="mostrarConfirmarContrasena() ? 'text' : 'password'" class="auth-campo"
-            placeholder="Repite tu contraseña"
-            [value]="confirmarContrasenaRegistro()"
+            placeholder="Repite tu contraseña" [value]="confirmarContrasenaRegistro()"
             (input)="confirmarContrasenaRegistro.set($any($event.target).value)">
           <button type="button" class="auth-campo-icono" (click)="alternarVisibilidadConfirmarContrasena()">
             <img [src]="mostrarConfirmarContrasena() ? '/iconos/ico-ojo-abierto.svg' : '/iconos/ico-ojo-cerrado.svg'"
@@ -132,7 +125,9 @@
       </div>
 
       <!-- Botón registrarse -->
-      <button type="submit" class="boton-primario auth-boton">Registrarse</button>
+      <button type="submit" class="boton-primario auth-boton" [disabled]="enviando()">
+        {{ enviando() ? 'Procesando...' : 'Registrarse' }}
+      </button>
 
       <!-- Link para cambiar a login -->
       <p class="auth-texto-cambio">
@@ -151,17 +146,8 @@
 
     <!-- Botones social login -->
     <div class="auth-social">
-      <button type="button" class="auth-social-boton">
+      <button type="button" class="auth-social-boton" (click)="iniciarSesionConGoogle()">
         <img src="/imagenes/logo-google.png" alt="Google">
-      </button>
-      <button type="button" class="auth-social-boton">
-        <img src="/imagenes/logo-discord.png" alt="Discord">
-      </button>
-      <button type="button" class="auth-social-boton">
-        <img src="/imagenes/logo-facebook.png" alt="Facebook">
-      </button>
-      <button type="button" class="auth-social-boton">
-        <img src="/imagenes/logo-X.png" alt="X">
       </button>
     </div>
   </div>

@@ -5,6 +5,7 @@ export interface UsuarioSesion {
   email: string;
   fotoPerfil?: string;
   rol: 'Cliente' | 'Admin';
+  origen?: 'email' | 'google';
 }
 
 const CLAVE_SESION = 'sesion-usuario';

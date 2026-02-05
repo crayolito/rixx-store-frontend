@@ -1,9 +1,13 @@
-@if (carrusel()?.slides?.length) {
-<app-seccion-carrusel [slides]="carrusel()!.slides"></app-seccion-carrusel>
-}
+<div class="inicio-pagina">
+  @if (carrusel()!.slides.length) {
+  <app-seccion-carrusel [slides]="carrusel()!.slides"></app-seccion-carrusel>
+  }
 
-<!-- <app-seccion-productos-oferta [productos]="productosOferta()"></app-seccion-productos-oferta> -->
-<!-- <app-seccion-productos-categoria [productos]="productosDestacados()" -->
-<!-- titulo="Juegos Destacados"></app-seccion-productos-categoria> -->
-<!-- <app-seccion-productos-categoria [productos]="productosNuevos()" -->
-<!-- titulo="Nuevos Lanzamientos"></app-seccion-productos-categoria> -->
+  @if (promocion()!.items.length) {
+  <app-seccion-promocion [items]="promocion()!.items" [titulo]="promocion()!.titulo"></app-seccion-promocion>
+  }
+
+  @for (categoria of categorias(); track categoria.handle) {
+  <app-seccion-categorias [categoria]="categoria"></app-seccion-categorias>
+  }
+</div>

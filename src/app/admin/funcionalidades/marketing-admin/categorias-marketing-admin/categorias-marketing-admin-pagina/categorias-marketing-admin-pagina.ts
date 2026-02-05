@@ -118,7 +118,7 @@ export class CategoriasMarketingAdminPagina implements OnInit {
           const existente = cm.find((c) => c.handle === handle);
           if (existente) {
             const prods = existente.productosOrdenados ?? existente.productos ?? [];
-            this.items.set(prods.map((i) => this.normalizarItem(i)));
+            this.items.set(prods.map((i: ProductoCategoriaMarketing) => this.normalizarItem(i)));
           }
         }
         return true;

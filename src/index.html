@@ -7,6 +7,18 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="logo.png">
+  <script>
+    (function () {
+      var h = window.location.hash;
+      if (h && h.indexOf('access_token') !== -1) {
+        try {
+          sessionStorage.setItem('google_oauth_hash', h);
+          console.log('[Google] Hash guardado (vuelta de Google)');
+        } catch (e) { }
+      }
+    })();
+  </script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>

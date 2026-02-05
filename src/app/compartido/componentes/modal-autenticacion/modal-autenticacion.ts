@@ -1,7 +1,9 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, effect, inject, input, NgZone, output, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Autenticacion } from '../../../nucleo/servicios/autenticacion';
+import { obtenerFotoPerfilAleatoria } from '../../../nucleo/constantes/fotos-perfil.constantes';
+import { UsuarioApiServicio } from '../../../nucleo/servicios/auth-api.servicio';
 import { Sesion } from '../../../nucleo/servicios/sesion';
+import { NotificacionServicio } from '../../servicios/notificacion';
 import { Modal } from '../modal/modal';
 
 type Pais = {
@@ -9,6 +11,20 @@ type Pais = {
   nombre: string;
   bandera: string;
   sigla: string;
+};
+
+declare const google: {
+  accounts: {
+    oauth2: {
+      initTokenClient: (config: {
+        client_id: string;
+        scope: string;
+        callback: (res: { access_token: string }) => void;
+        ux_mode?: 'popup' | 'redirect';
+        redirect_uri?: string;
+      }) => { requestAccessToken: (options?: { prompt?: string }) => void };
+    };
+  };
 };
 
 @Component({
@@ -21,11 +37,28 @@ export class ModalAutenticacion {
   estaAbierto = input.required<boolean>();
   cerrar = output<void>();
   modoActual = signal<'login' | 'registro'>('login');
-  private router = inject(Router);
-  private autenticacion = inject(Autenticacion);
-  private sesion = inject(Sesion);
+  enviando = signal(false);
 
-  // FASE 1: Estado de los formularios
+  constructor() {
+    effect(() => {
+      if (this.estaAbierto()) this.enviando.set(false);
+    });
+  }
+
+  // Método para cerrar y limpiar
+  cerrarModal() {
+    this.enviando.set(false);
+    this.limpiarFormularios();
+    this.cerrar.emit();
+  }
+
+  private router = inject(Router);
+  private sesion = inject(Sesion);
+  private usuarioApi = inject(UsuarioApiServicio);
+  private ngZone = inject(NgZone);
+  private notificacion = inject(NotificacionServicio);
+  private readonly CLIENT_ID_GOOGLE = '345565225524-10c01v4s4rtre2p0e4rprgph6jdvm8c8.apps.googleusercontent.com';
+
   emailLogin = signal('');
   contrasenaLogin = signal('');
   nombreRegistro = signal('');
@@ -36,9 +69,9 @@ export class ModalAutenticacion {
 
   mostrarContrasena = signal(false);
   mostrarConfirmarContrasena = signal(false);
-
   selectorPaisAbierto = signal(false);
   paisSeleccionado = signal<Pais>({ codigo: 'bo', nombre: 'Bolivia', bandera: '/imagenes/bolivia.png', sigla: '+591' });
+
   readonly paises: Pais[] = [
     { codigo: 'bo', nombre: 'Bolivia', bandera: '/imagenes/bolivia.png', sigla: '+591' },
     { codigo: 'mx', nombre: 'México', bandera: '/imagenes/mexico.png', sigla: '+52' },
@@ -54,6 +87,25 @@ export class ModalAutenticacion {
 
   alternarModo() {
     this.modoActual.set(this.modoActual() === 'login' ? 'registro' : 'login');
+    this.limpiarFormularios();
+  }
+
+  // Método para limpiar todos los campos de los formularios
+  private limpiarFormularios() {
+    // Limpiar formulario login
+    this.emailLogin.set('');
+    this.contrasenaLogin.set('');
+
+    // Limpiar formulario registro
+    this.nombreRegistro.set('');
+    this.emailRegistro.set('');
+    this.telefonoRegistro.set('');
+    this.contrasenaRegistro.set('');
+    this.confirmarContrasenaRegistro.set('');
+
+    // Resetear visibilidad de contraseñas
+    this.mostrarContrasena.set(false);
+    this.mostrarConfirmarContrasena.set(false);
   }
 
   alternarVisibilidadContrasena() {
@@ -73,43 +125,171 @@ export class ModalAutenticacion {
     this.selectorPaisAbierto.set(false);
   }
 
-  // FASE 2: Manejar login
-  emitirIniciarSesion() {
-    const usuario = this.autenticacion.iniciarSesion(
-      this.emailLogin(),
-      this.contrasenaLogin()
-    );
+  /** Actualiza el teléfono permitiendo solo dígitos. */
+  onTelefonoInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const soloNumeros = input.value.replace(/\D/g, '');
+    this.telefonoRegistro.set(soloNumeros);
+    input.value = soloNumeros;
+  }
 
-    if (usuario) {
-      this.sesion.guardarSesion(usuario);
-      this.cerrar.emit();
+  iniciarSesionConGoogle() {
+    if (typeof google === 'undefined') {
+      this.notificacion.error('Inicio de sesión con Google no disponible. Comprueba la conexión.');
+      return;
+    }
+    const tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: this.CLIENT_ID_GOOGLE,
+      scope: 'email profile openid',
+      callback: (res) => this.ngZone.run(() => this.procesarTokenGoogle(res.access_token)),
+      ux_mode: 'popup',
+    });
+    tokenClient.requestAccessToken({ prompt: 'select_account' });
+  }
 
-      // FASE 3: Redirigir según rol
-      if (usuario.rol === 'Admin') {
-        this.router.navigate(['/admin/inicio']);
-      } else {
-        this.router.navigate(['/']);
-      }
-    } else {
-      alert('Email o contraseña incorrectos');
+  private async procesarTokenGoogle(accessToken: string): Promise<void> {
+    try {
+      const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!res.ok) return;
+      const datos = (await res.json()) as { email?: string; name?: string; picture?: string };
+      if (!datos?.email) return;
+
+      this.enviando.set(true);
+      const nombre = (datos.name ?? '').trim() || 'Usuario';
+
+      this.usuarioApi.login(datos.email, '', true).subscribe({
+        next: () => {
+          this.enviando.set(false);
+          this.limpiarFormularios();
+          this.cerrar.emit();
+          this.notificacion.exito('¡Bienvenido de nuevo!');
+          const usuario = this.sesion.usuarioActual();
+          this.router.navigate(usuario?.rol === 'Admin' ? ['/admin/inicio'] : ['/']);
+        },
+        complete: () => this.enviando.set(false),
+        error: () => {
+          // Usuario no existe: crear cuenta con una de las 5 fotos aleatorias (no usamos foto de Google)
+          this.usuarioApi.crearUsuario({
+            nombre,
+            email: datos.email!,
+            estado: 'activo',
+            idRol: 2,
+            social_login: true,
+            foto: obtenerFotoPerfilAleatoria(),
+          }).subscribe({
+            next: () => {
+              this.usuarioApi.login(datos.email!, '', true).subscribe({
+                next: () => {
+                  this.enviando.set(false);
+                  this.limpiarFormularios();
+                  this.cerrar.emit();
+                  this.notificacion.exito('¡Cuenta creada con éxito! Bienvenido');
+                  this.router.navigate(['/']);
+                },
+                error: () => {
+                  this.notificacion.error('No se pudo iniciar sesión después del registro.');
+                  this.enviando.set(false);
+                },
+                complete: () => this.enviando.set(false),
+              });
+            },
+            error: () => {
+              this.notificacion.error('No se pudo crear la cuenta con Google. Intenta de nuevo.');
+              this.enviando.set(false);
+            },
+          });
+        },
+      });
+    } catch {
+      this.notificacion.error('No se pudo completar el inicio de sesión con Google.');
+      this.enviando.set(false);
     }
   }
 
-  // FASE 4: Manejar registro
-  emitirRegistro() {
-    if (this.contrasenaRegistro() !== this.confirmarContrasenaRegistro()) {
-      alert('Las contraseñas no coinciden');
+  emitirIniciarSesion() {
+    const email = this.emailLogin().trim();
+    const contrasena = this.contrasenaLogin();
+    if (!email) {
+      this.notificacion.advertencia('Ingresa tu email.');
       return;
     }
 
-    const usuario = this.autenticacion.registrar(
-      this.nombreRegistro(),
-      this.emailRegistro(),
-      this.contrasenaRegistro()
-    );
+    this.enviando.set(true);
+    this.usuarioApi.login(email, contrasena, false).subscribe({
+      next: () => {
+        this.enviando.set(false);
+        this.limpiarFormularios();
+        this.cerrar.emit();
+        this.notificacion.exito('¡Bienvenido de nuevo!');
+        const usuario = this.sesion.usuarioActual();
+        if (usuario?.rol === 'Admin') {
+          this.router.navigate(['/admin/inicio']);
+        } else {
+          this.router.navigate(['/']);
+        }
+      },
+      error: () => {
+        this.notificacion.error('Email o contraseña incorrectos');
+        this.enviando.set(false);
+      },
+      complete: () => this.enviando.set(false),
+    });
+  }
 
-    this.sesion.guardarSesion(usuario);
-    this.cerrar.emit();
-    this.router.navigate(['/']);
+  emitirRegistro() {
+    if (this.contrasenaRegistro() !== this.confirmarContrasenaRegistro()) {
+      this.notificacion.advertencia('Las contraseñas no coinciden');
+      return;
+    }
+
+    const nombre = this.nombreRegistro().trim();
+    const email = this.emailRegistro().trim();
+    const contrasena = this.contrasenaRegistro();
+    if (!nombre || !email || !contrasena) {
+      this.notificacion.advertencia('Completa nombre, email y contraseña.');
+      return;
+    }
+
+    const pais = this.paisSeleccionado();
+    const soloDigitos = this.telefonoRegistro().replace(/\D/g, '');
+    const numero = soloDigitos.trim();
+    const telefono = numero ? `${pais.sigla} ${numero}` : null;
+    const nacionalidad = numero ? pais.codigo.toUpperCase() : null;
+
+    this.enviando.set(true);
+    this.usuarioApi.crearUsuario({
+      nombre,
+      email,
+      contrasena,
+      estado: 'activo',
+      idRol: 2,
+      telefono,
+      nacionalidad,
+      foto: obtenerFotoPerfilAleatoria(),
+    }).subscribe({
+      next: () => {
+        this.usuarioApi.login(email, contrasena, false).subscribe({
+          next: () => {
+            this.enviando.set(false);
+            this.limpiarFormularios();
+            this.cerrar.emit();
+            this.notificacion.exito('¡Cuenta creada con éxito! Bienvenido');
+            this.router.navigate(['/']);
+          },
+          error: () => {
+            this.notificacion.info('Cuenta creada. Inicia sesión con tu email y contraseña.');
+            this.enviando.set(false);
+          },
+          complete: () => this.enviando.set(false),
+        });
+      },
+      error: () => {
+        this.notificacion.error('No se pudo crear la cuenta. Revisa los datos o intenta otro email.');
+        this.enviando.set(false);
+      },
+      complete: () => this.enviando.set(false),
+    });
   }
 }

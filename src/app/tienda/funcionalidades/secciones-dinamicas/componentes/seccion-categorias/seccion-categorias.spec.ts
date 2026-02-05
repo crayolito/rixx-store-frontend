@@ -14,6 +14,11 @@ describe('SeccionCategorias', () => {
 
     fixture = TestBed.createComponent(SeccionCategorias);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('categoria', {
+      handle: 'test',
+      titulo: 'Test',
+      productos: []
+    });
     fixture.detectChanges();
   });
 

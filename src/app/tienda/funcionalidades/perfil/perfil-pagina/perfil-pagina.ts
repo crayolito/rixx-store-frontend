@@ -2,6 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Modal } from '../../../../compartido/componentes/modal/modal';
+import { NotificacionServicio } from '../../../../compartido/servicios/notificacion';
+import { UsuarioApiServicio } from '../../../../nucleo/servicios/auth-api.servicio';
+import { Sesion } from '../../../../nucleo/servicios/sesion';
 
 export interface DatosEntrega {
   idJugador?: string;
@@ -65,6 +68,8 @@ interface MetodoPago {
   descripcion: string;
 }
 
+type Pais = { codigo: string; nombre: string; bandera: string; sigla: string };
+
 @Component({
   selector: 'app-perfil-pagina',
   standalone: true,
@@ -73,31 +78,86 @@ interface MetodoPago {
   styleUrl: './perfil-pagina.css',
 })
 export class PerfilPagina implements OnInit {
-  // FASE 1: Estado de la sección activa
   seccionActiva = signal<'perfil' | 'pedidos' | 'billetera'>('perfil');
 
-  // FASE 2: Datos del usuario
-  nombre = signal<string>('Juan Pérez García');
-  email = signal<string>('juan.perez@ejemplo.com');
+  nombre = signal<string>('');
+  email = signal<string>('');
+  telefono = signal<string>('');
+  nacionalidad = signal<string>('');
   fotoPerfil = signal<string>('/imagenes/foto-perfil1.png');
   contrasena = signal<string>('');
+  nuevaContrasena = signal<string>('');
   mostrarContrasena = signal<boolean>(false);
   mostrarCambioContrasena = signal<boolean>(false);
-  ingresoPorGoogle = signal<boolean>(true);
   estaEditando = signal<boolean>(false);
+  guardando = signal<boolean>(false);
   nombreTemporal = signal<string>('');
   emailTemporal = signal<string>('');
+  telefonoTemporal = signal<string>('');
+  nacionalidadTemporal = signal<string>('');
+  selectorPaisAbierto = signal(false);
+  selectorNacionalidadAbierto = signal(false);
+  paisSeleccionado = signal<Pais>({ codigo: 'bo', nombre: 'Bolivia', bandera: '/imagenes/bolivia.png', sigla: '+591' });
+  paisNacionalidad = signal<Pais>({ codigo: 'bo', nombre: 'Bolivia', bandera: '/imagenes/bolivia.png', sigla: '+591' });
+  readonly paises: Pais[] = [
+    { codigo: 'bo', nombre: 'Bolivia', bandera: '/imagenes/bolivia.png', sigla: '+591' },
+    { codigo: 'mx', nombre: 'México', bandera: '/imagenes/mexico.png', sigla: '+52' },
+    { codigo: 'ar', nombre: 'Argentina', bandera: '/imagenes/argentina.png', sigla: '+54' },
+    { codigo: 'co', nombre: 'Colombia', bandera: '/imagenes/colombia.png', sigla: '+57' },
+    { codigo: 'pe', nombre: 'Perú', bandera: '/imagenes/peru.png', sigla: '+51' },
+    { codigo: 'cl', nombre: 'Chile', bandera: '/imagenes/chile.png', sigla: '+56' },
+    { codigo: 'ec', nombre: 'Ecuador', bandera: '/imagenes/ecuador.png', sigla: '+593' },
+    { codigo: 've', nombre: 'Venezuela', bandera: '/imagenes/venezuela.png', sigla: '+58' },
+    { codigo: 'gt', nombre: 'Guatemala', bandera: '/imagenes/guatemala.png', sigla: '+502' },
+    { codigo: 'br', nombre: 'Brasil', bandera: '/imagenes/brasil.png', sigla: '+55' },
+  ];
+
+  tieneSocialLogin = computed(() => this.sesion.usuarioActual()?.socialLogin === true);
+
   pedidosExpandidos = signal<Set<string>>(new Set());
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private sesion = inject(Sesion);
+  private usuarioApi = inject(UsuarioApiServicio);
+  private notificacion = inject(NotificacionServicio);
 
   ngOnInit(): void {
+    const u = this.sesion.usuarioActual();
+    if (u) {
+      this.nombre.set(u.nombre ?? '');
+      this.email.set(u.email ?? '');
+      this.telefono.set(u.telefono ?? '');
+      this.nacionalidad.set(u.nacionalidad ?? '');
+      this.fotoPerfil.set(u.fotoPerfil ?? '/imagenes/foto-perfil1.png');
+      const codigoNac = (u.nacionalidad ?? '').toLowerCase();
+      const paisNac = this.paises.find(p => p.codigo.toLowerCase() === codigoNac);
+      if (paisNac) this.paisNacionalidad.set({ ...paisNac });
+    }
     this.route.queryParams.subscribe((params) => {
       const seccion = params['seccion'];
       if (seccion === 'pedidos' || seccion === 'billetera') {
         this.seccionActiva.set(seccion);
       }
     });
+  }
+
+  alternarSelectorPais(): void {
+    this.selectorPaisAbierto.update(v => !v);
+  }
+
+  alternarSelectorNacionalidad(): void {
+    this.selectorNacionalidadAbierto.update(v => !v);
+  }
+
+  seleccionarPais(pais: Pais): void {
+    this.paisSeleccionado.set({ ...pais });
+    this.selectorPaisAbierto.set(false);
+  }
+
+  seleccionarNacionalidadPerfil(pais: Pais): void {
+    this.paisNacionalidad.set({ ...pais });
+    this.nacionalidadTemporal.set(pais.codigo.toUpperCase());
+    this.selectorNacionalidadAbierto.set(false);
   }
 
   // FASE 3: Pedidos automáticos y Gift Cards
@@ -254,12 +314,65 @@ export class PerfilPagina implements OnInit {
     const archivo = input.files?.[0];
     if (!archivo) return;
 
-    const lector = new FileReader();
-    lector.onload = (e) => {
-      const resultado = e.target?.result as string;
-      this.fotoPerfil.set(resultado);
-    };
-    lector.readAsDataURL(archivo);
+    // Validar tipo de archivo
+    if (!archivo.type.startsWith('image/')) {
+      this.notificacion.error('Solo se permiten archivos de imagen');
+      return;
+    }
+
+    // Validar tamaño (máximo 5MB)
+    if (archivo.size > 5 * 1024 * 1024) {
+      this.notificacion.error('La imagen no debe superar 5MB');
+      return;
+    }
+
+    this.guardando.set(true);
+    this.notificacion.info('Subiendo imagen...');
+
+    // PASO 1: Crear FormData para subir a Cloudinary
+    const formData = new FormData();
+    formData.append('file', archivo);
+    formData.append('upload_preset', 'ml_default'); // Usa tu upload preset de Cloudinary
+    formData.append('cloud_name', 'dcvidtqlq'); // Tu cloud name
+
+    // PASO 2: Subir a Cloudinary
+    fetch('https://api.cloudinary.com/v1_1/dcvidtqlq/image/upload', {
+      method: 'POST',
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.secure_url) {
+          const urlFoto = data.secure_url;
+          // PASO 3: Actualizar en el backend
+          const id = this.sesion.usuarioActual()?.id;
+          if (id) {
+            this.usuarioApi.actualizarUsuario(id, { foto: urlFoto }).subscribe({
+              next: () => {
+                // PASO 4: Actualizar en la sesión y UI
+                const actual = this.sesion.usuarioActual();
+                if (actual) {
+                  this.sesion.guardarSesion({ ...actual, fotoPerfil: urlFoto });
+                }
+                this.fotoPerfil.set(urlFoto);
+                this.notificacion.exito('Foto de perfil actualizada');
+                this.guardando.set(false);
+              },
+              error: () => {
+                this.notificacion.error('No se pudo actualizar la foto de perfil');
+                this.guardando.set(false);
+              },
+            });
+          }
+        } else {
+          this.notificacion.error('Error al subir la imagen');
+          this.guardando.set(false);
+        }
+      })
+      .catch(() => {
+        this.notificacion.error('Error al subir la imagen');
+        this.guardando.set(false);
+      });
   }
 
   // FASE 7: Actualizar datos del usuario
@@ -281,9 +394,24 @@ export class PerfilPagina implements OnInit {
     }
   }
 
+  actualizarTelefono(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.telefonoTemporal.set(target.value);
+  }
+
+  actualizarNacionalidad(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.nacionalidadTemporal.set(target.value);
+  }
+
   actualizarContrasena(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.contrasena.set(target.value);
+  }
+
+  actualizarNuevaContrasena(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.nuevaContrasena.set(target.value);
   }
 
   toggleMostrarContrasena(): void {
@@ -295,32 +423,97 @@ export class PerfilPagina implements OnInit {
   }
 
   guardarPerfil(): void {
-    console.log('Guardando perfil:', {
-      nombre: this.nombre(),
-      email: this.email(),
-      fotoPerfil: this.fotoPerfil()
+    const id = this.sesion.usuarioActual()?.id;
+    if (id == null || this.tieneSocialLogin()) return;
+    const nueva = this.nuevaContrasena().trim();
+    if (!nueva) {
+      this.notificacion.advertencia('Ingresa la nueva contraseña');
+      return;
+    }
+    this.guardando.set(true);
+    this.usuarioApi.actualizarUsuario(id, { contrasena: nueva }).subscribe({
+      next: () => {
+        this.nuevaContrasena.set('');
+        this.notificacion.exito('Contraseña actualizada correctamente');
+      },
+      error: () => {
+        this.notificacion.error('No se pudo cambiar la contraseña');
+        this.guardando.set(false);
+      },
+      complete: () => this.guardando.set(false),
     });
-    alert('Perfil actualizado correctamente');
   }
 
-  // FASE 7.5: Edición de datos básicos
   activarEdicion(): void {
     this.estaEditando.set(true);
     this.nombreTemporal.set(this.nombre());
     this.emailTemporal.set(this.email());
+    this.telefonoTemporal.set(this.telefono());
+    this.nacionalidadTemporal.set(this.nacionalidad() || this.paisNacionalidad().codigo.toUpperCase());
   }
 
   cancelarEdicion(): void {
     this.estaEditando.set(false);
     this.nombreTemporal.set('');
     this.emailTemporal.set('');
+    this.telefonoTemporal.set('');
+    this.nacionalidadTemporal.set('');
   }
 
   guardarCambios(): void {
-    this.nombre.set(this.nombreTemporal());
-    this.email.set(this.emailTemporal());
-    this.estaEditando.set(false);
-    alert('Cambios guardados correctamente');
+    const id = this.sesion.usuarioActual()?.id;
+    if (id == null) {
+      this.notificacion.error('No se puede editar: no hay sesión.');
+      return;
+    }
+    const nombre = this.nombreTemporal().trim();
+    const email = this.emailTemporal().trim();
+
+    if (!nombre || !email) {
+      this.notificacion.advertencia('Nombre y email son obligatorios');
+      return;
+    }
+
+    const telefonoRaw = this.telefonoTemporal().trim().replace(/\s/g, '');
+    const prefijo = this.paisSeleccionado().sigla;
+    const telefono = telefonoRaw ? (telefonoRaw.startsWith('+') ? this.telefonoTemporal().trim() : `${prefijo} ${telefonoRaw}`) : undefined;
+    const nacionalidad = (this.nacionalidadTemporal() || this.paisNacionalidad().codigo).toUpperCase() || undefined;
+    const cuerpo: Parameters<UsuarioApiServicio['actualizarUsuario']>[1] = {
+      nombre,
+      email,
+      telefono: telefono ?? null,
+      nacionalidad: nacionalidad ?? null,
+    };
+    if (!this.tieneSocialLogin() && this.nuevaContrasena().trim()) {
+      cuerpo.contrasena = this.nuevaContrasena().trim();
+    }
+    this.guardando.set(true);
+    this.usuarioApi.actualizarUsuario(id, cuerpo).subscribe({
+      next: () => {
+        const actual = this.sesion.usuarioActual();
+        if (actual) {
+          this.sesion.guardarSesion({
+            ...actual,
+            nombre,
+            email,
+            telefono: telefono ?? actual.telefono,
+            nacionalidad: nacionalidad ?? actual.nacionalidad,
+          });
+        }
+        this.nombre.set(nombre);
+        this.email.set(email);
+        this.telefono.set(telefono ?? '');
+        this.nacionalidad.set(nacionalidad ?? '');
+        this.estaEditando.set(false);
+        this.nuevaContrasena.set('');
+        this.notificacion.exito('Cambios guardados correctamente');
+      },
+      error: () => {
+        this.notificacion.error('No se pudieron guardar los cambios');
+        this.guardando.set(false);
+      },
+      complete: () => this.guardando.set(false),
+    });
   }
 
   // FASE 7.6: Mostrar más productos en pedidos (máximo 2 visibles, luego "+ Más")
@@ -354,11 +547,12 @@ export class PerfilPagina implements OnInit {
   verificarIdentidad(): void {
     const clave = this.contrasenaVerificacion();
     if (!clave) {
-      alert('Ingresa tu contraseña');
+      this.notificacion.advertencia('Ingresa tu contraseña');
       return;
     }
     this.identidadVerificada.set(true);
     this.cerrarModalVerificarIdentidad();
+    this.notificacion.exito('Identidad verificada correctamente');
   }
 
   actualizarContrasenaVerificacion(event: Event): void {
@@ -382,11 +576,15 @@ export class PerfilPagina implements OnInit {
       `Valor total: $${pedido.valorTotal} USD`,
       pedido.instrucciones ? `Instrucciones: ${pedido.instrucciones}` : ''
     ];
-    navigator.clipboard.writeText(lineas.filter(Boolean).join('\n')).then(() => alert('Copiado al portapapeles'));
+    navigator.clipboard.writeText(lineas.filter(Boolean).join('\n')).then(() =>
+      this.notificacion.exito('Copiado al portapapeles')
+    );
   }
 
   copiarCodigoIndividual(texto: string): void {
-    navigator.clipboard.writeText(texto).then(() => alert('Copiado al portapapeles'));
+    navigator.clipboard.writeText(texto).then(() =>
+      this.notificacion.exito('Código copiado al portapapeles')
+    );
   }
 
   // FASE 8: Billetera
@@ -417,11 +615,11 @@ export class PerfilPagina implements OnInit {
   recargarBilletera(): void {
     const monto = this.paqueteSeleccionado()?.monto || parseFloat(this.cantidadEspecial());
     if (!monto || monto <= 0) {
-      alert('Selecciona un paquete o ingresa una cantidad');
+      this.notificacion.advertencia('Selecciona un paquete o ingresa una cantidad');
       return;
     }
     if (!this.metodoPagoSeleccionado()) {
-      alert('Selecciona un método de pago');
+      this.notificacion.advertencia('Selecciona un método de pago');
       return;
     }
     const nuevoSaldo = this.saldoActual() + monto;
@@ -436,7 +634,7 @@ export class PerfilPagina implements OnInit {
       saldoResultante: nuevoSaldo
     });
     this.transaccionesBilletera.set(transacciones);
-    alert(`Se recargaron $${monto} US a tu billetera`);
+    this.notificacion.exito(`Se recargaron $${monto} USD a tu billetera`);
     this.paqueteSeleccionado.set(null);
     this.cantidadEspecial.set('');
     this.metodoPagoSeleccionado.set('');

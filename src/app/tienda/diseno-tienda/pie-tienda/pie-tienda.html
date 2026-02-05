@@ -1,110 +1,68 @@
 <footer class="tienda-footer">
-  <!-- Barra superior con logo -->
   <div class="tienda-footer__barra-superior">
     <div class="tienda-footer__barra-color"></div>
     <div class="tienda-footer__logo-contenedor">
-      <img src="/logo.png" alt="RixxStore Logo" class="tienda-footer__logo">
+      @if (logoUrl()) {
+      <img [src]="logoUrl()" alt="Logo" class="tienda-footer__logo">
+      } @else {
+      <img src="/logo.png" alt="Logo" class="tienda-footer__logo">
+      }
     </div>
     <div class="tienda-footer__barra-color"></div>
   </div>
 
-  <!-- Contenido principal del footer -->
   <div class="tienda-footer__contenido">
     <div class="tienda-footer__columnas">
-      <!-- Columna 1: Acerca de -->
+      @for (seccion of secciones(); track seccion.id) {
       <div class="tienda-footer__columna">
-        <h4 class="tienda-footer__titulo">Acerca de RixxStore</h4>
-        <p class="tienda-footer__descripcion">
-          Tu tienda de confianza para recargas y juegos digitales. Recarga instantánea, juego instantáneo.
-        </p>
-        <div class="tienda-footer__logo-seccion">
-          <img src="/logo.png" alt="RixxStore" class="tienda-footer__logo-pequeno">
-        </div>
-      </div>
-
-      <!-- Columna 2: Enlaces rápidos -->
-      <div class="tienda-footer__columna">
-        <h4 class="tienda-footer__titulo">Enlaces Rápidos</h4>
+        <h4 class="tienda-footer__titulo">{{ seccion.titulo }}</h4>
+        @if (seccion.descripcion) {
+        <div class="tienda-footer__descripcion" [innerHTML]="seccion.descripcion"></div>
+        }
+        @if (seccion.opciones.length) {
         <nav class="tienda-footer__enlaces">
-          <a href="/productos" class="tienda-footer__enlace">Productos</a>
-          <a href="/politica-privacidad" class="tienda-footer__enlace">Política de Privacidad</a>
-          <a href="/terminos-servicio" class="tienda-footer__enlace">Términos de Servicio</a>
+          @for (opcion of seccion.opciones; track opcion.id) {
+          @if (opcion.tipo === 'telefono' || opcion.tipo === 'correo') {
+          <p class="tienda-footer__contacto-item">
+            <span class="tienda-footer__contacto-label">{{ opcion.etiqueta }}:</span>
+            <a [href]="urlEnlace(opcion)" class="tienda-footer__contacto-link">{{ opcion.path }}</a>
+          </p>
+          } @else {
+          @if (esEnlaceInterno(opcion.path)) {
+          <a [routerLink]="opcion.path" class="tienda-footer__enlace">{{ opcion.etiqueta }}</a>
+          } @else {
+          <a [href]="opcion.path" target="_blank" rel="noopener noreferrer" class="tienda-footer__enlace">{{
+            opcion.etiqueta }}</a>
+          }
+          }
+          }
         </nav>
+        }
       </div>
-
-      <!-- Columna 3: Mi cuenta -->
-      <div class="tienda-footer__columna">
-        <h4 class="tienda-footer__titulo">Mi Cuenta</h4>
-        <nav class="tienda-footer__enlaces">
-          <a href="/cuenta" class="tienda-footer__enlace">Mi Cuenta</a>
-          <a href="/cartera" class="tienda-footer__enlace">Mi Cartera</a>
-          <a href="/pedidos" class="tienda-footer__enlace">Pedidos</a>
-        </nav>
-      </div>
-
-      <!-- Columna 4: Necesitas ayuda -->
-      <div class="tienda-footer__columna">
-        <h4 class="tienda-footer__titulo">¿Necesitas Ayuda?</h4>
-        <p class="tienda-footer__texto-ayuda">Contáctanos</p>
-        <div class="tienda-footer__contacto">
-          <p class="tienda-footer__contacto-item">
-            <span class="tienda-footer__contacto-label">Teléfono:</span>
-            <a href="tel:+525551234567" class="tienda-footer__contacto-link">+52 55 1234 5678</a>
-          </p>
-          <p class="tienda-footer__contacto-item">
-            <span class="tienda-footer__contacto-label">Teléfono:</span>
-            <a href="tel:+525559876543" class="tienda-footer__contacto-link">+52 55 9876 5432</a>
-          </p>
-          <p class="tienda-footer__contacto-item">
-            <span class="tienda-footer__contacto-label">Correo Electrónico:</span>
-            <a href="mailto:info@rixxstore.com" class="tienda-footer__contacto-link">info@rixxstore.com</a>
-          </p>
-          <p class="tienda-footer__contacto-item">
-            <span class="tienda-footer__contacto-label">Correo Electrónico:</span>
-            <a href="mailto:soporte@rixxstore.com" class="tienda-footer__contacto-link">soporte@rixxstore.com</a>
-          </p>
-        </div>
-      </div>
+      }
     </div>
 
-    <!-- Sección inferior -->
     <div class="tienda-footer__inferior">
-      <!-- Métodos de pago -->
       <div class="tienda-footer__metodos-pago">
         <div class="tienda-footer__metodos-logos">
           <img src="/logo-binance.png" alt="Binance" class="tienda-footer__metodo-logo">
           <img src="/logo-veripagos.svg" alt="VeriPagos" class="tienda-footer__metodo-logo">
         </div>
       </div>
-
-      <!-- Copyright -->
       <p class="tienda-footer__copyright">
-        Copyright © 2026 RixxStore. Todos los derechos reservados.
+        Copyright © {{ currentYear }} RixxStore. Todos los derechos reservados.
       </p>
-
-      <!-- Redes sociales -->
+      @if (redesConUrl().length) {
       <div class="tienda-footer__redes">
-        <a href="https://facebook.com/rixxstore" target="_blank" rel="noopener noreferrer"
-          class="tienda-footer__red-social">
-          <img src="/imagenes/ico-facebook.svg" alt="Facebook" class="tienda-footer__red-icono">
+        @for (red of redesConUrl(); track red.id) {
+        @if (iconoRed(red.id)) {
+        <a [href]="red.url" target="_blank" rel="noopener noreferrer" class="tienda-footer__red-social">
+          <img [src]="iconoRed(red.id)" [alt]="red.id" class="tienda-footer__red-icono">
         </a>
-        <a href="https://twitter.com/rixxstore" target="_blank" rel="noopener noreferrer"
-          class="tienda-footer__red-social">
-          <img src="/imagenes/ico-twitter.svg" alt="Twitter" class="tienda-footer__red-icono">
-        </a>
-        <a href="https://instagram.com/rixxstore" target="_blank" rel="noopener noreferrer"
-          class="tienda-footer__red-social">
-          <img src="/imagenes/ico-instagram.svg" alt="Instagram" class="tienda-footer__red-icono">
-        </a>
-        <a href="https://tiktok.com/@rixxstore" target="_blank" rel="noopener noreferrer"
-          class="tienda-footer__red-social">
-          <img src="/imagenes/ico-tiktok.svg" alt="TikTok" class="tienda-footer__red-icono">
-        </a>
-        <a href="https://youtube.com/@rixxstore" target="_blank" rel="noopener noreferrer"
-          class="tienda-footer__red-social">
-          <img src="/imagenes/icon-youtube.svg" alt="YouTube" class="tienda-footer__red-icono">
-        </a>
+        }
+        }
       </div>
+      }
     </div>
   </div>
 </footer>

@@ -1,1 +1,24 @@
-<p>seccion-promocion works!</p>
+<section class="tienda-ofertas">
+  <div class="tienda-ofertas__header">
+    <h3>{{ titulo() }}</h3>
+    <div class="tienda-ofertas__botones">
+      <button class="tienda-ofertas__boton-nav" (click)="moverProductosIzquierda()">
+        <img src="/iconos/ico-flecha-izquierda-tabla.svg" alt="Anterior">
+      </button>
+      <button class="tienda-ofertas__boton-nav" (click)="moverProductosDerecha()">
+        <img src="/iconos/ico-flecha-derecha-tabla.svg" alt="Siguiente">
+      </button>
+    </div>
+  </div>
+  <div class="tienda-ofertas__contenedor" #contenedorProductos>
+    <div class="tienda-ofertas__pista" [style.transform]="'translateX(' + desplazamientoProductos() + 'px)'">
+      @for (item of items(); track item.handle) {
+      <a class="tienda-ofertas__item" [routerLink]="['/producto', item.handle]">
+        <img class="tienda-ofertas__imagen" [src]="item.imagen" [alt]="item.titulo">
+        <h4 class="tienda-ofertas__titulo">{{ item.titulo }}</h4>
+        <button class="tienda-ofertas__boton">COMPLETAR</button>
+      </a>
+      }
+    </div>
+  </div>
+</section>

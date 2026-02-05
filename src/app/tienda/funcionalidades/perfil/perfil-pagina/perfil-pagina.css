@@ -223,6 +223,7 @@
 }
 
 .perfil-dato-card {
+  position: relative;
   background-color: var(--color-fondo-terciario);
   border: 1px solid var(--color-borde-sutil);
   border-radius: var(--borde-radio-grande);
@@ -264,6 +265,56 @@
   margin: 0;
 }
 
+.perfil-datos__telefono-edicion,
+.perfil-datos__telefono-prefijo {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+}
+
+.perfil-datos__telefono-prefijo {
+  cursor: pointer;
+  padding: var(--espaciado-xs) var(--espaciado-sm);
+  background-color: var(--color-fondo-secundario);
+  border: 1px solid var(--color-borde-sutil);
+  border-radius: var(--borde-radio);
+  min-width: 100px;
+}
+
+.perfil-datos__telefono-edicion .global-formulario-campo__input {
+  flex: 1;
+}
+
+.perfil-datos__selector-pais {
+  position: absolute;
+  z-index: 10;
+  margin-top: var(--espaciado-xxs);
+  background-color: var(--color-fondo-terciario);
+  border: 1px solid var(--color-borde-sutil);
+  border-radius: var(--borde-radio);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.perfil-datos__opcion-pais {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  padding: var(--espaciado-sm);
+  cursor: pointer;
+}
+
+.perfil-datos__opcion-pais:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.perfil-dato-card .auth-pais-bandera {
+  width: 24px;
+  height: 16px;
+  object-fit: cover;
+  border-radius: 2px;
+}
+
 /* ─── Botones de Edición ─── */
 .perfil-datos__acciones {
   display: flex;
@@ -287,6 +338,9 @@
 
 /* ─── Sección de Contraseña con Toggle ─── */
 .perfil-contrasena-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-lg);
   background-color: var(--color-fondo-terciario);
   border: 1px solid var(--color-borde-sutil);
   border-radius: var(--borde-radio-grande);
@@ -375,7 +429,6 @@
 
 /* ─── Contenido del Toggle ─── */
 .perfil-contrasena-contenido {
-  margin-top: var(--espaciado-lg);
   padding-top: var(--espaciado-lg);
   border-top: 1px solid var(--color-borde-separador);
   animation: slideDown 0.3s ease;

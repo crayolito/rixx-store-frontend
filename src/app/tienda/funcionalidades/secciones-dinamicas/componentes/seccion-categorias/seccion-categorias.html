@@ -1,1 +1,39 @@
-<p>seccion-categorias works!</p>
+<section class="tienda-categorias-productos__bloque">
+  <div class="tienda-categorias-productos__header">
+    <h3 class="tienda-categorias-productos__subtitulo">{{ categoria().titulo }}</h3>
+    <a class="tienda-categorias-productos__boton-ver-mas" [routerLink]="['/categoria', categoria().handle]">Ver Más</a>
+  </div>
+  <div class="tienda-categorias-productos__grid">
+    @for (producto of categoria().productos ?? categoria().productosOrdenados ?? []; track producto.handle) {
+    <a class="tienda-categorias-productos__tarjeta" [routerLink]="['/producto', producto.handle]">
+      <div class="tienda-categorias-productos__imagen-contenedor">
+        <img class="tienda-categorias-productos__imagen" [src]="producto.imagen" [alt]="producto.titulo">
+        @if (obtenerEtiqueta(producto); as etiqueta) {
+        <span class="tienda-categorias-productos__etiqueta"
+          [class.tienda-categorias-productos__etiqueta--nuevo]="etiqueta === 'Nuevo'"
+          [class.tienda-categorias-productos__etiqueta--oferta]="etiqueta === 'Oferta'">
+          {{ etiqueta }}
+        </span>
+        }
+      </div>
+      <div class="tienda-categorias-productos__contenido">
+        <h4 class="tienda-categorias-productos__titulo">{{ producto.titulo }}</h4>
+        <p class="tienda-categorias-productos__descripcion">{{ producto.descripcion }}</p>
+        <div class="tienda-categorias-productos__precios">
+          @if (producto.precioOferta && producto.precioOferta > 0) {
+          <span class="tienda-categorias-productos__precio-base">${{ producto.precioBase }}</span>
+          <span class="tienda-categorias-productos__precio-oferta">${{ producto.precioOferta }}</span>
+          } @else {
+          <span class="tienda-categorias-productos__precio-oferta">${{ producto.precioBase }}</span>
+          }
+        </div>
+        @if (calcularPorcentajeDescuento(producto.precioBase, producto.precioOferta); as pct) {
+        <span class="tienda-categorias-productos__descuento">
+          Oferta de hasta el {{ pct }}%
+        </span>
+        }
+      </div>
+    </a>
+    }
+  </div>
+</section>
