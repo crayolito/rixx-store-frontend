@@ -177,7 +177,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--espaciado-xs);
+  gap: var(--espaciado-xxs);
 }
 
 .drawer-carrito__item-titulo {
@@ -195,6 +195,31 @@
 .drawer-carrito__item-precio {
   font-size: var(--texto-pequeno);
   color: var(--color-texto-terciario);
+}
+
+.drawer-carrito__item-variante {
+  font-size: var(--texto-mini);
+  color: var(--color-texto-secundario);
+  margin: 0;
+}
+
+.drawer-carrito__item-datos {
+  font-size: var(--texto-mini);
+  color: var(--color-texto-secundario);
+  background-color: var(--color-fondo-terciario);
+  padding: var(--espaciado-xxs) var(--espaciado-xs);
+  border-radius: var(--borde-radio-pequeno);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xxs);
+}
+
+.drawer-carrito__item-datos-titulo {
+  font-weight: var(--peso-semibold);
+}
+
+.drawer-carrito__item-dato-linea {
+  display: block;
 }
 
 /* ─── Controles de cantidad ─── */

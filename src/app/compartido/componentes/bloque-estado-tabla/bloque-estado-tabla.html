@@ -1,0 +1,18 @@
+@if (estado() === 'cargando') {
+  <div class="global-tabla-vacio">
+    <div class="global-tabla-vacio__spinner" aria-hidden="true"></div>
+    <p class="global-tabla-vacio__texto">{{ mensajeCarga() }}</p>
+  </div>
+} @else if (estado() === 'vacio') {
+  <div class="global-tabla-vacio">
+    @if (iconoVacio()) {
+      <img [src]="iconoVacio()" alt="" class="global-tabla-vacio__icono">
+    }
+    @if (tituloVacio()) {
+      <h3 class="global-tabla-vacio__titulo">{{ tituloVacio() }}</h3>
+    }
+    @if (textoVacio()) {
+      <p class="global-tabla-vacio__texto">{{ textoVacio() }}</p>
+    }
+  </div>
+}

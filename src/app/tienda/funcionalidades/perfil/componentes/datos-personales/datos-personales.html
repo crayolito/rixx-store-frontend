@@ -1,0 +1,190 @@
+<!-- Formulario de información personal -->
+<div class="perfil-datos">
+  <div class="perfil-datos__grid">
+    <div class="perfil-dato-card">
+      <div class="perfil-dato-card__header">
+        <img src="/iconos/ico-cliente.svg" alt="Nombre" class="perfil-dato-card__icono">
+        <span class="perfil-dato-card__label">Nombre</span>
+      </div>
+      @if (!estaEditando()) {
+      <p class="perfil-dato-card__valor">{{ nombre() }}</p>
+      } @else {
+      <div class="global-formulario-campo">
+        <div class="global-formulario-campo__contenedor">
+          <input type="text" class="global-formulario-campo__input" placeholder="Tu nombre" [value]="nombreTemporal()"
+            (input)="actualizarNombre($event)">
+        </div>
+      </div>
+      }
+    </div>
+
+    <div class="perfil-dato-card">
+      <div class="perfil-dato-card__header">
+        <img src="/iconos/ico-marketing.svg" alt="Email" class="perfil-dato-card__icono">
+        <span class="perfil-dato-card__label">Correo electrónico</span>
+      </div>
+      @if (!estaEditando()) {
+      <p class="perfil-dato-card__valor">{{ email() }}</p>
+      } @else {
+      <div class="global-formulario-campo">
+        <div class="global-formulario-campo__contenedor">
+          <input type="email" class="global-formulario-campo__input" placeholder="Ej: usuario@ejemplo.com"
+            [value]="emailTemporal()" (input)="actualizarEmail($event)">
+        </div>
+      </div>
+      }
+    </div>
+
+    <div class="perfil-dato-card">
+      <div class="perfil-dato-card__header">
+        <img src="/iconos/ico-configuracion.svg" alt="Teléfono" class="perfil-dato-card__icono">
+        <span class="perfil-dato-card__label">Teléfono</span>
+      </div>
+      @if (!estaEditando()) {
+      <p class="perfil-dato-card__valor">{{ telefono() || '—' }}</p>
+      } @else {
+      <div class="perfil-datos__telefono-edicion">
+        <div class="perfil-datos__telefono-prefijo" (click)="alternarSelectorPais()">
+          <img [src]="paisSeleccionado().bandera" alt="" class="auth-pais-bandera">
+          <span>{{ paisSeleccionado().sigla }}</span>
+        </div>
+        <input type="tel" class="global-formulario-campo__input"
+          [placeholder]="paisSeleccionado().sigla + ' 123 456 7890'" [value]="telefonoTemporal()"
+          (input)="actualizarTelefono($event)">
+      </div>
+      @if (selectorPaisAbierto()) {
+      <div class="perfil-datos__selector-pais" (click)="$event.stopPropagation()">
+        @for (pais of paises; track pais.codigo) {
+        <div class="perfil-datos__opcion-pais" (click)="seleccionarPais(pais)">
+          <img [src]="pais.bandera" alt="" class="auth-pais-bandera">
+          <span>{{ pais.sigla }}</span>
+        </div>
+        }
+      </div>
+      }
+      }
+    </div>
+
+    <div class="perfil-dato-card">
+      <div class="perfil-dato-card__header">
+        <img src="/iconos/ico-configuracion.svg" alt="Nacionalidad" class="perfil-dato-card__icono">
+        <span class="perfil-dato-card__label">Nacionalidad</span>
+      </div>
+      @if (!estaEditando()) {
+      <p class="perfil-dato-card__valor">{{ nacionalidad() || paisNacionalidad().nombre || '—' }}</p>
+      } @else {
+      <div class="perfil-datos__telefono-prefijo" (click)="alternarSelectorNacionalidad()">
+        <img [src]="paisNacionalidad().bandera" alt="" class="auth-pais-bandera">
+        <span>{{ paisNacionalidad().nombre }}</span>
+      </div>
+      @if (selectorNacionalidadAbierto()) {
+      <div class="perfil-datos__selector-pais" (click)="$event.stopPropagation()">
+        @for (pais of paises; track pais.codigo) {
+        <div class="perfil-datos__opcion-pais" (click)="seleccionarNacionalidadPerfil(pais)">
+          <img [src]="pais.bandera" alt="" class="auth-pais-bandera">
+          <span>{{ pais.nombre }}</span>
+        </div>
+        }
+      </div>
+      }
+      }
+    </div>
+  </div>
+
+  <div class="perfil-datos__acciones">
+    @if (!estaEditando()) {
+    <button class="boton-primario perfil-billetera__boton" (click)="activarEdicion()" type="button"
+      [disabled]="guardando()">
+      <p>Editar Información</p>
+    </button>
+    } @else {
+    <div class="perfil-datos__botones-edicion">
+      <button class="boton-secundario perfil-billetera__boton" (click)="cancelarEdicion()" type="button">
+        <p>Cancelar</p>
+      </button>
+      <button class="boton-primario perfil-billetera__boton" (click)="guardarCambios()" type="button"
+        [disabled]="guardando()">
+        <p>{{ guardando() ? 'Procesando...' : 'Guardar Cambios' }}</p>
+      </button>
+    </div>
+    }
+  </div>
+
+  <!-- Sección contraseña: mensaje Google o formulario cambio -->
+  <div class="perfil-contrasena-seccion">
+    @if (tieneSocialLogin()) {
+    <div class="perfil-contrasena-seccion__header">
+      <div class="perfil-contrasena-seccion__info">
+        <img src="/iconos/ico-configuracion.svg" alt="Contraseña" class="perfil-contrasena-seccion__icono">
+        <span class="perfil-contrasena-seccion__titulo">Seguridad de la cuenta</span>
+      </div>
+    </div>
+    <div class="perfil-mensaje-google">
+      <img src="/imagenes/logo-google.png" alt="Google" class="perfil-mensaje-google__logo">
+      <div class="perfil-mensaje-google__contenido">
+        <h4 class="perfil-mensaje-google__titulo">Cambio de contraseña no disponible</h4>
+        <p class="perfil-mensaje-google__texto">
+          Esta cuenta está vinculada con Google, por lo que no es posible cambiar la contraseña. Si deseas
+          cambiar tu contraseña, puedes hacerlo directamente desde tu cuenta de Google.
+        </p>
+      </div>
+    </div>
+    } @else {
+    <div class="perfil-contrasena-seccion__header">
+      <div class="perfil-contrasena-seccion__info">
+        <img src="/iconos/ico-configuracion.svg" alt="Contraseña" class="perfil-contrasena-seccion__icono">
+        <span class="perfil-contrasena-seccion__titulo">Seguridad de la cuenta</span>
+      </div>
+      <label class="perfil-toggle">
+        <input type="checkbox" class="perfil-toggle__input" [checked]="mostrarCambioContrasena()"
+          (change)="toggleCambioContrasena()">
+        <span class="perfil-toggle__slider"></span>
+      </label>
+    </div>
+    @if (mostrarCambioContrasena()) {
+    <div class="perfil-contrasena-contenido">
+      <div class="perfil-formulario-contrasena">
+        <div class="perfil-datos__grid">
+          <div class="perfil-dato-card">
+            <div class="perfil-dato-card__header">
+              <img src="/iconos/ico-configuracion.svg" alt="Contraseña actual" class="perfil-dato-card__icono">
+              <span class="perfil-dato-card__label">Contraseña actual</span>
+            </div>
+            <div class="global-formulario-campo">
+              <div class="global-formulario-campo__contenedor">
+                <input [type]="mostrarContrasena() ? 'text' : 'password'" class="global-formulario-campo__input"
+                  placeholder="••••••••" [value]="contrasenaActual()" (input)="actualizarContrasenaActual($event)">
+                <button type="button" class="global-formulario-campo__boton-icono" (click)="toggleMostrarContrasena()">
+                  <img [src]="mostrarContrasena() ? '/iconos/ico-ojo-cerrado.svg' : '/iconos/ico-ojo-abierto.svg'"
+                    [alt]="mostrarContrasena() ? 'Ocultar' : 'Mostrar'" class="icono-boton icono-color-blanco">
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="perfil-dato-card">
+            <div class="perfil-dato-card__header">
+              <img src="/iconos/ico-configuracion.svg" alt="Nueva contraseña" class="perfil-dato-card__icono">
+              <span class="perfil-dato-card__label">Nueva contraseña</span>
+            </div>
+            <div class="global-formulario-campo">
+              <div class="global-formulario-campo__contenedor">
+                <input [type]="mostrarContrasena() ? 'text' : 'password'" class="global-formulario-campo__input"
+                  placeholder="••••••••" [value]="nuevaContrasena()" (input)="actualizarNuevaContrasena($event)">
+                <button type="button" class="global-formulario-campo__boton-icono" (click)="toggleMostrarContrasena()">
+                  <img [src]="mostrarContrasena() ? '/iconos/ico-ojo-cerrado.svg' : '/iconos/ico-ojo-abierto.svg'"
+                    [alt]="mostrarContrasena() ? 'Ocultar' : 'Mostrar'" class="icono-boton icono-color-blanco">
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="boton-primario perfil-billetera__boton" (click)="guardarPerfil()" type="button"
+          [disabled]="guardando()">
+          <p>{{ guardando() ? 'Procesando...' : 'Cambiar Contraseña' }}</p>
+        </button>
+      </div>
+    </div>
+    }
+    }
+  </div>
+</div>

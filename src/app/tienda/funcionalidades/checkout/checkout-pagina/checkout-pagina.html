@@ -130,8 +130,19 @@
               <img [src]="item.imagen" [alt]="item.titulo" class="checkout-pagina__producto-imagen">
               <div class="checkout-pagina__producto-info">
                 <h3 class="checkout-pagina__producto-titulo">{{ item.titulo }}</h3>
-                <p class="checkout-pagina__producto-cantidad">Cantidad: {{ item.cantidad }}</p>
-                <p class="checkout-pagina__producto-precio">${{ item.precioTotal | number:'1.2-2' }}</p>
+                @if (item.varianteNombre) {
+                <p class="checkout-pagina__producto-variante">{{ item.varianteNombre }}</p>
+                }
+                <p class="checkout-pagina__producto-precio">${{ item.precio | number:'1.2-2' }} c/u · {{ item.cantidad
+                  }} = ${{ item.precioTotal | number:'1.2-2' }}</p>
+                @if (tieneDatosAdicionales(item)) {
+                <div class="checkout-pagina__producto-datos">
+                  <span class="checkout-pagina__producto-datos-titulo">Datos:</span>
+                  @for (dato of obtenerDatosAdicionales(item); track dato.etiqueta) {
+                  <span class="checkout-pagina__producto-dato-linea">{{ dato.etiqueta }}: {{ dato.valor }}</span>
+                  }
+                </div>
+                }
               </div>
             </div>
             }

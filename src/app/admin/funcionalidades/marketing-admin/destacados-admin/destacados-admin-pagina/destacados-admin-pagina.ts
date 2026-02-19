@@ -8,6 +8,7 @@ import {
   ConfiguracionGlobal,
   ItemDestacado,
 } from '../../../../../compartido/modelos/configuracion.modelo';
+import { ConfiguracionApiServicio } from '../../../../../compartido/servicios/configuracion-api.servicio';
 
 const CLAVE_CONFIGURACION_GLOBAL = 'configuracion-global';
 
@@ -20,6 +21,7 @@ const CLAVE_CONFIGURACION_GLOBAL = 'configuracion-global';
 })
 export class DestacadosAdminPagina implements OnInit {
   private router = inject(Router);
+  private configuracionApi = inject(ConfiguracionApiServicio);
 
   readonly productosDisponibles = PRODUCTOS;
 
@@ -49,23 +51,20 @@ export class DestacadosAdminPagina implements OnInit {
       }
       return false;
     };
-    fetch('/configuracion.json')
-      .then((r) => r.json())
-      .then((global: ConfiguracionGlobal) => {
-        if (aplicarDestacados(global)) return;
-        const local = this.obtenerConfiguracionGlobal();
-        if (aplicarDestacados(local)) return;
-        this.titulo.set('Productos destacados');
-        const primero = this.productosDisponibles[0];
-        this.items.set(primero ? [{ handle: primero.id, titulo: primero.nombre, imagen: primero.imagen }] : []);
-      })
-      .catch(() => {
-        const local = this.obtenerConfiguracionGlobal();
-        if (aplicarDestacados(local)) return;
-        this.titulo.set('Productos destacados');
-        const primero = this.productosDisponibles[0];
-        this.items.set(primero ? [{ handle: primero.id, titulo: primero.nombre, imagen: primero.imagen }] : []);
-      });
+    const aplicarFallback = () => {
+      const local = this.obtenerConfiguracionGlobal();
+      if (aplicarDestacados(local)) return;
+      this.titulo.set('Productos destacados');
+      const primero = this.productosDisponibles[0];
+      this.items.set(primero ? [{ handle: primero.id, titulo: primero.nombre, imagen: primero.imagen }] : []);
+    };
+    this.configuracionApi.obtenerConfiguracion().subscribe({
+      next: (global) => {
+        if (aplicarDestacados(global as ConfiguracionGlobal)) return;
+        aplicarFallback();
+      },
+      error: aplicarFallback,
+    });
   }
 
   volver(): void {

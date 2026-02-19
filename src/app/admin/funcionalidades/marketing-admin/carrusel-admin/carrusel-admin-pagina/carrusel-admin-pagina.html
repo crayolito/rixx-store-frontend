@@ -101,14 +101,16 @@
             (input)="setBusquedaProducto(i, $any($event.target).value)">
         </div>
         <div class="carrusel-admin-lista-opciones">
-          @for (p of productosFiltradosPara(i); track p.id) {
+          @for (p of productosFiltradosPara(i); track p.handle) {
           <button type="button" class="carrusel-admin-opcion"
-            [class.carrusel-admin-opcion--activa]="slide.destinoHandle === p.id"
+            [class.carrusel-admin-opcion--activa]="slide.destinoHandle === p.handle"
             (click)="asignarDestinoProducto(i, p)">
-            {{ p.nombre }}
+            {{ p.titulo }}
           </button>
           }
-          @if (productosFiltradosPara(i).length === 0) {
+          @if (productosDisponibles().length === 0) {
+          <span class="carrusel-admin-sin-resultados">No hay productos disponibles.</span>
+          } @else if (productosFiltradosPara(i).length === 0) {
           <span class="carrusel-admin-sin-resultados">Ningún producto coincide.</span>
           }
         </div>
@@ -134,7 +136,9 @@
             {{ handleATitulo(cat.handle) }}
           </button>
           }
-          @if (categoriasFiltradasPara(i).length === 0) {
+          @if (categoriasDisponibles().length === 0) {
+          <span class="carrusel-admin-sin-resultados">No hay categorías disponibles.</span>
+          } @else if (categoriasFiltradasPara(i).length === 0) {
           <span class="carrusel-admin-sin-resultados">Ninguna categoría coincide.</span>
           }
         </div>

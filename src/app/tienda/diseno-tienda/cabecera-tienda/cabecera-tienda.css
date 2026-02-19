@@ -398,11 +398,15 @@
   opacity: 0.9;
 }
 
-.usuario-email {
+.usuario-email,
+.usuario-nombre {
   font-size: var(--texto-pequeno);
   color: var(--color-texto-primario);
   font-weight: var(--peso-medium);
   white-space: nowrap;
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tienda-header__usuario-flecha {
@@ -430,6 +434,13 @@
   max-height: 280px;
   overflow-y: auto;
   padding: var(--espaciado-xxs);
+}
+
+.tienda-header__busqueda-sin-resultados {
+  margin: 0;
+  padding: var(--espaciado-sm);
+  font-size: var(--texto-base);
+  color: var(--color-texto-secundario);
 }
 
 .tienda-header__busqueda-item {

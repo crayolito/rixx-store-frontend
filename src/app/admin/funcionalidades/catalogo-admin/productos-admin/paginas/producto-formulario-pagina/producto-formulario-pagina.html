@@ -2,16 +2,25 @@
   <div class="contenedor-base">
     <!-- Sección: Título y Opciones -->
     <section class="seccion-titulo">
-      <div class="titulo-contenedor">
+      <div class="titulo-contenedor titulo-contenedor--en-linea">
         <img src="/iconos/ico-producto.svg" alt="Icono productos" class="icono-boton icono-color-base">
-        <h3>Agregar Producto</h3>
+        <h3>{{ esEdicion() ? 'Editar Producto' : 'Agregar Producto' }}</h3>
+        @if (hayCambiosPendientes()) {
+        <span class="panel-titulo-cambios">• Cambios sin guardar</span>
+        }
       </div>
       <div class="opciones-contenedor">
         <button type="button" class="boton-secundario" (click)="volver()">
           <p>Volver</p>
         </button>
-        <button type="button" class="boton-primario" (click)="guardar()">
-          <p>Guardar</p>
+        @if (hayCambiosPendientes()) {
+        <button type="button" class="boton-secundario" (click)="cancelarCambios()" [disabled]="guardando()">
+          <p>Cancelar</p>
+        </button>
+        }
+        <button type="button" class="boton-primario" (click)="ejecutarGuardar()"
+          [disabled]="guardando() || !puedeGuardar()">
+          <p>{{ guardando() ? 'Guardando...' : 'Guardar' }}</p>
         </button>
       </div>
     </section>
@@ -31,15 +40,51 @@
       <div class="formulario-imagenes">
         <label class="global-formulario-campo__etiqueta">Multimedia</label>
         <div class="global-formulario-imagenes__contenedor-imagenes">
-          <div class="global-formulario-imagenes__contenedor">
-            <img src="/iconos/ico-imagen.svg" alt="Icono imagen" class="icono-boton icono-color-secundario">
-            <label class="global-formulario-imagenes__etiqueta1">Haz clic para subir una imagen (Desktop)</label>
-            <label class="global-formulario-imagenes__etiqueta2">PNG, JPG, GIF hasta 10MB</label>
+          <div class="formulario-imagenes__slot">
+            <label [for]="'input-portada'"
+              class="global-formulario-imagenes__contenedor global-formulario-imagenes__contenedor--clickeable"
+              [class.formulario-imagenes__contenedor--cargando]="subiendoPortada()">
+              @if (subiendoPortada()) {
+              <div class="formulario-imagenes__cargando">
+                <div class="formulario-imagenes__spinner" aria-hidden="true"></div>
+                <span>Subiendo...</span>
+              </div>
+              } @else if (imagenPortada()) {
+              <div class="formulario-imagenes__preview-wrap">
+                <img [src]="imagenPortada()" alt="Portada" class="global-formulario-imagenes__preview"
+                  (error)="$any($event.target).src='/imagenes/imagen-nodisponible.jpg'">
+              </div>
+              } @else {
+              <img src="/iconos/ico-imagen.svg" alt="Icono imagen" class="icono-boton icono-color-secundario">
+              <span class="global-formulario-imagenes__etiqueta1">Portada</span>
+              <span class="global-formulario-imagenes__etiqueta2">PNG, JPG, GIF hasta 10MB (Cloudinary)</span>
+              }
+            </label>
+            <input type="file" [id]="'input-portada'" accept="image/*" (change)="manejarSubirImagen('portada', $event)"
+              [disabled]="subiendoPortada()" class="formulario-imagenes__input-oculto">
           </div>
-          <div class="global-formulario-imagenes__contenedor">
-            <img src="/iconos/ico-imagen.svg" alt="Icono imagen" class="icono-boton icono-color-secundario">
-            <label class="global-formulario-imagenes__etiqueta1">Haz clic para subir una imagen (Mobile)</label>
-            <label class="global-formulario-imagenes__etiqueta2">PNG, JPG, GIF hasta 10MB</label>
+          <div class="formulario-imagenes__slot">
+            <label [for]="'input-banner'"
+              class="global-formulario-imagenes__contenedor global-formulario-imagenes__contenedor--clickeable"
+              [class.formulario-imagenes__contenedor--cargando]="subiendoBanner()">
+              @if (subiendoBanner()) {
+              <div class="formulario-imagenes__cargando">
+                <div class="formulario-imagenes__spinner" aria-hidden="true"></div>
+                <span>Subiendo...</span>
+              </div>
+              } @else if (imagenBanner()) {
+              <div class="formulario-imagenes__preview-wrap">
+                <img [src]="imagenBanner()" alt="Banner" class="global-formulario-imagenes__preview"
+                  (error)="$any($event.target).src='/imagenes/imagen-nodisponible.jpg'">
+              </div>
+              } @else {
+              <img src="/iconos/ico-imagen.svg" alt="Icono imagen" class="icono-boton icono-color-secundario">
+              <span class="global-formulario-imagenes__etiqueta1">Banner (desktop)</span>
+              <span class="global-formulario-imagenes__etiqueta2">PNG, JPG, GIF hasta 10MB (Cloudinary)</span>
+              }
+            </label>
+            <input type="file" [id]="'input-banner'" accept="image/*" (change)="manejarSubirImagen('banner', $event)"
+              [disabled]="subiendoBanner()" class="formulario-imagenes__input-oculto">
           </div>
         </div>
       </div>
@@ -102,58 +147,71 @@
     </section>
 
     <!-- Sección: Campos Adicionales -->
-    <section class="seccion-base">
+    <section class="seccion-base seccion-campos-adicionales">
       <div class="titulo-contenedor">
         <h3>Campos Adicionales</h3>
-        <!-- <p class="titulo-contenedor__descripcion">Define campos personalizados que el cliente deberá completar al
-          comprar
-          este producto (ej: ID de juego, zona, servidor, etc.)</p> -->
+        @if (puedeAgregarCampos()) {
         <div class="opciones-contenedor">
-          @if (esProductoManual()) {
           <button type="button" class="boton-primario" (click)="abrirModalAgregarCampo()">
             <p>Agregar campo</p>
           </button>
-          }
         </div>
+        }
       </div>
+      <p class="seccion-campos-adicionales__descripcion">
+        Define los datos que el cliente debe completar al comprar (ej: ID de juego, usuario, servidor). Solo los
+        productos sin id Vemper y con «Proceso manual» activado permiten agregar o editar campos adicionales.
+      </p>
 
-
-      <div class="global-checkbox">
-        <input type="checkbox" id="campos-adicionales" name="campos-adicionales" [checked]="esProductoManual()"
-          (change)="esProductoManual.set($any($event.target).checked)" class="global-checkbox__input" />
-        <label for="campos-adicionales" class="global-checkbox__contenido">
-          <p class="global-checkbox__titulo">Producto Manual</p>
-          <p class="global-checkbox__descripcion">Si está marcado, este producto será procesado manualmente y
-            podrás agregar campos adicionales.</p>
-        </label>
+      @if (!puedeAgregarCampos() && camposAdicionales().length === 0) {
+      <div class="campos-adicionales-vacio campos-adicionales-vacio--info">
+        <div class="campos-adicionales-vacio__icono">
+          <img src="/iconos/ico-informacion.svg" alt="" class="icono-boton-grande icono-color-secundario">
+        </div>
+        <p class="campos-adicionales-vacio__texto">Este producto no permite agregar campos adicionales.</p>
       </div>
+      }
 
-      @if (esProductoManual() && camposAdicionales().length > 0) {
+      @if (puedeAgregarCampos() && camposAdicionales().length === 0) {
+      <div class="campos-adicionales-vacio">
+        <div class="campos-adicionales-vacio__icono">
+          <img src="/iconos/ico-imagen.svg" alt="" class="icono-boton-grande icono-color-secundario">
+        </div>
+        <p class="campos-adicionales-vacio__titulo">Sin campos definidos</p>
+        <p class="campos-adicionales-vacio__texto">Haz clic en «Agregar campo» para definir qué información debe
+          ingresar el cliente (ej: ID del jugador, zona, correo).</p>
+      </div>
+      }
+
+      @if (camposAdicionales().length > 0) {
       <div class="formulario-campos-adicionales">
         @for (campo of camposAdicionales(); track campo.id; let i = $index) {
-        <div class="campo-adicional-agregado" [class.campo-adicional-agregado--arrastrando]="estaArrastrando(campo.id)"
-          [class.campo-adicional-agregado--zona-soltar]="tipoArrastrando() === 'campo' && elementoArrastrando() !== campo.id"
-          draggable="true" (dragstart)="iniciarArrastreCampo($event, campo.id, i)"
-          (dragover)="permitirSoltarCampo($event)" (drop)="soltarCampo($event, i)" (dragend)="limpiarArrastre()">
-          <div class="campo-adicional-agregado__arrastrar">
+        <div class="campo-adicional-tarjeta" [class.campo-adicional-tarjeta--solo-lectura]="!puedeAgregarCampos()"
+          [class.campo-adicional-agregado--arrastrando]="puedeAgregarCampos() && estaArrastrando(campo.id)"
+          [class.campo-adicional-agregado--zona-soltar]="puedeAgregarCampos() && tipoArrastrando() === 'campo' && elementoArrastrando() !== campo.id"
+          [attr.draggable]="puedeAgregarCampos()"
+          (dragstart)="puedeAgregarCampos() && iniciarArrastreCampo($event, campo.id, i)"
+          (dragover)="puedeAgregarCampos() && permitirSoltarCampo($event)"
+          (drop)="puedeAgregarCampos() && soltarCampo($event, i)" (dragend)="limpiarArrastre()">
+          @if (puedeAgregarCampos()) {
+          <div class="campo-adicional-tarjeta__arrastrar">
             <img src="/iconos/ico-expandir-todo.svg" alt="Mover" class="icono-boton-mediano icono-color-secundario">
           </div>
-          <div class="campo-adicional-agregado__info">
-            <p class="campo-adicional-agregado__etiqueta">{{ campo.etiqueta }}</p>
-            <label class="campo-adicional-agregado__identificador">ID: {{ campo.identificador }}</label>
+          }
+          <div class="campo-adicional-tarjeta__contenido">
+            <p class="campo-adicional-tarjeta__etiqueta">{{ campo.etiqueta }}</p>
+            <div class="campo-adicional-tarjeta__badges">
+              <span class="campo-adicional-tarjeta__badge"
+                [class.campo-adicional-tarjeta__badge--numero]="campo.tipo === 'numero'">
+                {{ campo.tipo === 'numero' ? 'Número' : 'Texto' }}
+              </span>
+              @if (campo.requerido) {
+              <span class="campo-adicional-tarjeta__badge campo-adicional-tarjeta__badge--requerido">Requerido</span>
+              }
+            </div>
           </div>
-          <div class="campo-adicional-agregado__estados">
-            <span class="campo-adicional-agregado__badge"
-              [class.campo-adicional-agregado__badge--numero]="campo.tipo === 'numero'">
-              {{ campo.tipo === 'numero' ? 'Número' : 'Texto' }}
-            </span>
-            @if (campo.requerido) {
-            <span class="campo-adicional-agregado__badge campo-adicional-agregado__badge--requerido">
-              Requerido
-            </span>
-            }
-          </div>
-          <div class="campo-adicional-agregado__acciones">
+          @if (puedeAgregarCampos()) {
+          <div class="campo-adicional-tarjeta__acciones">
             <button type="button" class="campo-adicional-agregado__boton" (click)="abrirModalEditarCampo(campo)"
               aria-label="Editar campo">
               <img src="/iconos/ico-editar.svg" alt="Editar" class="icono-boton-mediano icono-color-secundario">
@@ -163,6 +221,7 @@
               <img src="/iconos/ico-delete.svg" alt="Eliminar" class="icono-boton-mediano icono-color-secundario">
             </button>
           </div>
+          }
         </div>
         }
       </div>
@@ -173,20 +232,20 @@
     <section class="seccion-base">
       <div class="titulo-contenedor">
         <h3>Gestión de Precios</h3>
-        <button type="button" class="boton-primario" (click)="abrirModalAgregarPrecio()">
-          <p>Importar Precios</p>
-        </button>
+        @if (!tieneCodigoVemper()) {
         <button type="button" class="boton-primario" (click)="abrirModalAgregarPrecio()">
           <p>Agregar precio</p>
         </button>
+        }
       </div>
 
       @if (precios().length > 0) {
       <div class="formulario-precios">
         @for (precio of precios(); track precio.id; let i = $index) {
-        <div class="precio-agregado" [class.precio-agregado--arrastrando]="estaArrastrandoPrecio(precio.id)"
+        <div class="precio-agregado" [class.precio-agregado--solo-lectura]="tieneCodigoVemper()"
+          [class.precio-agregado--arrastrando]="estaArrastrandoPrecio(precio.id)"
           [class.precio-agregado--zona-soltar]="tipoArrastrando() === 'precio' && elementoArrastrando() !== precio.id"
-          draggable="true" (dragstart)="iniciarArrastrePrecio($event, precio.id, i)"
+          [attr.draggable]="true" (dragstart)="iniciarArrastrePrecio($event, precio.id, i)"
           (dragover)="permitirSoltarPrecio($event)" (drop)="soltarPrecio($event, i)" (dragend)="limpiarArrastre()">
           <div class="precio-agregado__info">
             <div class="precio-agregado__cabecera">
@@ -208,17 +267,12 @@
                 <span class="precio-agregado__detalle-valor">${{ precio.precioBase | number:'1.2-2' }}</span>
               </div>
               <div class="precio-agregado__detalle-item">
-                <span class="precio-agregado__detalle-etiqueta">Descuento</span>
-                <span class="precio-agregado__detalle-valor">{{ precio.porcentajeDescuento }}%</span>
+                <span class="precio-agregado__detalle-etiqueta">Margen Cliente</span>
+                <span class="precio-agregado__detalle-valor">{{ precio.margenClienteFinal }}% → ${{ (precio.precioBase * precio.margenClienteFinal/100) | number:'1.2-2' }}</span>
               </div>
               <div class="precio-agregado__detalle-item">
-                <span class="precio-agregado__detalle-etiqueta">Margen Cliente</span>
-                <span class="precio-agregado__detalle-valor">{{ precio.margenClienteFinal }}%</span>
-              </div>
-              <div class="precio-agregado__detalle-item precio-agregado__detalle-item--destacado">
-                <span class="precio-agregado__detalle-etiqueta">Precio Cliente Final</span>
-                <span class="precio-agregado__detalle-valor">${{ (precio.precioBase * (1 +
-                  precio.margenClienteFinal/100)) | number:'1.2-2' }}</span>
+                <span class="precio-agregado__detalle-etiqueta">Margen Revendedor</span>
+                <span class="precio-agregado__detalle-valor">{{ precio.margenRevendedor }}% → ${{ (precio.precioBase * precio.margenRevendedor/100) | number:'1.2-2' }}</span>
               </div>
             </div>
 
@@ -228,13 +282,18 @@
               aria-label="Editar precio">
               <img src="/iconos/ico-editar.svg" alt="Editar" class="icono-boton-mediano icono-color-secundario">
             </button>
-            <button type="button" class="precio-agregado__boton" (click)="eliminarPrecio(precio.id)"
-              aria-label="Eliminar precio">
+            <button type="button" class="precio-agregado__boton" [disabled]="tieneCodigoVemper()"
+              (click)="!tieneCodigoVemper() && eliminarPrecio(precio.id)" aria-label="Eliminar precio">
               <img src="/iconos/ico-delete.svg" alt="Eliminar" class="icono-boton-mediano icono-color-secundario">
             </button>
           </div>
         </div>
         }
+      </div>
+      } @else {
+      @if (tieneCodigoVemper()) {
+      <div class="global-mensaje-vacio">
+        <p class="global-mensaje-vacio__texto">Este producto no permite agregar precios.</p>
       </div>
       } @else {
       <div class="global-mensaje-vacio">
@@ -285,23 +344,76 @@
         </div>
       </div>
       }
+      }
     </section>
   </div>
-  <div class="contenedor-base">
-    <br>
 
+  <div class="contenedor-base">
+    <!-- Sección: Estado -->
     <section class="seccion-base">
-      <div class="global-checkbox">
-        <input type="checkbox" name="campos-adicionales" class="global-checkbox__input" />
-        <label for="campos-adicionales" class="global-checkbox__contenido">
-          <p class="global-checkbox__titulo">Sincronizacion Automatica</p>
-          <p class="global-checkbox__descripcion">Los cambios manuales (incluyendo titulo y slug) pueden
-            ser sobreescritos por la sincronizacion automatica. Desactivarla si deseas mantener los cambios manuales.
+      <div class="titulo-contenedor">
+        <h3>Estado</h3>
+      </div>
+      <div class="global-formulario-campo">
+        <div class="formulario-estado">
+          <label class="formulario-estado__opcion">
+            <input type="radio" class="global-radio__input" name="estado-producto" value="activo"
+              [checked]="estadoProducto() === 'activo'" (change)="estadoProducto.set('activo')">
+            <div class="formulario-estado__contenido">
+              <p class="formulario-estado__titulo">Activo</p>
+            </div>
+          </label>
+          <label class="formulario-estado__opcion">
+            <input type="radio" class="global-radio__input" name="estado-producto" value="inactivo"
+              [checked]="estadoProducto() === 'inactivo'" (change)="estadoProducto.set('inactivo')">
+            <div class="formulario-estado__contenido">
+              <p class="formulario-estado__titulo">Inactivo</p>
+            </div>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección: Sincronización automática -->
+    @if (tieneCodigoVemper()) {
+    <section class="seccion-base">
+      <div class="titulo-contenedor">
+        <h3>Sincronización automática</h3>
+      </div>
+      <div class="global-checkbox seccion-disponibilidad__sincronizacion">
+        <input type="checkbox" id="sincronizacion-automatica" name="sincronizacion-automatica"
+          class="global-checkbox__input" [checked]="sincronizacionAutomatica()"
+          (change)="sincronizacionAutomatica.set($any($event.target).checked)" />
+        <label for="sincronizacion-automatica" class="global-checkbox__contenido">
+          <p class="global-checkbox__descripcion">Los cambios manuales pueden ser
+            sobrescritos por la sincronización automática. Desactívala si deseas mantener los cambios manuales.</p>
+        </label>
+      </div>
+    </section>
+    }
+
+    <!-- Sección: Proceso manual (solo productos sin id Vemper) -->
+    @if (!tieneCodigoVemper()) {
+    <section class="seccion-base">
+      <div class="titulo-contenedor">
+        <h3>Proceso manual</h3>
+      </div>
+      <div class="global-checkbox seccion-disponibilidad__sincronizacion">
+        <input type="checkbox" id="proceso-manual" name="proceso-manual" class="global-checkbox__input"
+          [checked]="procesoManual()" (change)="alCambiarProcesoManual($any($event.target).checked)" />
+        <label for="proceso-manual" class="global-checkbox__contenido">
+          <p class="global-checkbox__descripcion">
+            Al activar esta opción, podrás agregar campos personalizados (como
+            nickname, ID de servidor, etc.) que el cliente deberá completar al comprar. Tú procesarás las recargas
+            manualmente.
+            <br>
+            <strong>Nota importante:</strong> Los productos con proceso manual NO permiten la generación de códigos
+            automáticos.
           </p>
         </label>
       </div>
     </section>
-
+    }
 
     <!-- Sección: Contenido -->
     <section class="seccion-base">
@@ -430,14 +542,17 @@
           </div>
         </div>
       </div>
-      <!-- Fila 3: 3 inputs en una fila - Márgenes -->
-      <div class="modal-precio__fila modal-precio__fila--tres">
+      <!-- Fila 3: Margen Cliente y Margen Revendedor -->
+      <div class="modal-precio__fila modal-precio__fila--dos">
         <div class="global-formulario-campo">
           <label class="global-formulario-campo__etiqueta">Margen Cliente %</label>
           <div class="global-formulario-campo__contenedor">
             <input type="number" class="global-formulario-campo__input" placeholder="0" step="0.01" min="0"
               [value]="margenClienteFinal()" (input)="margenClienteFinal.set($any($event.target).valueAsNumber || 0)">
           </div>
+          @if (precioBase() > 0 && margenClienteFinal() > 0) {
+          <span class="global-formulario-campo__ayuda">${{ margenClienteEnDolares() | number:'1.2-2' }} del precio base</span>
+          }
         </div>
         <div class="global-formulario-campo">
           <label class="global-formulario-campo__etiqueta">Margen Revendedor %</label>
@@ -446,16 +561,9 @@
               [value]="margenRevendedor()" (input)="margenRevendedor.set($any($event.target).valueAsNumber || 0)">
           </div>
         </div>
-        <div class="global-formulario-campo">
-          <label class="global-formulario-campo__etiqueta">Margen Mayorista %</label>
-          <div class="global-formulario-campo__contenedor">
-            <input type="number" class="global-formulario-campo__input" placeholder="0" step="0.01" min="0"
-              [value]="margenMayorista()" (input)="margenMayorista.set($any($event.target).valueAsNumber || 0)">
-          </div>
-        </div>
       </div>
       <!-- Fila 4: Solo cálculos (precio base × cada porcentaje), sin inputs -->
-      <div class="modal-precio__fila modal-precio__fila--tres modal-precio__fila--calculos">
+      <div class="modal-precio__fila modal-precio__fila--dos modal-precio__fila--calculos">
         <div class="modal-precio__calculo">
           <span class="modal-precio__calculo-etiqueta">Precio Cliente Final</span>
           <span class="modal-precio__calculo-valor">{{ precioClienteFinalCalculado() | number:'1.2-2' }}</span>
@@ -464,27 +572,8 @@
           <span class="modal-precio__calculo-etiqueta">Precio Revendedor</span>
           <span class="modal-precio__calculo-valor">{{ precioRevendedorCalculado() | number:'1.2-2' }}</span>
         </div>
-        <div class="modal-precio__calculo">
-          <span class="modal-precio__calculo-etiqueta">Precio Mayorista</span>
-          <span class="modal-precio__calculo-valor">{{ precioMayoristaCalculado() | number:'1.2-2' }}</span>
-        </div>
       </div>
-      <!-- Fila 5: Porcentaje de Descuento % + Solo Cliente Final, con nota del cálculo debajo -->
-      <div class="modal-precio__fila">
-        <div class="modal-precio__fila-campos">
-          <div class="global-formulario-campo">
-            <label class="global-formulario-campo__etiqueta">Porcentaje de Descuento %</label>
-            <div class="global-formulario-campo__contenedor">
-              <input type="number" class="global-formulario-campo__input" placeholder="0" step="0.01" min="0" max="100"
-                [value]="porcentajeDescuento()"
-                (input)="porcentajeDescuento.set($any($event.target).valueAsNumber || 0)">
-            </div>
-          </div>
-        </div>
-        <p class="modal-precio__nota">Precio con descuento = Precio base × (1 − Descuento % / 100). Si «Solo Cliente
-          Final» está marcado, el descuento aplica solo al precio cliente final.</p>
-      </div>
-      <!-- Fila 6: Un solo checkbox Precio Activo -->
+      <!-- Fila 5: Un solo checkbox Precio Activo -->
       <div class="modal-precio__fila">
         <div class="global-formulario-campo global-formulario-campo--checkbox">
           <div class="global-checkbox">

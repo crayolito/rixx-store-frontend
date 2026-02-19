@@ -50,7 +50,6 @@
   grid-template-columns: repeat(2, 1fr);
   gap: var(--espaciado-md);
   padding: var(--espaciado-md);
-
 }
 
 .grid-categorias__vacio {

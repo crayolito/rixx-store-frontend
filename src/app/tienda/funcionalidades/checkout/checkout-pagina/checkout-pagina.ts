@@ -1,7 +1,9 @@
+import { Location } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import type { ItemCarrito } from '../../../../compartido/servicios/carrito.servicio';
 import { CarritoServicio } from '../../../../compartido/servicios/carrito.servicio';
 
 // FASE 1: Modelos de datos
@@ -31,6 +33,7 @@ export class CheckoutPagina implements OnInit {
   // FASE 2: Servicios
   private carritoServicio = inject(CarritoServicio);
   private router = inject(Router);
+  private location = inject(Location);
   private cdr = inject(ChangeDetectorRef);
 
   // FASE 3: Estado del carrito
@@ -249,15 +252,12 @@ export class CheckoutPagina implements OnInit {
     this.tiempoRestante.set(600);
   }
 
-  // FASE 16: Volver al catálogo (limpiar todo)
+  // FASE 16: Volver a la página anterior (producto, categoría, etc.)
   volverAlCatalogo(): void {
-    // Limpiar cuenta regresiva si existe
     if (this.intervaloCuentaRegresiva) {
       clearInterval(this.intervaloCuentaRegresiva);
       this.intervaloCuentaRegresiva = null;
     }
-    
-    // Limpiar todo el estado del checkout
     this.mostrarQR.set(false);
     this.estaProcesando.set(false);
     this.datosPago.set(null);
@@ -269,9 +269,30 @@ export class CheckoutPagina implements OnInit {
       email: '',
       telefono: ''
     });
-    
-    // Redirigir al inicio
-    this.router.navigate(['/']);
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/']);
+    }
+  }
+
+  tieneDatosAdicionales(item: ItemCarrito): boolean {
+    const campos = item.camposDinamicos && Object.keys(item.camposDinamicos).length > 0;
+    const servidor = item.servidor?.trim();
+    return !!(campos || servidor);
+  }
+
+  obtenerDatosAdicionales(item: ItemCarrito): { etiqueta: string; valor: string }[] {
+    const datos: { etiqueta: string; valor: string }[] = [];
+    if (item.servidor?.trim()) datos.push({ etiqueta: 'Servidor', valor: item.servidor });
+    const campos = item.camposDinamicos ?? {};
+    Object.entries(campos).forEach(([handle, valor]) => {
+      if (handle !== 'servidor' && valor?.trim()) {
+        const etiqueta = handle.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+        datos.push({ etiqueta, valor });
+      }
+    });
+    return datos;
   }
 
   // FASE 17: Redirigir si el carrito está vacío y cargar datos

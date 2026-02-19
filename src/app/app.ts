@@ -17,7 +17,6 @@ export class App implements OnInit {
   private router = inject(Router);
 
   ngOnInit(): void {
-    this.sesion.cargarSesion();
     this.procesarVueltaGoogle();
   }
 

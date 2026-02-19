@@ -6,8 +6,8 @@
     </button>
     <a href="/admin/inicio" class="logo-admin-link">
       <img src="logo.png" alt="Logo" class="logo-admin">
-      <h4>RIXX</h4>
-      <p>Store 2026</p>
+      <h4>SIXX</h4>
+      <p>AHORA</p>
     </a>
   </div>
   <button class="boton-busqueda" type="button">
@@ -16,15 +16,15 @@
   <div class="contenedor-cabecera-derecha">
     <div class="contenedor-cabecera-derecha-perfil">
       <div class="perfil-usuario" type="button">
-        <h4 class="texto-boton">JA</h4>
+        <h4 class="texto-boton">{{ inicialesUsuario() }}</h4>
       </div>
-      <p class="nombre-usuario">Jose Alejandro</p>
+      <p class="nombre-usuario">{{ nombreUsuario() }}</p>
     </div>
-    <button id="boton-cerrar-sesion" class="boton-menu" type="button">
-      <img src="/iconos/ico-cerrar-sesion.svg" alt="Salir" class="icono-boton icono-color-claro">
-    </button>
-    <button id="boton-configuracion" class="boton-menu" type="button">
+    <button id="boton-configuracion" class="boton-menu" type="button" (click)="irAConfiguracion()">
       <img src="/iconos/ico-configuracion.svg" alt="Configuración" class="icono-boton icono-color-claro">
+    </button>
+    <button id="boton-cerrar-sesion" class="boton-menu" type="button" (click)="cerrarSesion()">
+      <img src="/iconos/ico-cerrar-sesion.svg" alt="Salir" class="icono-boton icono-color-claro">
     </button>
   </div>
 </header>

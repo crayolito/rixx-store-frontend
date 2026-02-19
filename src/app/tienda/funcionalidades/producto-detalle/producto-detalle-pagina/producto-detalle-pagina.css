@@ -187,7 +187,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--espaciado-xs);
+  gap: var(--espaciado-md);
   padding: var(--espaciado-sm) var(--espaciado-md);
   background-color: var(--color-fondo-secundario);
   border: 2px solid transparent;
@@ -214,9 +214,32 @@
   cursor: not-allowed;
 }
 
-.tienda-producto-detalle__variante .global-radio__input {
+/* ─── Radio mejorado (círculo más visible) en variantes y método de pago ─── */
+.tienda-producto-detalle__variante .global-radio__input,
+.tienda-producto-detalle__metodo-pago .global-radio__input {
   flex-shrink: 0;
   margin: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-width: 2px;
+  border-color: var(--color-borde-separador);
+  background-color: var(--color-fondo-secundario);
+}
+
+.tienda-producto-detalle__variante .global-radio__input:hover:not(:disabled),
+.tienda-producto-detalle__metodo-pago .global-radio__input:hover:not(:disabled) {
+  border-color: var(--color-primario);
+}
+
+.tienda-producto-detalle__variante .global-radio__input:checked,
+.tienda-producto-detalle__metodo-pago .global-radio__input:checked {
+  border-color: var(--color-primario);
+  background-color: var(--color-primario);
+}
+
+.tienda-producto-detalle__variante .global-radio__input:checked::before,
+.tienda-producto-detalle__metodo-pago .global-radio__input:checked::before {
+  background-color: var(--color-fondo-secundario);
 }
 
 .tienda-producto-detalle__variante-contenido {
@@ -344,6 +367,51 @@
   opacity: 0.6;
 }
 
+/* ─── Dropdown servidor (mejorado visualmente) ─── */
+.tienda-producto-detalle__campo-servidor .global-formulario-campo__etiqueta {
+  color: var(--color-texto-primario);
+}
+
+.tienda-producto-detalle__dropdown-servidor {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tienda-producto-detalle__select-servidor {
+  width: 100%;
+  padding: var(--espaciado-sm) var(--espaciado-lg) var(--espaciado-sm) var(--espaciado-md);
+  font-size: var(--texto-base);
+  font-weight: var(--peso-medium);
+  color: var(--color-texto-primario);
+  background-color: var(--color-fondo-secundario);
+  border: 2px solid var(--color-borde-separador);
+  border-radius: var(--borde-radio);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color var(--transicion-rapida), background-color var(--transicion-rapida);
+}
+
+.tienda-producto-detalle__select-servidor:hover,
+.tienda-producto-detalle__select-servidor:focus {
+  border-color: var(--color-primario);
+  outline: none;
+}
+
+.tienda-producto-detalle__select-servidor option {
+  background-color: var(--color-fondo-secundario);
+  color: var(--color-texto-primario);
+}
+
+.tienda-producto-detalle__select-flecha {
+  position: absolute;
+  right: var(--espaciado-sm);
+  width: 1rem;
+  height: 1rem;
+  pointer-events: none;
+  opacity: 0.8;
+}
 
 /* ─── Métodos de pago con radio buttons ─── */
 .tienda-producto-detalle__metodos-pago {
@@ -655,5 +723,23 @@
 
   .tienda-producto-detalle__boton {
     flex: 1;
+  }
+}
+
+/* ─── Resaltar sección cuando faltan datos ─── */
+.tienda-producto-detalle__seccion--resaltar {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 4px;
+  border-radius: var(--borde-radio);
+  animation: producto-detalle-resaltar 0.3s ease;
+}
+
+@keyframes producto-detalle-resaltar {
+  from {
+    outline-color: transparent;
+  }
+
+  to {
+    outline-color: var(--color-primario);
   }
 }

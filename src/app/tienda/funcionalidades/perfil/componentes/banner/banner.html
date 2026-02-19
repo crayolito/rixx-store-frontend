@@ -1,0 +1,23 @@
+<!-- Banner superior: foto, nombre y email -->
+<div class="perfil-banner">
+  <div class="perfil-banner__contenido">
+    <div class="perfil-banner__foto-contenedor">
+      <label for="input-foto-perfil" class="perfil-banner__foto-label">
+        @if (fotoPerfil() && fotoPerfil() !== '/imagenes/usuarios/default.jpg') {
+        <img [src]="fotoPerfil()" alt="Foto de perfil" class="perfil-banner__foto">
+        } @else {
+        <img src="/imagenes/foto-perfil1.png" alt="Foto por defecto" class="perfil-banner__foto">
+        }
+        <div class="perfil-banner__foto-overlay">
+          <img src="/iconos/ico-editar.svg" alt="Editar" class="perfil-banner__foto-icono">
+        </div>
+      </label>
+      <input type="file" id="input-foto-perfil" accept="image/*" (change)="manejarCambioFoto($event)"
+        style="display: none;">
+    </div>
+    <div class="perfil-banner__info">
+      <h1 class="perfil-banner__nombre">{{ nombre() }}</h1>
+      <p class="perfil-banner__email">{{ email() }}</p>
+    </div>
+  </div>
+</div>

@@ -6,8 +6,7 @@ import type {
   ConfiguracionGlobal,
   ProductoCategoriaMarketing
 } from '../../../../compartido/modelos/configuracion.modelo';
-
-const CLAVE_CONFIGURACION_GLOBAL = 'configuracion-global';
+import { ConfiguracionApiServicio } from '../../../../compartido/servicios/configuracion-api.servicio';
 
 interface CategoriaVista {
   id: string;
@@ -24,6 +23,7 @@ interface CategoriaVista {
 })
 export class CategoriaPagina implements OnInit {
   private route = inject(ActivatedRoute);
+  private configuracionApi = inject(ConfiguracionApiServicio);
 
   Math = Math;
   usaConfig = signal(false);
@@ -84,7 +84,14 @@ export class CategoriaPagina implements OnInit {
 
   private cargarConfiguracion(slugDesdeRuta?: string): void {
     const aplicar = (global: ConfiguracionGlobal) => {
-      const cm = global?.categorias ?? global?.categoria?.categorias;
+      const cat = global?.categorias;
+      const catObj = cat && typeof cat === 'object' && !Array.isArray(cat)
+        ? (cat as unknown as { categorias?: CategoriaMarketing[] }).categorias
+        : undefined;
+      const cm =
+        (Array.isArray(cat) ? cat : catObj) ??
+        global?.categoria?.categorias ??
+        global?.categoriasMarketing?.categorias;
       if (Array.isArray(cm) && cm.length > 0) {
         this.categoriasMarketing.set(cm);
         this.categorias.set(
@@ -110,23 +117,15 @@ export class CategoriaPagina implements OnInit {
       }
       return false;
     };
-    fetch('/configuracion.json')
-      .then((r) => r.json())
-      .then((global: ConfiguracionGlobal) => {
-        if (aplicar(global)) return;
-        try {
-          const raw = localStorage.getItem(CLAVE_CONFIGURACION_GLOBAL);
-          if (raw) aplicar(JSON.parse(raw) as ConfiguracionGlobal);
-        } catch { }
+    this.configuracionApi.obtenerConfiguracion().subscribe({
+      next: (global) => {
+        if (aplicar(global as ConfiguracionGlobal)) return;
         if (!this.usaConfig()) this.cargarDatosFallback();
-      })
-      .catch(() => {
-        try {
-          const raw = localStorage.getItem(CLAVE_CONFIGURACION_GLOBAL);
-          if (raw) aplicar(JSON.parse(raw) as ConfiguracionGlobal);
-        } catch { }
+      },
+      error: () => {
         if (!this.usaConfig()) this.cargarDatosFallback();
-      });
+      },
+    });
   }
 
   private cargarDatosFallback(): void {

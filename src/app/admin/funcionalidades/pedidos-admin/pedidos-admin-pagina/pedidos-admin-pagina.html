@@ -102,27 +102,31 @@
           <td class="global-tabla__celda global-tabla__celda-acciones">
             <ul class="global-tabla__lista-acciones global-tabla__lista-acciones--iconos">
               <li>
-                <button type="button" (click)="verDetalles(pedido)" title="Ver más">
-                  <img src="/iconos/ico-vermas.svg" alt="Ver más" class="icono-boton-mediano icono-color-base">
+                <button type="button" (click)="verDetalles(pedido)" title="Ver más"
+                  class="boton-secundario global-tabla__boton-accion">
+                  <img src="/iconos/ico-ojo-abierto.svg" alt="" class="icono-boton icono-color-base">
+                  <p>Ver más</p>
                 </button>
               </li>
               @if (pedido.estado === 'completado') {
               <li>
-                <button type="button" (click)="reembolsarPedido(pedido)" title="Reembolsar">
-                  <img src="/iconos/ico-reembolsar.svg" alt="Reembolsar"
-                    class="icono-boton-mediano icono-color-secundario">
+                <button type="button" (click)="reembolsarPedido(pedido)" title="Reembolsar"
+                  class="boton-secundario global-tabla__boton-accion">
+                  <p>Reembolsar</p>
                 </button>
               </li>
               }
               @if (pedido.estado === 'pendiente') {
               <li>
                 @if (estaProcesando(pedido)) {
-                <button type="button" class="global-tabla__boton-procesando" disabled title="Procesando">
-                  <img src="/iconos/ico-completar.svg" alt="Procesando" class="icono-boton-mediano icono-color-septimo">
+                <button type="button" class="global-tabla__boton-procesando" disabled title="Procesando"
+                  class="boton-secundario global-tabla__boton-accion">
+                  <p>Procesando</p>
                 </button>
                 } @else {
-                <button type="button" (click)="completarPedidoConEspera(pedido)" title="Completar">
-                  <img src="/iconos/ico-completar.svg" alt="Completar" class="icono-boton-mediano icono-color-primario">
+                <button type="button" (click)="completarPedidoConEspera(pedido)" title="Completar"
+                  class="boton-secundario global-tabla__boton-accion">
+                  <p>Completar</p>
                 </button>
                 }
               </li>

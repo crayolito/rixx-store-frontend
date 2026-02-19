@@ -1,5 +1,8 @@
 <section class="tienda-carrusel">
-  <div class="tienda-carrusel__contenedor">
+  <div class="tienda-carrusel__contenedor" (mousedown)="iniciarArrastre($event)"
+    (mouseup)="finalizarArrastre($event)" (mouseleave)="cancelarArrastre()"
+    (touchstart)="iniciarArrastreTouch($event)" (touchend)="finalizarArrastreTouch($event)"
+    (touchcancel)="cancelarArrastre()">
     <div class="tienda-carrusel__pista">
       @for (slide of slides(); track slide.id; let i = $index) {
       <div class="tienda-carrusel__slide" [class.tienda-carrusel__slide--anterior]="esAnterior(i)"
@@ -7,10 +10,9 @@
         [class.tienda-carrusel__slide--oculta]="esOculta(i)" (click)="irASlide(i)">
 
         @if (esActiva(i)) {
-        <!-- Imagen activa con eventos de arrastre y navegación -->
+        <!-- Imagen activa: click para ir al destino -->
         <a [style.cursor]="slide.tipoDestino !== 'ninguno' ? 'pointer' : 'default'"
-          (click)="manejarClickImagen($event, slide)" (mousedown)="iniciarArrastre($event)"
-          (mouseup)="finalizarArrastre($event)" (mouseleave)="cancelarArrastre()">
+          (click)="manejarClickImagen($event, slide)">
           <img [src]="esMovil ? slide.imagenMovil : slide.imagenDesktop" [alt]="'Banner ' + slide.id"
             class="tienda-carrusel__imagen">
         </a>

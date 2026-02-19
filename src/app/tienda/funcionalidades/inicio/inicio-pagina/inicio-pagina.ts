@@ -26,9 +26,14 @@ export class InicioPagina {
 
       if (config.carrusel) this.carrusel.set(config.carrusel);
       if (config.promocion) this.promocion.set(config.promocion);
-      if (Array.isArray(config.categorias) && config.categorias.length > 0) {
-        this.categorias.set(config.categorias);
-      }
+
+      // Categorías: prioridad categorias → categoria.categorias → categoriasMarketing.categorias (donde guarda el admin)
+      const lista =
+        (Array.isArray(config.categorias) && config.categorias.length > 0 && config.categorias) ||
+        (config.categoria?.categorias?.length && config.categoria.categorias) ||
+        (config.categoriasMarketing?.categorias?.length && config.categoriasMarketing.categorias) ||
+        [];
+      this.categorias.set(lista);
     });
   }
 

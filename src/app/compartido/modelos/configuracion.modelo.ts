@@ -182,4 +182,6 @@ export interface OpcionPieDePagina {
   tipo: string;
   etiqueta: string;
   path: string;
+  numero?: string;
+  correo?: string;
 }

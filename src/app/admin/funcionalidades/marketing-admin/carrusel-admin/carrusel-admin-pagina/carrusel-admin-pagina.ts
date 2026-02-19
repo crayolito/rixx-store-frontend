@@ -1,17 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import type { Producto } from '../../../../../compartido/datos/productos.datos';
-import { PRODUCTOS } from '../../../../../compartido/datos/productos.datos';
 import type { CategoriaConfiguracion } from '../../../../../compartido/modelos/configuracion.modelo';
 import {
-  ConfiguracionCarrusel,
-  ConfiguracionGlobal,
   handleATitulo,
   SlideCarrusel,
   TipoDestinoCarrusel,
 } from '../../../../../compartido/modelos/configuracion.modelo';
-const CLAVE_CONFIGURACION_GLOBAL = 'configuracion-global';
+import { ProductoApi } from '../../../../../compartido/modelos/producto.modelo';
+import { ConfiguracionApiServicio } from '../../../../../compartido/servicios/configuracion-api.servicio';
+import { CategoriasApiServicio } from '../../../../../nucleo/servicios/categorias-api.servicio';
+import { CloudinaryApiServicio } from '../../../../../nucleo/servicios/cloudinary-api.servicio';
+import { ProductosApiServicio } from '../../../../../nucleo/servicios/productos-api.servicio';
+
 const MIN_SLIDES = 3;
 const MAX_SLIDES = 8;
 
@@ -24,58 +25,67 @@ const MAX_SLIDES = 8;
 })
 export class CarruselAdminPagina implements OnInit {
   private router = inject(Router);
+  private categoriasApi = inject(CategoriasApiServicio);
+  private productosApi = inject(ProductosApiServicio);
+  private cloudinaryApi = inject(CloudinaryApiServicio);
+  private configuracionApi = inject(ConfiguracionApiServicio);
 
-  readonly productosDisponibles = PRODUCTOS;
-  readonly categoriasDisponibles: CategoriaConfiguracion[] = [];
+  readonly productosDisponibles = signal<ProductoApi[]>([]);
+  readonly categoriasDisponibles = signal<CategoriaConfiguracion[]>([]);
   readonly minSlides = MIN_SLIDES;
   readonly maxSlides = MAX_SLIDES;
   readonly handleATitulo = handleATitulo;
 
-  slides = signal<SlideCarrusel[]>([]);
+  slides = signal<SlideCarrusel[]>([
+    { id: 'slide-1', imagenMovil: '', imagenDesktop: '', tipoDestino: 'ninguno' },
+    { id: 'slide-2', imagenMovil: '', imagenDesktop: '', tipoDestino: 'ninguno' },
+    { id: 'slide-3', imagenMovil: '', imagenDesktop: '', tipoDestino: 'ninguno' },
+  ]);
   busquedaProducto = signal<Record<number, string>>({});
   busquedaCategoria = signal<Record<number, string>>({});
   mensajeGuardado = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.cargarDesdeJson();
+    this.cargarCategorias();
+    this.cargarProductos();
+    this.cargarConfiguracion();
   }
 
-  private obtenerConfiguracionGlobal(): ConfiguracionGlobal {
-    try {
-      const raw = localStorage.getItem(CLAVE_CONFIGURACION_GLOBAL);
-      if (raw) return JSON.parse(raw) as ConfiguracionGlobal;
-    } catch { }
-    return {};
+  private cargarCategorias(): void {
+    this.categoriasApi.obtenerTodas().subscribe({
+      next: (lista) => {
+        const mapeadas: CategoriaConfiguracion[] = lista.map((c) => ({
+          id: String(c.id_categoria),
+          handle: c.handle,
+          titulo: c.nombre,
+        }));
+        this.categoriasDisponibles.set(mapeadas);
+      },
+    });
   }
 
-  private cargarDesdeJson(): void {
-    const aplicarCarrusel = (global: ConfiguracionGlobal) => {
-      const c = global?.carrusel;
-      if (c && Array.isArray(c.slides) && c.slides.length >= MIN_SLIDES) {
-        const normalizados = this.normalizarSlides(c.slides);
-        this.slides.set(normalizados);
-        return true;
-      }
-      return false;
-    };
-    fetch('/configuracion.json')
-      .then((r) => r.json())
-      .then((global: ConfiguracionGlobal) => {
-        if (aplicarCarrusel(global)) return;
-        const local = this.obtenerConfiguracionGlobal();
-        if (aplicarCarrusel(local)) return;
-        this.slides.set(this.obtenerSlidesPorDefecto());
-      })
-      .catch(() => {
-        const local = this.obtenerConfiguracionGlobal();
-        if (aplicarCarrusel(local)) return;
-        this.slides.set(this.obtenerSlidesPorDefecto());
-      });
+  private cargarProductos(): void {
+    this.productosApi.obtenerImportados().subscribe({
+      next: (lista) => this.productosDisponibles.set(lista),
+    });
+  }
+
+  private cargarConfiguracion(): void {
+    this.configuracionApi.obtenerConfiguracion().subscribe({
+      next: (config) => {
+        const c = config?.carrusel;
+        if (c && Array.isArray(c.slides) && c.slides.length >= MIN_SLIDES) {
+          this.slides.set(this.normalizarSlides(c.slides));
+        } else {
+          this.slides.set(this.obtenerSlidesPorDefecto());
+        }
+      },
+      error: () => this.slides.set(this.obtenerSlidesPorDefecto()),
+    });
   }
 
   private normalizarSlides(lista: SlideCarrusel[]): SlideCarrusel[] {
-    const recortada =
-      lista.length > MAX_SLIDES ? lista.slice(0, MAX_SLIDES) : lista;
+    const recortada = lista.length > MAX_SLIDES ? lista.slice(0, MAX_SLIDES) : lista;
     return recortada.map((s) => ({
       id: s.id,
       imagenMovil: s.imagenMovil ?? '',
@@ -85,26 +95,12 @@ export class CarruselAdminPagina implements OnInit {
     }));
   }
 
+  /** Devuelve 3 slides vacíos cuando no hay configuración guardada. */
   private obtenerSlidesPorDefecto(): SlideCarrusel[] {
     return [
-      {
-        id: 'slide-1',
-        imagenMovil: '/imagenes/banner-juego1.jpg',
-        imagenDesktop: '/imagenes/banner-juego1.jpg',
-        tipoDestino: 'ninguno',
-      },
-      {
-        id: 'slide-2',
-        imagenMovil: '/imagenes/banner-juego2.png',
-        imagenDesktop: '/imagenes/banner-juego2.png',
-        tipoDestino: 'ninguno',
-      },
-      {
-        id: 'slide-3',
-        imagenMovil: '/imagenes/banner-juego3.jpg',
-        imagenDesktop: '/imagenes/banner-juego3.jpg',
-        tipoDestino: 'ninguno',
-      },
+      { id: 'slide-1', imagenMovil: '', imagenDesktop: '', tipoDestino: 'ninguno' },
+      { id: 'slide-2', imagenMovil: '', imagenDesktop: '', tipoDestino: 'ninguno' },
+      { id: 'slide-3', imagenMovil: '', imagenDesktop: '', tipoDestino: 'ninguno' },
     ];
   }
 
@@ -115,40 +111,37 @@ export class CarruselAdminPagina implements OnInit {
   guardarConfiguracion(): void {
     const list = this.slides();
     if (list.length < MIN_SLIDES || list.length > MAX_SLIDES) {
-      this.mensajeGuardado.set(
-        `Debes tener entre ${MIN_SLIDES} y ${MAX_SLIDES} slides.`
-      );
+      this.mensajeGuardado.set(`Debes tener entre ${MIN_SLIDES} y ${MAX_SLIDES} slides.`);
       setTimeout(() => this.mensajeGuardado.set(null), 5000);
       return;
     }
-    const incompleto = list.some(
-      (s) => !s.imagenMovil?.trim() || !s.imagenDesktop?.trim()
-    );
+    const incompleto = list.some((s: SlideCarrusel) => !s.imagenMovil?.trim() || !s.imagenDesktop?.trim());
     if (incompleto) {
-      this.mensajeGuardado.set(
-        'Cada slide debe tener imagen móvil e imagen desktop.'
-      );
+      this.mensajeGuardado.set('Cada slide debe tener imagen móvil e imagen desktop.');
       setTimeout(() => this.mensajeGuardado.set(null), 5000);
       return;
     }
     const sinDestino = list.some(
-      (s) =>
-        (s.tipoDestino === 'producto' || s.tipoDestino === 'categoria') &&
-        !s.destinoHandle?.trim()
+      (s: SlideCarrusel) =>
+        (s.tipoDestino === 'producto' || s.tipoDestino === 'categoria') && !s.destinoHandle?.trim(),
     );
     if (sinDestino) {
       this.mensajeGuardado.set(
-        'En los slides con "Ir a producto" o "Ir a categoría" debes seleccionar uno.'
+        'En los slides con "Ir a producto" o "Ir a categoría" debes seleccionar uno.',
       );
       setTimeout(() => this.mensajeGuardado.set(null), 5000);
       return;
     }
-    const datos: ConfiguracionCarrusel = { slides: list };
-    const global = this.obtenerConfiguracionGlobal();
-    global.carrusel = datos;
-    localStorage.setItem(CLAVE_CONFIGURACION_GLOBAL, JSON.stringify(global));
-    this.mensajeGuardado.set('Configuración guardada correctamente.');
-    setTimeout(() => this.mensajeGuardado.set(null), 3000);
+    this.configuracionApi.actualizarCarrusel(list).subscribe({
+      next: () => {
+        this.mensajeGuardado.set('Configuración guardada correctamente.');
+        setTimeout(() => this.mensajeGuardado.set(null), 3000);
+      },
+      error: () => {
+        this.mensajeGuardado.set('Error al guardar la configuración.');
+        setTimeout(() => this.mensajeGuardado.set(null), 5000);
+      },
+    });
   }
 
   puedeAgregarSlide(): boolean {
@@ -162,7 +155,7 @@ export class CarruselAdminPagina implements OnInit {
   agregarSlide(): void {
     if (!this.puedeAgregarSlide()) return;
     const id = 'slide-' + Date.now();
-    this.slides.update((list) => [
+    this.slides.update((list: SlideCarrusel[]) => [
       ...list,
       {
         id,
@@ -175,15 +168,15 @@ export class CarruselAdminPagina implements OnInit {
 
   quitarSlide(indice: number): void {
     if (!this.puedeQuitarSlide()) return;
-    const list = this.slides().filter((_, i) => i !== indice);
+    const list = this.slides().filter((_: SlideCarrusel, i: number) => i !== indice);
     this.slides.set(list);
-    this.busquedaProducto.update((r) => this.reindexarBusqueda(r, indice));
-    this.busquedaCategoria.update((r) => this.reindexarBusqueda(r, indice));
+    this.busquedaProducto.update((r: Record<number, string>) => this.reindexarBusqueda(r, indice));
+    this.busquedaCategoria.update((r: Record<number, string>) => this.reindexarBusqueda(r, indice));
   }
 
   private reindexarBusqueda(
     actual: Record<number, string>,
-    indiceQuitado: number
+    indiceQuitado: number,
   ): Record<number, string> {
     const next: Record<number, string> = {};
     Object.entries(actual).forEach(([k, v]) => {
@@ -198,104 +191,102 @@ export class CarruselAdminPagina implements OnInit {
     const input = evento.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.slides.update((list) =>
-        list.map((s, i) =>
-          i === indice ? { ...s, imagenMovil: reader.result as string } : s
-        )
-      );
-    };
-    reader.readAsDataURL(file);
+    if (file.size > 10 * 1024 * 1024) return;
+    this.cloudinaryApi.subirImagen(file).subscribe({
+      next: (url) => {
+        if (!url) return;
+        this.slides.update((list: SlideCarrusel[]) =>
+          list.map((s: SlideCarrusel, i: number) => (i === indice ? { ...s, imagenMovil: url } : s)),
+        );
+      },
+    });
+    input.value = '';
   }
 
   actualizarImagenDesktop(indice: number, evento: Event): void {
     const input = evento.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.slides.update((list) =>
-        list.map((s, i) =>
-          i === indice ? { ...s, imagenDesktop: reader.result as string } : s
-        )
-      );
-    };
-    reader.readAsDataURL(file);
+    if (file.size > 10 * 1024 * 1024) return;
+    this.cloudinaryApi.subirImagen(file).subscribe({
+      next: (url) => {
+        if (!url) return;
+        this.slides.update((list: SlideCarrusel[]) =>
+          list.map((s: SlideCarrusel, i: number) => (i === indice ? { ...s, imagenDesktop: url } : s)),
+        );
+      },
+    });
+    input.value = '';
   }
 
   actualizarTipoDestino(indice: number, valor: TipoDestinoCarrusel): void {
-    this.slides.update((list) =>
-      list.map((s, i) =>
+    this.slides.update((list: SlideCarrusel[]) =>
+      list.map((s: SlideCarrusel, i: number) =>
         i === indice
           ? {
-            ...s,
-            tipoDestino: valor,
-            destinoHandle:
-              valor === 'ninguno' ? undefined : s.destinoHandle,
-          }
-          : s
-      )
+              ...s,
+              tipoDestino: valor,
+              destinoHandle: valor === 'ninguno' ? undefined : s.destinoHandle,
+            }
+          : s,
+      ),
     );
   }
 
   setBusquedaProducto(indice: number, valor: string): void {
-    this.busquedaProducto.update((r) => ({ ...r, [indice]: valor }));
+    this.busquedaProducto.update((r: Record<number, string>) => ({ ...r, [indice]: valor }));
   }
 
   setBusquedaCategoria(indice: number, valor: string): void {
-    this.busquedaCategoria.update((r) => ({ ...r, [indice]: valor }));
+    this.busquedaCategoria.update((r: Record<number, string>) => ({ ...r, [indice]: valor }));
   }
 
-  productosFiltradosPara(indice: number): Producto[] {
+  productosFiltradosPara(indice: number): ProductoApi[] {
     const texto = (this.busquedaProducto()[indice] ?? '').trim().toLowerCase();
-    if (!texto) return this.productosDisponibles;
-    return this.productosDisponibles.filter(
+    const lista = this.productosDisponibles();
+    if (!texto) return lista;
+    return lista.filter(
       (p) =>
-        p.nombre.toLowerCase().includes(texto) ||
-        p.id.toLowerCase().includes(texto)
+        p.titulo.toLowerCase().includes(texto) || (p.handle ?? '').toLowerCase().includes(texto),
     );
   }
 
   categoriasFiltradasPara(indice: number): CategoriaConfiguracion[] {
     const texto = (this.busquedaCategoria()[indice] ?? '').trim().toLowerCase();
-    if (!texto) return this.categoriasDisponibles;
-    return this.categoriasDisponibles.filter(
-      (c: CategoriaConfiguracion) =>
+    const lista = this.categoriasDisponibles();
+    if (!texto) return lista;
+    return lista.filter(
+      (c) =>
         c.handle.toLowerCase().includes(texto) ||
-        handleATitulo(c.handle).toLowerCase().includes(texto)
+        handleATitulo(c.handle).toLowerCase().includes(texto),
     );
   }
 
-  asignarDestinoProducto(indice: number, producto: Producto): void {
-    this.slides.update((list) =>
-      list.map((s, i) =>
+  asignarDestinoProducto(indice: number, producto: ProductoApi): void {
+    this.slides.update((list: SlideCarrusel[]) =>
+      list.map((s: SlideCarrusel, i: number) =>
         i === indice
-          ? {
-            ...s,
-            tipoDestino: 'producto' as const,
-            destinoHandle: producto.id,
-          }
-          : s
-      )
+          ? { ...s, tipoDestino: 'producto' as const, destinoHandle: producto.handle }
+          : s,
+      ),
     );
   }
 
   asignarDestinoCategoria(indice: number, handle: string): void {
-    this.slides.update((list) =>
-      list.map((s, i) =>
+    this.slides.update((list: SlideCarrusel[]) =>
+      list.map((s: SlideCarrusel, i: number) =>
         i === indice
           ? {
-            ...s,
-            tipoDestino: 'categoria' as const,
-            destinoHandle: handle,
-          }
-          : s
-      )
+              ...s,
+              tipoDestino: 'categoria' as const,
+              destinoHandle: handle,
+            }
+          : s,
+      ),
     );
   }
 
   nombreProductoPorHandle(handle: string): string {
-    return this.productosDisponibles.find((p) => p.id === handle)?.nombre ?? handle;
+    return this.productosDisponibles().find((p) => p.handle === handle)?.titulo ?? handle;
   }
 }

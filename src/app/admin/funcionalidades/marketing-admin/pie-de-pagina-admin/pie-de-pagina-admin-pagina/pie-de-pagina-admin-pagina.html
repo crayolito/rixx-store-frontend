@@ -1,14 +1,20 @@
 <div class="contenedor-pagina">
   <section class="pie-de-pagina-admin-seccion pie-de-pagina-admin-tarjeta">
     <div class="pie-de-pagina-admin-cabecera-principal">
-      <h2 class="pie-de-pagina-admin-titulo">Pie de página</h2>
-      <div class="pie-de-pagina-admin-botones-cabecera">
-        @if (mensajeGuardado()) {
-        <span class="pie-de-pagina-admin-mensaje" [class.pie-de-pagina-admin-mensaje--error]="mensajeGuardado() !== 'Configuración guardada correctamente.'">{{
-          mensajeGuardado() }}</span>
+      <div class="pie-de-pagina-admin-titulo-contenedor">
+        <h2 class="pie-de-pagina-admin-titulo">Pie de página</h2>
+        @if (hayCambiosPendientes()) {
+        <span class="pie-de-pagina-admin-cambios-sin-guardar">• Cambios sin guardar</span>
         }
+      </div>
+      <div class="pie-de-pagina-admin-botones-cabecera">
         <button type="button" class="boton-secundario" (click)="volver()">Volver</button>
-        <button type="button" class="boton-primario" (click)="guardarConfiguracion()">Guardar</button>
+        @if (hayCambiosPendientes()) {
+        <button type="button" class="boton-secundario" (click)="cancelarCambios()" [disabled]="guardando()">Cancelar</button>
+        }
+        <button type="button" class="boton-primario" (click)="guardarConfiguracion()" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando...' : 'Guardar' }}
+        </button>
       </div>
     </div>
 
@@ -38,7 +44,7 @@
           } @else {
           <img src="/iconos/ico-imagen.svg" alt="Icono imagen" class="icono-boton icono-color-secundario">
           <span class="global-formulario-imagenes__etiqueta1">Haz clic para subir el logo</span>
-          <span class="global-formulario-imagenes__etiqueta2">PNG, JPG, SVG hasta 5MB</span>
+          <span class="global-formulario-imagenes__etiqueta2">PNG, JPG, SVG hasta 5MB (Cloudinary)</span>
           }
         </label>
         <input type="file" id="input-logo-pie" accept="image/*" (change)="manejarCambioLogo($event)"
@@ -113,18 +119,40 @@
             </div>
             @if (getTipoEnlace(opcion.path) === 'categoria') {
               <div class="global-formulario-campo">
-                <label class="global-formulario-campo__etiqueta">Slug de la categoría</label>
+                <label class="global-formulario-campo__etiqueta">Categoría</label>
                 <div class="global-formulario-campo__contenedor">
-                  <input type="text" class="global-formulario-campo__input" placeholder="Ej: free-fire"
+                  <select class="global-formulario-campo__input"
+                    [value]="getSlugOPathParaEnlace(opcion.path)"
+                    (change)="actualizarPathEnlace(i, j, 'categoria', $any($event.target).value)">
+                    <option value="">Elige una categoría</option>
+                    @for (cat of categoriasParaEnlace(); track cat.handle) {
+                    <option [value]="cat.handle">{{ cat.nombre }}</option>
+                    }
+                  </select>
+                </div>
+                <p class="pie-de-pagina-admin-ayuda pie-de-pagina-admin-ayuda--campo">Si no aparece, escribe el slug abajo.</p>
+                <div class="global-formulario-campo__contenedor">
+                  <input type="text" class="global-formulario-campo__input" placeholder="Slug manual (ej: mi-categoria)"
                     [value]="getSlugOPathParaEnlace(opcion.path)" (input)="actualizarPathEnlace(i, j, 'categoria', $any($event.target).value)">
                 </div>
               </div>
             }
             @if (getTipoEnlace(opcion.path) === 'producto') {
               <div class="global-formulario-campo">
-                <label class="global-formulario-campo__etiqueta">Slug del producto</label>
+                <label class="global-formulario-campo__etiqueta">Producto</label>
                 <div class="global-formulario-campo__contenedor">
-                  <input type="text" class="global-formulario-campo__input" placeholder="Ej: 1 o nombre-producto"
+                  <select class="global-formulario-campo__input"
+                    [value]="getSlugOPathParaEnlace(opcion.path)"
+                    (change)="actualizarPathEnlace(i, j, 'producto', $any($event.target).value)">
+                    <option value="">Elige un producto</option>
+                    @for (prod of productosParaEnlace(); track prod.handle) {
+                    <option [value]="prod.handle">{{ prod.titulo }}</option>
+                    }
+                  </select>
+                </div>
+                <p class="pie-de-pagina-admin-ayuda pie-de-pagina-admin-ayuda--campo">Si no aparece, escribe el slug abajo.</p>
+                <div class="global-formulario-campo__contenedor">
+                  <input type="text" class="global-formulario-campo__input" placeholder="Slug manual (ej: mi-producto)"
                     [value]="getSlugOPathParaEnlace(opcion.path)" (input)="actualizarPathEnlace(i, j, 'producto', $any($event.target).value)">
                 </div>
               </div>

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, effect, inject, input, OnDestroy, OnInit, output } from '@angular/core';
 import { Router } from '@angular/router';
+import type { ItemCarrito } from '../../servicios/carrito.servicio';
 import { CarritoServicio } from '../../servicios/carrito.servicio';
 
 @Component({
@@ -71,6 +72,25 @@ export class DrawerCarrito implements OnInit, OnDestroy {
   irAlCheckout() {
     this.cerrarDrawer();
     this.router.navigate(['/checkout']);
+  }
+
+  tieneDatosAdicionales(item: ItemCarrito): boolean {
+    const campos = item.camposDinamicos && Object.keys(item.camposDinamicos).length > 0;
+    const servidor = item.servidor?.trim();
+    return !!(campos || servidor);
+  }
+
+  obtenerDatosAdicionales(item: ItemCarrito): { etiqueta: string; valor: string }[] {
+    const datos: { etiqueta: string; valor: string }[] = [];
+    if (item.servidor?.trim()) datos.push({ etiqueta: 'Servidor', valor: item.servidor });
+    const campos = item.camposDinamicos ?? {};
+    Object.entries(campos).forEach(([handle, valor]) => {
+      if (handle !== 'servidor' && valor?.trim()) {
+        const etiqueta = handle.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+        datos.push({ etiqueta, valor });
+      }
+    });
+    return datos;
   }
 
   ngOnDestroy() {

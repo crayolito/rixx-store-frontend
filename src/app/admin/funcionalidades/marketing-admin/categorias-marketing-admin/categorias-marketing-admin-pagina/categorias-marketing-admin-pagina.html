@@ -4,13 +4,33 @@
       <h2 class="categorias-marketing-titulo">Categorías Marketing</h2>
       <div class="categorias-marketing-botones">
         <button type="button" class="boton-secundario" (click)="volver()">Volver</button>
-        <button type="button" class="boton-primario" (click)="guardarConfiguracion()">Guardar cambios</button>
+        @if (hayCambiosPendientes()) {
+        <button type="button" class="boton-secundario" (click)="cancelarCambios()" [disabled]="guardando()">
+          Cancelar
+        </button>
+        }
+        <button type="button" class="boton-primario" (click)="guardarConfiguracion()"
+          [disabled]="guardando() || !categoriaSeleccionada()">
+          {{ guardando() ? 'Guardando…' : 'Guardar cambios' }}
+        </button>
       </div>
     </div>
 
     <p class="categorias-marketing-ayuda">
-      Selecciona una categoría, elige al menos {{ minProductos }} productos, indica qué precio mostrar y arrastra para ordenar.
+      Selecciona una categoría, elige productos, indica qué precio mostrar y arrastra para ordenar. Puedes dejar una categoría vacía. Al guardar se envía al servidor.
     </p>
+
+    @if (hayCambiosPendientes() && !guardando()) {
+    <div class="categorias-marketing-aviso-cambios" role="status">
+      <span class="categorias-marketing-aviso-cambios__texto">
+        Tienes cambios sin guardar{{ categoriaSeleccionada() ? ' en «' + categoriaSeleccionada() + '»' : '' }}. Pulsa «Guardar cambios» para enviarlos al servidor.
+      </span>
+    </div>
+    }
+
+    @if (cargandoDatos()) {
+    <p class="categorias-marketing-ayuda">Cargando categorías y productos…</p>
+    }
 
     <div class="categorias-marketing-paneles">
       <aside class="categorias-marketing-panel-izq">
@@ -37,18 +57,22 @@
             (input)="setBusqueda($any($event.target).value)">
         </div>
         <div class="categorias-marketing-lista-productos">
-          @for (p of productosDeCategoria(); track p.id) {
+          @for (p of productosDeCategoria(); track p.handle) {
           <div class="categorias-marketing-fila-producto">
             <label class="categorias-marketing-checkbox">
               <input type="checkbox" [checked]="estaSeleccionado(p)"
-                [disabled]="estaSeleccionado(p) && !puedeQuitarSeleccion()"
+                [disabled]="(estaSeleccionado(p) && !puedeQuitarSeleccion()) || estaCargandoPrecios(p)"
                 (change)="toggleSeleccion(p)">
             </label>
-            <img [src]="p.imagen" alt="" class="categorias-marketing-fila-imagen">
+            <img [src]="imagenProducto(p)" alt="" class="categorias-marketing-fila-imagen">
             <div class="categorias-marketing-fila-info">
-              <span class="categorias-marketing-fila-titulo">{{ p.nombre }}</span>
+              <span class="categorias-marketing-fila-titulo">{{ p.titulo }}</span>
               <span class="categorias-marketing-fila-precios">
+                @if (estaCargandoPrecios(p)) {
+                Cargando…
+                } @else {
                 {{ preciosDelProducto(p).length }} precio(s)
+                }
               </span>
             </div>
           </div>
@@ -59,10 +83,7 @@
         </div>
 
         <h4 class="categorias-marketing-titulo-terciario">Productos elegidos ({{ items().length }})</h4>
-        @if (items().length < minProductos) {
-        <p class="categorias-marketing-alerta">Selecciona al menos {{ minProductos }} productos.</p>
-        }
-        <p class="categorias-marketing-hint">Arrastra un ítem para cambiar su orden.</p>
+        <p class="categorias-marketing-hint">Arrastra un ítem para cambiar su orden. Puedes cambiar el precio a mostrar en cualquier momento.</p>
         <div class="categorias-marketing-lista-elegidos">
           @for (item of items(); track item.handle; let i = $index) {
           <div class="categorias-marketing-item-elegido"
@@ -123,7 +144,7 @@
               }
             </div>
             <button type="button" class="boton-secundario categorias-marketing-boton-quitar"
-              [disabled]="items().length <= minProductos" (click)="quitarItem(i)">
+              (click)="quitarItem(i)">
               Quitar
             </button>
           </div>

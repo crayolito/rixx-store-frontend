@@ -1,79 +1,62 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-
-interface ProductoVemper {
-  id: string;
-  nombre: string;
-  precioBase: string;
-  stock: number;
-  categoriaId: string;
-}
-
-const NOMBRES_CATEGORIAS: Record<string, string> = {
-  '1': 'Electrónica',
-  '2': 'Ropa',
-  '3': 'Hogar',
-  '4': 'Deportes',
-  '5': 'Libros',
-  '6': 'Juguetes',
-  '7': 'Belleza',
-  '8': 'Alimentos',
-  '9': 'Música',
-  '10': 'Jardín',
-};
-
-const PRODUCTOS_MOCK: ProductoVemper[] = [
-  { id: 'v1', nombre: 'Producto Vemper A', precioBase: '9.99', stock: 50, categoriaId: '1' },
-  { id: 'v2', nombre: 'Producto Vemper B', precioBase: '19.50', stock: 120, categoriaId: '1' },
-  { id: 'v3', nombre: 'Producto Vemper C', precioBase: '5.00', stock: 0, categoriaId: '1' },
-  { id: 'v4', nombre: 'Producto Vemper D', precioBase: '29.99', stock: 25, categoriaId: '1' },
-  { id: 'v5', nombre: 'Producto Vemper E', precioBase: '12.00', stock: 80, categoriaId: '1' },
-  { id: 'v6', nombre: 'Producto Vemper F', precioBase: '8.50', stock: 45, categoriaId: '2' },
-  { id: 'v7', nombre: 'Producto Vemper G', precioBase: '15.00', stock: 10, categoriaId: '2' },
-  { id: 'v8', nombre: 'Producto Vemper H', precioBase: '22.00', stock: 30, categoriaId: '3' },
-  { id: 'v9', nombre: 'Producto Vemper I', precioBase: '11.99', stock: 60, categoriaId: '3' },
-  { id: 'v10', nombre: 'Producto Vemper J', precioBase: '7.50', stock: 100, categoriaId: '4' },
-];
+import { ActivatedRoute, Router } from '@angular/router';
+import { BloqueEstadoTablaComponente } from '../../../../../compartido/componentes/bloque-estado-tabla/bloque-estado-tabla';
+import { ProductoApi } from '../../../../../compartido/modelos/producto.modelo';
+import { NotificacionServicio } from '../../../../../compartido/servicios/notificacion';
+import { CategoriasApiServicio } from '../../../../../nucleo/servicios/categorias-api.servicio';
+import { ProductosApiServicio } from '../../../../../nucleo/servicios/productos-api.servicio';
 
 @Component({
   selector: 'app-productos-veemper-pagina',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, BloqueEstadoTablaComponente],
   templateUrl: './productos-veemper-pagina.html',
   styleUrl: './productos-veemper-pagina.css',
 })
 export class ProductosVemperPagina {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private categoriasApi = inject(CategoriasApiServicio);
+  private productosApi = inject(ProductosApiServicio);
+  private notificacion = inject(NotificacionServicio);
+
   Math = Math;
 
   idCategoria = signal<string>('');
-  nombreCategoria = computed(() => NOMBRES_CATEGORIAS[this.idCategoria()] ?? 'Categoría');
+  nombreCategoria = signal<string>('Categoría');
+  productosVemper = signal<ProductoApi[]>([]);
+  estaCargando = signal(false);
+  importados = signal<Set<string>>(new Set());
+  importandoHandle = signal<string | null>(null);
 
-  todosProductos = signal<ProductoVemper[]>(PRODUCTOS_MOCK);
+  textoBusqueda = signal<string>('');
+  filtrosVisibles = signal<boolean>(true);
+  paginaActual = signal(1);
+  productosPorPagina = signal(12);
+
+  /** Productos filtrados por categoria: coinciden con el nombre de la categoría */
   productosFiltrados = computed(() => {
-    const id = this.idCategoria();
-    if (!id) return [];
-    return this.todosProductos().filter(p => p.categoriaId === id);
+    const idCat = this.idCategoria();
+    const nombreCat = this.nombreCategoria();
+    const lista = this.productosVemper();
+    if (!idCat || !nombreCat || nombreCat == 'Categoría') return lista;
+    return lista.filter((p) => (p.categorias ?? []).includes(nombreCat));
   });
 
-  textoBusqueda = signal('');
-  filtrosVisibles = signal<boolean>(false);
-
+  /** Productos visibles tras aplicar búsqueda */
   productosVisibles = computed(() => {
     let lista = this.productosFiltrados();
     const busqueda = this.textoBusqueda().trim().toLowerCase();
     if (busqueda) {
-      lista = lista.filter(p => p.nombre.toLowerCase().includes(busqueda));
+      lista = lista.filter((p) => p.titulo?.toLowerCase().includes(busqueda));
     }
     return lista;
   });
 
-  paginaActual = signal(1);
-  productosPorPagina = signal(12);
   totalProductos = computed(() => this.productosVisibles().length);
   totalPaginas = computed(() =>
-    Math.max(1, Math.ceil(this.totalProductos() / this.productosPorPagina()))
+    Math.max(1, Math.ceil(this.totalProductos() / this.productosPorPagina())),
   );
   productosPaginados = computed(() => {
     const inicio = (this.paginaActual() - 1) * this.productosPorPagina();
@@ -106,54 +89,114 @@ export class ProductosVemperPagina {
     return paginas;
   });
 
-  importados = signal<Set<string>>(new Set());
-
   constructor() {
     const idInicial = this.route.snapshot.paramMap.get('id');
     this.idCategoria.set(idInicial ?? '');
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       this.idCategoria.set(id ?? '');
       this.paginaActual.set(1);
     });
   }
 
-  importar(producto: ProductoVemper) {
-    if (this.importados().has(producto.id)) return;
-    if (confirm('¿Importar el producto "' + producto.nombre + '" al catálogo?')) {
-      this.importados.update(set => {
-        const nuevo = new Set(set);
-        nuevo.add(producto.id);
-        return nuevo;
-      });
-    }
+  ngOnInit(): void {
+    this.cargarDatos();
   }
 
-  yaImportado(productoId: string): boolean {
-    return this.importados().has(productoId);
+  /** Carga categoría y productos Vemper */
+  cargarDatos(): void {
+    const id = this.idCategoria();
+    if (!id) return;
+
+    this.estaCargando.set(true);
+
+    this.categoriasApi.obtenerTodas().subscribe({
+      next: (categorias) => {
+        const cat = categorias.find((c) => String(c.id_categoria) === id);
+        this.nombreCategoria.set(cat?.nombre ?? 'Categoría');
+      },
+      error: () => {
+        this.estaCargando.set(false);
+        this.notificacion.error('No se pudo cargar la categoría');
+      },
+    });
+
+    this.productosApi.obtenerVemper().subscribe({
+      next: (productos) => {
+        this.productosVemper.set(productos);
+        const yaImportados = new Set<string>();
+        productos.forEach((p) => {
+          if (p.importado) yaImportados.add(p.handle);
+        });
+        this.importados.set(yaImportados);
+      },
+      error: () => {
+        this.estaCargando.set(false);
+        this.notificacion.error('No se pudieron cargar los productos');
+      },
+      complete: () => this.estaCargando.set(false),
+    });
   }
 
-  alternarFiltros() {
-    this.filtrosVisibles.update(v => !v);
+  /** Marca el producto como importado vía API */
+  importar(producto: ProductoApi): void {
+    if (this.importados().has(producto.handle) || this.importandoHandle()) return;
+
+    this.importandoHandle.set(producto.handle);
+    this.productosApi.marcarComoImportado(producto.handle).subscribe({
+      next: () => {
+        this.importados.update((s) => {
+          const nuevo = new Set(s);
+          nuevo.add(producto.handle);
+          return nuevo;
+        });
+        this.notificacion.exito('Producto importado correctamente');
+      },
+      error: () => {
+        this.notificacion.error('No se pudo importar el producto');
+      },
+      complete: () => this.importandoHandle.set(null),
+    });
   }
 
-  limpiarFiltros() {
+  /** Indica si el producto ya está importado */
+  yaImportado(handle: string): boolean {
+    return this.importados().has(handle);
+  }
+
+  /** Indica si se está procesando la importación */
+  estaImportando(handle: string): boolean {
+    return this.importandoHandle() === handle;
+  }
+
+  alternarFiltros(): void {
+    this.filtrosVisibles.update((v) => !v);
+  }
+
+  limpiarFiltros(): void {
     this.textoBusqueda.set('');
     this.paginaActual.set(1);
   }
 
-  actualizarBusqueda(valor: string) {
+  actualizarBusqueda(valor: string): void {
     this.textoBusqueda.set(valor);
     this.paginaActual.set(1);
   }
 
-  irAPagina(pagina: number) {
+  irAPagina(pagina: number): void {
     if (pagina >= 1 && pagina <= this.totalPaginas()) this.paginaActual.set(pagina);
   }
-  paginaAnterior() {
-    if (this.paginaActual() > 1) this.paginaActual.update(p => p - 1);
+
+  paginaAnterior(): void {
+    if (this.paginaActual() > 1) this.paginaActual.update((p) => p - 1);
   }
-  paginaSiguiente() {
-    if (this.paginaActual() < this.totalPaginas()) this.paginaActual.update(p => p + 1);
+
+  paginaSiguiente(): void {
+    if (this.paginaActual() < this.totalPaginas()) this.paginaActual.update((p) => p + 1);
+  }
+
+  /** Navega de vuelta a la lista de categorías Importar Vemper */
+  volver(): void {
+    this.router.navigate(['/admin/catalogo/importar-vemper']);
   }
 }

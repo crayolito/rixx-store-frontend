@@ -16,12 +16,12 @@
 
     <!-- Formulario LOGIN -->
     @if (modoActual() === 'login') {
-    <form class="auth-formulario" (submit)="emitirIniciarSesion(); $event.preventDefault()">
+    <form class="auth-formulario" autocomplete="off" (submit)="emitirIniciarSesion(); $event.preventDefault()">
       <!-- Email -->
       <div class="auth-campo-grupo">
         <label class="auth-label">Email</label>
-        <input type="email" class="auth-campo" placeholder="tu@email.com" [value]="emailLogin()"
-          (input)="emailLogin.set($any($event.target).value)">
+        <input type="email" class="auth-campo" placeholder="tu@email.com" autocomplete="off"
+          [value]="emailLogin()" (input)="emailLogin.set($any($event.target).value)">
       </div>
 
       <!-- Contraseña con ojito -->
@@ -29,7 +29,7 @@
         <label class="auth-label">Contraseña</label>
         <div class="auth-campo-contrasena">
           <input [type]="mostrarContrasena() ? 'text' : 'password'" class="auth-campo" placeholder="Tu contraseña"
-            [value]="contrasenaLogin()" (input)="contrasenaLogin.set($any($event.target).value)">
+            autocomplete="new-password" [value]="contrasenaLogin()" (input)="contrasenaLogin.set($any($event.target).value)">
           <button type="button" class="auth-campo-icono" (click)="alternarVisibilidadContrasena()">
             <img [src]="mostrarContrasena() ? '/iconos/ico-ojo-abierto.svg' : '/iconos/ico-ojo-cerrado.svg'"
               alt="Mostrar/Ocultar">
@@ -56,19 +56,19 @@
 
     <!-- Formulario REGISTRO -->
     @else {
-    <form class="auth-formulario" (submit)="emitirRegistro(); $event.preventDefault()">
+    <form class="auth-formulario" autocomplete="off" (submit)="emitirRegistro(); $event.preventDefault()">
       <!-- Nombre -->
       <div class="auth-campo-grupo">
         <label class="auth-label">Nombre</label>
-        <input type="text" class="auth-campo" placeholder="Tu nombre" [value]="nombreRegistro()"
+        <input type="text" class="auth-campo" placeholder="Tu nombre" autocomplete="off" [value]="nombreRegistro()"
           (input)="nombreRegistro.set($any($event.target).value)">
       </div>
 
       <!-- Email -->
       <div class="auth-campo-grupo">
         <label class="auth-label">Email</label>
-        <input type="email" class="auth-campo" placeholder="tu@email.com" [value]="emailRegistro()"
-          (input)="emailRegistro.set($any($event.target).value)">
+        <input type="email" class="auth-campo" placeholder="tu@email.com" autocomplete="off"
+          [value]="emailRegistro()" (input)="emailRegistro.set($any($event.target).value)">
       </div>
 
       <!-- Teléfono / Región (prefijo = región; opcional) -->
@@ -102,7 +102,7 @@
         <label class="auth-label">Contraseña</label>
         <div class="auth-campo-contrasena">
           <input [type]="mostrarContrasena() ? 'text' : 'password'" class="auth-campo" placeholder="Mínimo 8 caracteres"
-            [value]="contrasenaRegistro()" (input)="contrasenaRegistro.set($any($event.target).value)">
+            autocomplete="new-password" [value]="contrasenaRegistro()" (input)="contrasenaRegistro.set($any($event.target).value)">
           <button type="button" class="auth-campo-icono" (click)="alternarVisibilidadContrasena()">
             <img [src]="mostrarContrasena() ? '/iconos/ico-ojo-abierto.svg' : '/iconos/ico-ojo-cerrado.svg'"
               alt="Mostrar/Ocultar">
@@ -115,7 +115,7 @@
         <label class="auth-label">Confirmar contraseña</label>
         <div class="auth-campo-contrasena">
           <input [type]="mostrarConfirmarContrasena() ? 'text' : 'password'" class="auth-campo"
-            placeholder="Repite tu contraseña" [value]="confirmarContrasenaRegistro()"
+            placeholder="Repite tu contraseña" autocomplete="new-password" [value]="confirmarContrasenaRegistro()"
             (input)="confirmarContrasenaRegistro.set($any($event.target).value)">
           <button type="button" class="auth-campo-icono" (click)="alternarVisibilidadConfirmarContrasena()">
             <img [src]="mostrarConfirmarContrasena() ? '/iconos/ico-ojo-abierto.svg' : '/iconos/ico-ojo-cerrado.svg'"

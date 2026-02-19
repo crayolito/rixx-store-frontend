@@ -1,21 +1,20 @@
 <div class="lista-productos-contenedor" (click)="cerrarTodosLosDropdowns()">
-  <!-- ===== SECCIÓN: TITULO Y OPCIONES ===== -->
   <section class="titulo-opciones-contenedor">
     <div class="titulo-contenedor">
       <img src="/iconos/ico-producto.svg" alt="Icono productos" class="icono-boton icono-color-base">
       <h3>Productos</h3>
     </div>
     <div class="opciones-contenedor">
-      <button id="boton-mostrar-filtros" class="boton-secundario">
-        <p>Mostrar Filtros</p>
+      <button id="boton-mostrar-filtros" class="boton-secundario" type="button" (click)="alternarFiltros()">
+        <p>{{ filtrosVisibles() ? 'Ocultar Filtros' : 'Mostrar Filtros' }}</p>
       </button>
-      <button id="boton-agregar-producto" class="boton-primario">
+      <button id="boton-agregar-producto" class="boton-primario" routerLink="/admin/catalogo/productos/nuevo">
         <p>Agregar producto</p>
       </button>
     </div>
   </section>
 
-  <!-- ===== SECCIÓN: FILTROS Y BÚSQUEDA ===== -->
+  @if (filtrosVisibles()) {
   <section class="global-filtros" (click)="$event.stopPropagation()">
     <div class="global-filtros__item">
       <p class="global-filtros__titulo">Buscador</p>
@@ -25,7 +24,6 @@
           (input)="textoBusqueda.set($any($event.target).value)">
       </div>
     </div>
-
     <div class="global-filtros__item">
       <p class="global-filtros__titulo">Categoría</p>
       <div class="global-filtros__dropdown" (click)="$event.stopPropagation()">
@@ -35,7 +33,7 @@
         </button>
         @if (dropdownCategoriaAbierto()) {
         <div class="global-filtros__dropdown-menu">
-          @for (opcion of opcionesCategoria; track opcion) {
+          @for (opcion of opcionesCategoria(); track opcion) {
           <button class="global-filtros__dropdown-opcion" (click)="seleccionarCategoria(opcion)" type="button">
             {{ opcion }}
           </button>
@@ -44,38 +42,36 @@
         }
       </div>
     </div>
-
     <div class="global-filtros__item">
       <p class="global-filtros__titulo">Estado</p>
       <div class="global-filtros__dropdown" (click)="$event.stopPropagation()">
         <button class="global-filtros__dropdown-boton" (click)="alternarEstado()" type="button">
-          <span>{{ estadoSeleccionado() }}</span>
+          <span>{{ estadoSeleccionado() === 'Todos' ? 'Todos' : primeraLetraMayuscula(estadoSeleccionado()) }}</span>
           <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="icono-boton icono-color-base">
         </button>
         @if (dropdownEstadoAbierto()) {
         <div class="global-filtros__dropdown-menu">
-          @for (opcion of opcionesEstado; track opcion) {
+          @for (opcion of opcionesEstado(); track $index) {
           <button class="global-filtros__dropdown-opcion" (click)="seleccionarEstado(opcion)" type="button">
-            {{ opcion }}
+            {{ opcion === 'Todos' ? 'Todos' : primeraLetraMayuscula(opcion) }}
           </button>
           }
         </div>
         }
       </div>
     </div>
-
     <div class="global-filtros__item">
-      <p class="global-filtros__titulo">Disponibilidad</p>
+      <p class="global-filtros__titulo">Tipo de proceso</p>
       <div class="global-filtros__dropdown" (click)="$event.stopPropagation()">
-        <button class="global-filtros__dropdown-boton" (click)="alternarDisponibilidad()" type="button">
-          <span>{{ disponibilidadSeleccionada() }}</span>
+        <button class="global-filtros__dropdown-boton" (click)="alternarTipoProceso()" type="button">
+          <span>{{ tipoProcesoSeleccionado() === 'Todos' ? 'Todos' : primeraLetraMayuscula(tipoProcesoSeleccionado()) }}</span>
           <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="icono-boton icono-color-base">
         </button>
-        @if (dropdownDisponibilidadAbierto()) {
+        @if (dropdownTipoProcesoAbierto()) {
         <div class="global-filtros__dropdown-menu">
-          @for (opcion of opcionesDisponibilidad; track opcion) {
-          <button class="global-filtros__dropdown-opcion" (click)="seleccionarDisponibilidad(opcion)" type="button">
-            {{ opcion }}
+          @for (opcion of opcionesTipoProceso(); track opcion) {
+          <button class="global-filtros__dropdown-opcion" (click)="seleccionarTipoProceso(opcion)" type="button">
+            {{ opcion === 'Todos' ? 'Todos' : primeraLetraMayuscula(opcion) }}
           </button>
           }
         </div>
@@ -89,55 +85,63 @@
       </button>
     </div>
   </section>
+  }
 
-  <!-- ===== SECCIÓN: TABLA DE PRODUCTOS ===== -->
   <section class="global-tabla">
+    @if (estaCargando()) {
+      <app-bloque-estado-tabla estado="cargando" mensajeCarga="Cargando productos..." />
+    } @else if (productosPaginados().length === 0) {
+      <app-bloque-estado-tabla
+        estado="vacio"
+        tituloVacio="No se encontraron productos"
+        textoVacio="No hay productos o los filtros no coinciden con ningún resultado. Prueba ajustando los filtros o agrega un nuevo producto."
+        iconoVacio="/iconos/ico-producto.svg" />
+    } @else {
     <table class="global-tabla__elemento">
       <thead class="global-tabla__cabecera">
         <tr>
           <th>Producto</th>
-          <th>Categoria</th>
+          <th>Categoría</th>
           <th>Estado</th>
-          <th>Fuente</th>
-          <th>Inventario</th>
+          <th>Proceso</th>
+          <th>Campos dinámicos</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody class="global-tabla__cuerpo">
-        @for (producto of productosPaginados(); track producto.id) {
+        @for (producto of productosPaginados(); track producto.handle) {
         <tr class="global-tabla__fila">
-          <td class="global-tabla__celda global-tabla__celda-principal">
-            <img [src]="producto.imagen" [alt]="producto.nombre" class="global-tabla__imagen">
-            <p class="global-tabla__texto-principal" [title]="producto.nombre">
-              {{ truncarTexto(producto.nombre, 50) }}
-            </p>
+          <td class="global-tabla__celda global-tabla__celda-info" [title]="producto.titulo">
+            <p>{{ truncarTexto(producto.titulo, 50) }}</p>
           </td>
           <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--categoria">
-            <p>{{ producto.categoria }}</p>
+            <p>{{ categoriasTexto(producto) }}</p>
           </td>
           <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--estado">
-            <span class="global-badge" [class]="'global-badge--' + producto.estado.toLowerCase()">
-              {{ producto.estado }}
+            <span class="global-badge" [class]="'global-badge--' + (producto.estado || '').toLowerCase()">
+              {{ primeraLetraMayuscula(producto.estado) }}
             </span>
           </td>
-          <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--fuente">
-            <p>{{ producto.fuente }}</p>
+          <td class="global-tabla__celda global-tabla__celda-info">
+            <span class="global-badge" [class]="'global-badge--' + (producto.tipoProceso || 'manual').toLowerCase()">
+              {{ primeraLetraMayuscula(producto.tipoProceso) }}
+            </span>
           </td>
-          <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--inventario">
-            <p>{{ producto.inventario }} en existencias</p>
+          <td class="global-tabla__celda global-tabla__celda-info">
+            <p>{{ producto.camposDinamicos.length }}</p>
           </td>
           <td class="global-tabla__celda global-tabla__celda-acciones">
             <ul class="global-tabla__lista-acciones">
               <li>
-                <a [routerLink]="['/admin/catalogo/productos/editar', producto.id]"
+                <a [routerLink]="['/admin/catalogo/productos/editar', producto.handle]"
                   class="boton-secundario global-tabla__boton-accion"
-                  [attr.aria-label]="'Editar producto ' + producto.nombre">
+                  [attr.aria-label]="'Editar producto ' + producto.titulo">
                   <img src="/iconos/ico-editar.svg" alt="" class="icono-boton icono-color-base">
                   <p>Editar</p>
                 </a>
               </li>
               <li>
-                <button class="boton-secundario global-tabla__boton-accion" (click)="eliminarProducto(producto.id)">
+                <button class="boton-secundario global-tabla__boton-accion" (click)="eliminarProducto(producto.handle)">
                   <img src="/iconos/ico-borrar.svg" alt="Icono borrar" class="icono-boton icono-color-base">
                   <p>Eliminar</p>
                 </button>
@@ -149,7 +153,6 @@
       </tbody>
     </table>
 
-    <!-- ===== PAGINACIÓN ===== -->
     <div class="global-paginacion">
       <div class="global-paginacion__controles">
         <button class="global-paginacion__boton global-paginacion__boton--anterior" (click)="paginaAnterior()"
@@ -181,5 +184,6 @@
         totalProductos()) }} de {{ totalProductos() }}
       </p>
     </div>
+    }
   </section>
 </div>

@@ -5,7 +5,9 @@ export interface UsuarioSesion {
   nombre: string;
   email: string;
   fotoPerfil?: string;
-  rol: 'Cliente' | 'Admin';
+  rol: string;
+  idRol?: number;
+  permisos: string[];
   origen?: 'email' | 'google';
   token?: string;
   socialLogin?: boolean;
@@ -25,10 +27,13 @@ export class Sesion {
       const raw = localStorage.getItem(CLAVE_SESION);
       if (raw) {
         const usuario = JSON.parse(raw) as UsuarioSesion;
+        if (!Array.isArray(usuario.permisos)) {
+          usuario.permisos = [];
+        }
         this.usuarioActual.set(usuario);
         this.estaLogueado.set(true);
       }
-    } catch (error) {
+    } catch {
       this.usuarioActual.set(null);
       this.estaLogueado.set(false);
     }
@@ -48,5 +53,10 @@ export class Sesion {
 
   obtenerToken(): string | null {
     return this.usuarioActual()?.token ?? null;
+  }
+
+  tienePermiso(permiso: string): boolean {
+    const permisos = this.usuarioActual()?.permisos ?? [];
+    return permisos.includes(permiso);
   }
 }

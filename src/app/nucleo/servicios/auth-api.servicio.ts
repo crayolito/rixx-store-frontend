@@ -1,9 +1,39 @@
 import { HttpHeaders } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
-import { Observable, tap } from "rxjs";
+import { catchError, map, Observable, of, switchMap } from "rxjs";
 import { HttpBaseServicio } from "./http-base.servicio";
 import type { UsuarioSesion } from "./sesion";
 import { Sesion } from "./sesion";
+
+export interface RolConPermisos {
+  id_rol: number;
+  nombre: string;
+  permisos: string[];
+}
+
+export interface UsuarioApiItem {
+  id: number;
+  rol: string;
+  nombre: string;
+  email: string;
+  foto: string | null;
+  telefono: string | null;
+  saldo: number;
+  estado: string;
+  nacionalidad: string | null;
+  socialLogin: boolean;
+  ultimoAcceso?: string;
+  fechaCreacion?: string;
+  fechaActualizacion?: string;
+}
+
+export interface RespuestaListarUsuarios {
+  exito: boolean;
+  datos: UsuarioApiItem[] | { datos: UsuarioApiItem[]; total?: number };
+  total?: number;
+  pagina?: number;
+  totalPaginas?: number;
+}
 
 interface RespuestaLogin {
   exito: boolean;
@@ -14,6 +44,7 @@ interface RespuestaLogin {
     email: string;
     foto?: string;
     idRol?: number;
+    id_rol?: number;
     rol?: string;
     social_login?: boolean;
     socialLogin?: boolean;
@@ -28,16 +59,28 @@ interface RespuestaCrearUsuario {
   datos?: { id: number; nombre: string; email: string;[k: string]: unknown };
 }
 
-function idRolARol(idRol: number | undefined): 'Cliente' | 'Admin' | 'Revendedor' {
-  if (idRol === 1) return 'Admin';
-  if (idRol === 2) return 'Cliente';
-  if (idRol === 3) return 'Revendedor';
-  return 'Cliente';
+function extraerIdRolDelToken(token: string): number | undefined {
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return undefined;
+    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    const decoded = JSON.parse(json) as { idRol?: number; id_rol?: number };
+    return decoded.idRol ?? decoded.id_rol;
+  } catch {
+    return undefined;
+  }
 }
 
-function mapearDatosLoginASesion(datos: RespuestaLogin['datos']): UsuarioSesion {
-  const rol: 'Cliente' | 'Admin' | 'Revendedor' = idRolARol(datos.idRol);
-  // El backend puede devolver 'social_login' o 'socialLogin'
+function permisosPorRolAdmin(rolNombre: string): string[] {
+  const nombre = (rolNombre ?? '').toLowerCase();
+  if (nombre.includes('admin') || nombre === 'administrador') {
+    return ['acceder_admin', 'ver_perfil', 'ver_checkout', 'ver_billetera', 'gestionar_usuarios', 'gestionar_productos'];
+  }
+  return ['ver_perfil', 'ver_checkout', 'ver_billetera'];
+}
+
+function mapearDatosLoginASesion(datos: RespuestaLogin['datos'], permisos: string[] = [], rolNombre: string = 'Cliente'): UsuarioSesion {
+  const idRol = datos.idRol ?? datos.id_rol;
   const socialLogin = datos.social_login || datos.socialLogin || false;
 
   return {
@@ -45,7 +88,9 @@ function mapearDatosLoginASesion(datos: RespuestaLogin['datos']): UsuarioSesion 
     nombre: datos.nombre,
     email: datos.email,
     fotoPerfil: datos.foto,
-    rol: rol as UsuarioSesion['rol'],
+    rol: datos.rol ?? rolNombre,
+    idRol,
+    permisos,
     token: datos.token,
     socialLogin,
     telefono: datos.telefono,
@@ -64,12 +109,54 @@ export class UsuarioApiServicio {
       contrasena: contrasena || '',
       ...(socialLogin && { social_login: true }),
     }).pipe(
-      tap((respuesta) => {
-        if (respuesta?.exito && respuesta.datos) {
-          this.sesion.guardarSesion(mapearDatosLoginASesion(respuesta.datos));
-        }
+      switchMap((respuesta) => {
+        if (!respuesta?.exito || !respuesta.datos) return of(respuesta);
+        const datos = respuesta.datos;
+        const idRol = datos.idRol ?? datos.id_rol ?? (datos.token ? extraerIdRolDelToken(datos.token) : undefined);
+        const rolDelBackend = datos.rol ?? 'Cliente';
+        this.sesion.guardarSesion(mapearDatosLoginASesion(datos, [], rolDelBackend));
+        return this.listarRolesConPermisos().pipe(
+          map((rolesResp) => {
+            if (rolesResp?.exito && rolesResp.datos) {
+              const miRol = rolesResp.datos.find((r) => r.id_rol === idRol)
+                ?? rolesResp.datos.find((r) => r.nombre.toLowerCase() === rolDelBackend.toLowerCase())
+                ?? rolesResp.datos.find((r) => rolDelBackend.toLowerCase().includes(r.nombre.toLowerCase()));
+              const permisos = miRol?.permisos ?? permisosPorRolAdmin(rolDelBackend);
+              const rolNombre = miRol?.nombre ?? rolDelBackend;
+              this.sesion.guardarSesion(mapearDatosLoginASesion(datos, permisos, rolNombre));
+            } else {
+              this.sesion.guardarSesion(mapearDatosLoginASesion(datos, permisosPorRolAdmin(rolDelBackend), rolDelBackend));
+            }
+            return respuesta;
+          }),
+          catchError(() => {
+            this.sesion.guardarSesion(mapearDatosLoginASesion(datos, permisosPorRolAdmin(rolDelBackend), rolDelBackend));
+            return of(respuesta);
+          })
+        );
       })
     );
+  }
+
+  registrar(datos: {
+    nombre: string;
+    email: string;
+    contrasena?: string;
+    social_login?: boolean;
+    telefono?: string | null;
+    nacionalidad?: string | null;
+    foto?: string;
+  }): Observable<RespuestaCrearUsuario> {
+    const cuerpo: Record<string, unknown> = {
+      nombre: datos.nombre.trim(),
+      email: datos.email.trim(),
+      social_login: datos.social_login ?? false,
+      ...(datos.contrasena != null && datos.contrasena !== '' && { contrasena: datos.contrasena }),
+      ...(datos.telefono != null && datos.telefono !== '' && { telefono: datos.telefono }),
+      ...(datos.nacionalidad != null && datos.nacionalidad !== '' && { nacionalidad: datos.nacionalidad }),
+      ...(datos.foto && { foto: datos.foto }),
+    };
+    return this.httpBase.enviarPost<RespuestaCrearUsuario>('/auth/register', cuerpo);
   }
 
   crearUsuario(datos: {
@@ -97,6 +184,49 @@ export class UsuarioApiServicio {
     return this.httpBase.enviarPost<RespuestaCrearUsuario>('/usuarios', cuerpo);
   }
 
+  cambiarContrasena(
+    id: number,
+    contrasenaActual: string,
+    nuevaContrasena: string
+  ): Observable<{ exito: boolean; mensaje?: string }>{
+    const token = this.sesion.obtenerToken();
+    const headers = token
+    ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+    : undefined;
+    return this.httpBase.actualizarPut<{ exito: boolean; mensaje?: string }>(
+      `/usuarios/${id}/contrasena`,
+      {
+        contrasenaActual,
+        contrasenaNueva: nuevaContrasena
+      },
+      { headers }
+    );
+  }
+
+  listarRoles(): Observable<{ exito: boolean; datos: RolConPermisos[] }> {
+    return this.listarRolesConPermisos();
+  }
+
+  listarRolesConPermisos(): Observable<{ exito: boolean; datos: RolConPermisos[] }> {
+    const token = this.sesion.obtenerToken();
+    const headers = token
+      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+      : undefined;
+    return this.httpBase.obtenerConOpciones<{ exito: boolean; datos: RolConPermisos[] }>(
+      '/roles',
+      { headers }
+    );
+  }
+
+  listarUsuarios(pagina: number, limite: number): Observable<RespuestaListarUsuarios> {
+    const token = this.sesion.obtenerToken();
+    const headers = token
+      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+      : undefined;
+    const params = `?pagina=${pagina}&limite=${limite}`;
+    return this.httpBase.obtenerConOpciones<RespuestaListarUsuarios>(`/usuarios${params}`, { headers });
+  }
+
   actualizarUsuario(
     id: number,
     datos: {
@@ -106,6 +236,8 @@ export class UsuarioApiServicio {
       foto?: string;
       telefono?: string | null;
       nacionalidad?: string | null;
+      idRol?: number;
+      estado?: string;
     }
   ): Observable<{ exito: boolean; datos?: unknown }> {
     const token = this.sesion.obtenerToken();
@@ -115,13 +247,25 @@ export class UsuarioApiServicio {
     const cuerpo: Record<string, unknown> = {};
     if (datos['nombre'] !== undefined) cuerpo['nombre'] = datos['nombre'];
     if (datos['email'] !== undefined) cuerpo['email'] = datos['email'];
-    if (datos['contrasena'] != null && datos['contrasena'] !== '') cuerpo['contrasena'] = datos['contrasena'];
     if (datos['foto'] !== undefined) cuerpo['foto'] = datos['foto'];
     if (datos['telefono'] !== undefined) cuerpo['telefono'] = datos['telefono'];
     if (datos['nacionalidad'] !== undefined) cuerpo['nacionalidad'] = datos['nacionalidad'];
+    if (datos['idRol'] !== undefined) cuerpo['idRol'] = datos['idRol'];
+    if (datos['estado'] !== undefined) cuerpo['estado'] = datos['estado'];
     return this.httpBase.actualizarPut<{ exito: boolean; datos?: unknown }>(
       `/usuarios/${id}`,
       cuerpo,
+      { headers }
+    );
+  }
+
+  eliminarUsuario(id: number): Observable<{ exito: boolean; mensaje?: string }> {
+    const token = this.sesion.obtenerToken();
+    const headers = token
+      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+      : undefined;
+    return this.httpBase.eliminar<{ exito: boolean; mensaje?: string }>(
+      `/usuarios/${id}`,
       { headers }
     );
   }

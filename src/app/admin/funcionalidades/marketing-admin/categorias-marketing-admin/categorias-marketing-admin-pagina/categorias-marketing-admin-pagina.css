@@ -55,6 +55,20 @@
   line-height: 1.4;
 }
 
+.categorias-marketing-aviso-cambios {
+  padding: var(--espaciado-sm) var(--espaciado-md);
+  background-color: var(--color-aviso-fondo, rgba(241, 196, 15, 0.15));
+  border: 1px solid var(--color-aviso-borde, rgba(241, 196, 15, 0.5));
+  border-radius: var(--borde-radio);
+  margin: 0;
+}
+
+.categorias-marketing-aviso-cambios__texto {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-base);
+  font-weight: var(--peso-medium, 500);
+}
+
 .categorias-marketing-paneles {
   display: grid;
   grid-template-columns: 1fr;

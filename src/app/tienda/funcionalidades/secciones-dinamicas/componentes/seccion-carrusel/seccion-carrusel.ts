@@ -17,8 +17,8 @@ export class SeccionCarrusel implements OnInit, OnDestroy {
   indiceActivo = signal(0);
   private intervalo!: ReturnType<typeof setInterval>;
 
-  // Variables para control de arrastre con ratón
-  private mouseInicio = 0;
+  // Control de arrastre: ratón (desktop) y touch (móvil)
+  private posicionInicioX = 0;
   private estaArrastrando = false;
   private umbralArrastre = 50;
 
@@ -56,15 +56,17 @@ export class SeccionCarrusel implements OnInit, OnDestroy {
     return !this.esAnterior(i) && !this.esActiva(i) && !this.esSiguiente(i);
   }
 
-  // Navegación
+  // Navegación manual (flechas o arrastre); reinicia el avance automático
   irAnterior() {
     const total = this.slides().length;
     this.indiceActivo.update((n) => (n - 1 + total) % total);
+    this.iniciarIntervalo();
   }
 
   irSiguiente() {
     const total = this.slides().length;
     this.indiceActivo.update((n) => (n + 1) % total);
+    this.iniciarIntervalo();
   }
 
   irASlide(indice: number) {
@@ -72,22 +74,49 @@ export class SeccionCarrusel implements OnInit, OnDestroy {
     this.iniciarIntervalo();
   }
 
-  // Control con ratón
+  // Desktop: arrastre con ratón (izquierda/derecha)
   iniciarArrastre(evento: MouseEvent) {
     evento.preventDefault();
     this.estaArrastrando = false;
-    this.mouseInicio = evento.clientX;
+    this.posicionInicioX = evento.clientX;
     clearInterval(this.intervalo);
   }
 
   finalizarArrastre(evento: MouseEvent) {
-    const mouseActual = evento.clientX;
-    const diferencia = mouseActual - this.mouseInicio;
-
-    if (Math.abs(diferencia) > this.umbralArrastre) {
+    this.aplicarArrastre(evento.clientX, () => {
       evento.preventDefault();
       evento.stopPropagation();
+    });
+  }
 
+  cancelarArrastre() {
+    if (this.posicionInicioX !== 0) {
+      this.posicionInicioX = 0;
+      this.estaArrastrando = false;
+      this.iniciarIntervalo();
+    }
+  }
+
+  // Móvil: arrastre con dedo (izquierda/derecha)
+  iniciarArrastreTouch(evento: TouchEvent) {
+    if (evento.touches.length === 0) return;
+    this.estaArrastrando = false;
+    this.posicionInicioX = evento.touches[0].clientX;
+    clearInterval(this.intervalo);
+  }
+
+  finalizarArrastreTouch(evento: TouchEvent) {
+    if (evento.changedTouches.length === 0) return;
+    const posicionFinalX = evento.changedTouches[0].clientX;
+    this.aplicarArrastre(posicionFinalX, () => evento.preventDefault());
+  }
+
+  /** Lógica común: si el desplazamiento supera el umbral, cambia de slide (izq/der). */
+  private aplicarArrastre(posicionFinalX: number, alConsumir: () => void) {
+    const diferencia = posicionFinalX - this.posicionInicioX;
+
+    if (Math.abs(diferencia) > this.umbralArrastre) {
+      alConsumir();
       if (diferencia > 0) {
         this.irAnterior();
       } else {
@@ -98,15 +127,8 @@ export class SeccionCarrusel implements OnInit, OnDestroy {
       this.estaArrastrando = false;
     }
 
+    this.posicionInicioX = 0;
     this.iniciarIntervalo();
-  }
-
-  cancelarArrastre() {
-    if (this.mouseInicio !== 0) {
-      this.mouseInicio = 0;
-      this.estaArrastrando = false;
-      this.iniciarIntervalo();
-    }
   }
 
   // NUEVA FUNCIONALIDAD: Manejar click en imagen con destinos

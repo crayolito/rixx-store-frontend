@@ -36,24 +36,21 @@
 
 .notificacion {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--espaciado-sm);
-  padding: var(--espaciado-md);
-  background-color: var(--color-fondo-cuaternario);
+  padding: var(--espaciado-md) var(--espaciado-lg);
+  background-color: var(--color-fondo-secundario);
   border-left: 4px solid;
-  border-radius: var(--borde-radio);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: var(--borde-radio-grande);
+  box-shadow: var(--sombra-fuerte);
   pointer-events: auto;
-  /* La notificación sí recibe clicks */
   animation: deslizarEntrada 0.3s ease-out;
   transition: all 0.2s ease;
-  background-color: var(--color-fondo-base);
-  color: var(--color-primario);
 }
 
 .notificacion:hover {
-  transform: translateX(-4px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  transform: translateX(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .notificacion__icono {
@@ -63,14 +60,16 @@
   justify-content: center;
   width: 24px;
   height: 24px;
+  margin-top: 2px;
 }
 
 .notificacion__mensaje {
   flex: 1;
   margin: 0;
   font-size: var(--texto-base);
-  color: var(--color-fondo-base);
-  line-height: 1.4;
+  color: var(--color-texto-primario);
+  line-height: 1.5;
+  font-weight: var(--peso-medio);
 }
 
 .notificacion__boton-cerrar {
@@ -79,7 +78,7 @@
   border: none;
   padding: var(--espaciado-xs);
   cursor: pointer;
-  color: var(--color-fondo-septimo);
+  color: var(--color-texto-terciario);
   transition: color 0.2s ease;
   display: flex;
   align-items: center;
@@ -87,7 +86,7 @@
 }
 
 .notificacion__boton-cerrar:hover {
-  color: var(--color-fondo-base);
+  color: var(--color-texto-primario);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -97,57 +96,37 @@
 /* ─── Éxito ─── */
 .notificacion--exito {
   border-left-color: var(--color-primario);
-  /* background-color: #f0f9e8; */
 }
 
 .notificacion--exito .notificacion__icono {
   color: var(--color-primario);
 }
 
-.notificacion--exito .notificacion__mensaje {
-  color: var(--color-primario);
-}
-
 /* ─── Error ─── */
 .notificacion--error {
   border-left-color: #ef4444;
-  /* background-color: #fef2f2; */
 }
 
 .notificacion--error .notificacion__icono {
   color: #ef4444;
 }
 
-.notificacion--error .notificacion__mensaje {
-  color: var(--color-primario);
-}
-
 /* ─── Advertencia ─── */
 .notificacion--advertencia {
   border-left-color: #f59e0b;
-  /* background-color: #fffbeb; */
 }
 
 .notificacion--advertencia .notificacion__icono {
   color: #f59e0b;
 }
 
-.notificacion--advertencia .notificacion__mensaje {
-  color: var(--color-primario);
-}
-
 /* ─── Info ─── */
 .notificacion--info {
   border-left-color: var(--color-acento-cyan);
-  /* background-color: #ecfeff; */
 }
 
 .notificacion--info .notificacion__icono {
   color: var(--color-acento-cyan);
-}
-
-.notificacion--info .notificacion__mensaje {
-  color: var(--color-primario);
 }
 
 /* ═══════════════════════════════════════════════════════

@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, effect, inject, input, NgZone, output, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { obtenerFotoPerfilAleatoria } from '../../../nucleo/constantes/fotos-perfil.constantes';
@@ -85,6 +86,15 @@ export class ModalAutenticacion {
     { codigo: 'br', nombre: 'Brasil', bandera: '/imagenes/brasil.png', sigla: '+55' },
   ];
 
+  private extraerMensajeBackend(error: unknown): string {
+    if (!error || typeof error !== 'object') return '';
+    const body = (error as HttpErrorResponse).error;
+    if (body && typeof body === 'object' && typeof (body as { mensaje?: string }).mensaje === 'string') {
+      return (body as { mensaje: string }).mensaje;
+    }
+    return '';
+  }
+
   alternarModo() {
     this.modoActual.set(this.modoActual() === 'login' ? 'registro' : 'login');
     this.limpiarFormularios();
@@ -138,16 +148,17 @@ export class ModalAutenticacion {
       this.notificacion.error('Inicio de sesión con Google no disponible. Comprueba la conexión.');
       return;
     }
+    const modoAlClic = this.modoActual();
     const tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: this.CLIENT_ID_GOOGLE,
       scope: 'email profile openid',
-      callback: (res) => this.ngZone.run(() => this.procesarTokenGoogle(res.access_token)),
+      callback: (res) => this.ngZone.run(() => this.procesarTokenGoogle(res.access_token, modoAlClic)),
       ux_mode: 'popup',
     });
     tokenClient.requestAccessToken({ prompt: 'select_account' });
   }
 
-  private async procesarTokenGoogle(accessToken: string): Promise<void> {
+  private async procesarTokenGoogle(accessToken: string, modoAlClic: 'login' | 'registro'): Promise<void> {
     try {
       const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -158,6 +169,7 @@ export class ModalAutenticacion {
 
       this.enviando.set(true);
       const nombre = (datos.name ?? '').trim() || 'Usuario';
+      const esModoLogin = modoAlClic === 'login';
 
       this.usuarioApi.login(datos.email, '', true).subscribe({
         next: () => {
@@ -166,16 +178,22 @@ export class ModalAutenticacion {
           this.cerrar.emit();
           this.notificacion.exito('¡Bienvenido de nuevo!');
           const usuario = this.sesion.usuarioActual();
-          this.router.navigate(usuario?.rol === 'Admin' ? ['/admin/inicio'] : ['/']);
+          if (usuario?.permisos?.includes('acceder_admin')) {
+            this.router.navigate(['/admin/inicio']);
+          }
         },
         complete: () => this.enviando.set(false),
-        error: () => {
-          // Usuario no existe: crear cuenta con una de las 5 fotos aleatorias (no usamos foto de Google)
-          this.usuarioApi.crearUsuario({
+        error: (err) => {
+          if (esModoLogin) {
+            const msg = this.extraerMensajeBackend(err);
+            this.notificacion.error(msg || 'No tienes cuenta con este correo. Regístrate primero.');
+            this.enviando.set(false);
+            return;
+          }
+          // Modo registro: crear cuenta y luego iniciar sesión
+          this.usuarioApi.registrar({
             nombre,
             email: datos.email!,
-            estado: 'activo',
-            idRol: 2,
             social_login: true,
             foto: obtenerFotoPerfilAleatoria(),
           }).subscribe({
@@ -186,17 +204,18 @@ export class ModalAutenticacion {
                   this.limpiarFormularios();
                   this.cerrar.emit();
                   this.notificacion.exito('¡Cuenta creada con éxito! Bienvenido');
-                  this.router.navigate(['/']);
                 },
-                error: () => {
-                  this.notificacion.error('No se pudo iniciar sesión después del registro.');
+                error: (err) => {
+                  const msg = this.extraerMensajeBackend(err);
+                  this.notificacion.error(msg || 'No se pudo iniciar sesión después del registro.');
                   this.enviando.set(false);
                 },
                 complete: () => this.enviando.set(false),
               });
             },
-            error: () => {
-              this.notificacion.error('No se pudo crear la cuenta con Google. Intenta de nuevo.');
+            error: (err) => {
+              const msg = this.extraerMensajeBackend(err);
+              this.notificacion.error(msg || 'No se pudo crear la cuenta con Google. Intenta de nuevo.');
               this.enviando.set(false);
             },
           });
@@ -224,14 +243,13 @@ export class ModalAutenticacion {
         this.cerrar.emit();
         this.notificacion.exito('¡Bienvenido de nuevo!');
         const usuario = this.sesion.usuarioActual();
-        if (usuario?.rol === 'Admin') {
+        if (usuario?.permisos?.includes('acceder_admin')) {
           this.router.navigate(['/admin/inicio']);
-        } else {
-          this.router.navigate(['/']);
         }
       },
-      error: () => {
-        this.notificacion.error('Email o contraseña incorrectos');
+      error: (err) => {
+        const msg = this.extraerMensajeBackend(err);
+        this.notificacion.error(msg || 'Email o contraseña incorrectos');
         this.enviando.set(false);
       },
       complete: () => this.enviando.set(false),
@@ -259,12 +277,11 @@ export class ModalAutenticacion {
     const nacionalidad = numero ? pais.codigo.toUpperCase() : null;
 
     this.enviando.set(true);
-    this.usuarioApi.crearUsuario({
+    this.usuarioApi.registrar({
       nombre,
       email,
       contrasena,
-      estado: 'activo',
-      idRol: 2,
+      social_login: false,
       telefono,
       nacionalidad,
       foto: obtenerFotoPerfilAleatoria(),
@@ -276,17 +293,18 @@ export class ModalAutenticacion {
             this.limpiarFormularios();
             this.cerrar.emit();
             this.notificacion.exito('¡Cuenta creada con éxito! Bienvenido');
-            this.router.navigate(['/']);
           },
-          error: () => {
-            this.notificacion.info('Cuenta creada. Inicia sesión con tu email y contraseña.');
+          error: (err) => {
+            const msg = this.extraerMensajeBackend(err);
+            this.notificacion.info(msg || 'Cuenta creada. Inicia sesión con tu email y contraseña.');
             this.enviando.set(false);
           },
           complete: () => this.enviando.set(false),
         });
       },
-      error: () => {
-        this.notificacion.error('No se pudo crear la cuenta. Revisa los datos o intenta otro email.');
+      error: (err) => {
+        const msg = this.extraerMensajeBackend(err);
+        this.notificacion.error(msg || 'No se pudo crear la cuenta. Revisa los datos o intenta otro email.');
         this.enviando.set(false);
       },
       complete: () => this.enviando.set(false),

@@ -25,6 +25,50 @@
 }
 
 /* ═══════════════════════════════════════════════════════
+   TÍTULO Y OPCIONES (como otras páginas admin)
+   ═══════════════════════════════════════════════════════ */
+
+.panel-principal-contenedor .titulo-opciones-contenedor {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--espaciado-sm);
+  padding: 0 var(--espaciado-md);
+  color: var(--color-fondo-base);
+}
+
+.panel-principal-contenedor .titulo-contenedor {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espaciado-xs);
+}
+
+.panel-principal-contenedor .opciones-contenedor {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espaciado-xs);
+  flex-wrap: wrap;
+}
+
+.panel-principal-contenedor .titulo-contenedor--en-linea {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+}
+
+.panel-principal-contenedor .titulo-contenedor--en-linea h3 {
+  margin: 0;
+}
+
+.panel-titulo-cambios {
+  color: var(--color-primario);
+  font-weight: var(--peso-semibold);
+  font-size: var(--texto-base);
+}
+
+/* ═══════════════════════════════════════════════════════
        2. SECCIÓN ROL
        ═══════════════════════════════════════════════════════ */
 
@@ -95,8 +139,26 @@
   transition: all var(--transicion-normal);
 }
 
+.panel-seccion__botones,
+.panel-seccion__mensaje {
+  grid-column: 1 / -1;
+}
+
 .panel-seccion__contenido--oculto {
   display: none !important;
+}
+
+.panel-seccion__botones {
+  display: flex;
+  gap: var(--espaciado-md);
+  border-top: var(--borde-grosor) solid var(--color-borde-separador);
+}
+
+.panel-seccion__mensaje {
+  font-size: var(--texto-base);
+  color: var(--color-fondo-septimo);
+  margin: 0;
+  line-height: 1.5;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -206,6 +268,11 @@
 
 /* ─── Tablet ─── */
 @media (min-width: 768px) {
+  .panel-principal-contenedor .titulo-opciones-contenedor {
+    flex-direction: row;
+  }
+
+
   .panel-rol {
     padding: 0;
   }
@@ -214,7 +281,7 @@
     padding: 0;
   }
 
-  .panel-formulario-campos {
+  .panel-seccion__contenido {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--espaciado-lg);

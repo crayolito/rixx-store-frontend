@@ -1,18 +1,15 @@
-import { Component, computed, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { BloqueEstadoTablaComponente } from '../../../../../compartido/componentes/bloque-estado-tabla/bloque-estado-tabla';
 import { Modal } from '../../../../../compartido/componentes/modal/modal';
-
-interface Codigo {
-  id: string;
-  codigo: string;
-  nombre_producto: string;
-  precio_producto: string;
-  cliente_email: string;
-  cliente_nombre: string;
-  estado: 'disponible' | 'vendido' | 'expirado' | 'usado' | 'reservado';
-  fecha_creacion: string;
-  fecha_expiracion: string;
-  informacion_adicional?: string;
-}
+import type { CodigoApi } from '../../../../../compartido/modelos/codigo.modelo';
+import type {
+  PrecioApi,
+  ProductoDetalleApi,
+} from '../../../../../compartido/modelos/producto.modelo';
+import { NotificacionServicio } from '../../../../../compartido/servicios/notificacion';
+import { CodigosApiServicio } from '../../../../../nucleo/servicios/codigos-api.servicio';
+import { ProductosApiServicio } from '../../../../../nucleo/servicios/productos-api.servicio';
 
 interface PrecioProducto {
   id: string;
@@ -24,320 +21,168 @@ interface PrecioProducto {
 interface ProductoConPrecios {
   id: string;
   nombre: string;
+  handle: string;
   precios: PrecioProducto[];
 }
 
 @Component({
   selector: 'app-codigos-admin-pagina',
-  imports: [Modal],
+  standalone: true,
+  imports: [CommonModule, Modal, BloqueEstadoTablaComponente],
   templateUrl: './codigos-admin-pagina.html',
   styleUrl: './codigos-admin-pagina.css',
 })
-export class CodigosAdminPagina {
+export class CodigosAdminPagina implements OnInit {
   Math = Math;
 
-  // FASE 1: Estados para filtros superiores (badges de colores) - AGREGADO TOTAL
+  private codigosApi = inject(CodigosApiServicio);
+  private productosApi = inject(ProductosApiServicio);
+  private notificacion = inject(NotificacionServicio);
+
   estadosFiltro = [
     { nombre: 'Total', valor: 'total', color: 'morado' },
     { nombre: 'Disponible', valor: 'disponible', color: 'verde' },
     { nombre: 'Vendido', valor: 'vendido', color: 'azul' },
     { nombre: 'Expirado', valor: 'expirado', color: 'rojo' },
-    { nombre: 'Usado', valor: 'usado', color: 'gris' },
-    { nombre: 'Reservado', valor: 'reservado', color: 'amarillo' }
   ];
   estadoActivoFiltro = signal<string | null>(null);
 
-  // FASE 2: Controles de visibilidad
   modalAgregarAbierto = signal(false);
   filtrosVisibles = signal(true);
 
-  // FASE 2.1: Estados del modal de agregar código
+  // Estados de carga
+  estaCargando = signal(false);
+  errorAlCargar = signal(false);
+  guardando = signal(false);
+
+  // Modal agregar
   productoSeleccionado = signal<string>('');
   precioSeleccionado = signal<string>('');
   sinFechaExpiracion = signal<boolean>(false);
   fechaExpiracionCodigo = signal<string>('');
-  productosDisponibles = signal<ProductoConPrecios[]>([
-    {
-      id: '1',
-      nombre: 'Pines Free Latam',
-      precios: [
-        { id: '1-1', nombre: '1200 + 218 diamantes bonus', precio: 1200, bonificacion: '218 diamantes bonus' },
-        { id: '1-2', nombre: '2400 + 450 diamantes bonus', precio: 2400, bonificacion: '450 diamantes bonus' },
-        { id: '1-3', nombre: '5000 + 1000 diamantes bonus', precio: 5000, bonificacion: '1000 diamantes bonus' }
-      ]
-    },
-    {
-      id: '2',
-      nombre: 'Recarga Movistar 50',
-      precios: [
-        { id: '2-1', nombre: '$50.00', precio: 50 },
-        { id: '2-2', nombre: '$100.00', precio: 100 },
-        { id: '2-3', nombre: '$200.00', precio: 200 }
-      ]
-    },
-    {
-      id: '3',
-      nombre: 'Netflix Premium',
-      precios: [
-        { id: '3-1', nombre: '1 Mes - $120.00', precio: 120 },
-        { id: '3-2', nombre: '3 Meses - $350.00', precio: 350 },
-        { id: '3-3', nombre: '6 Meses - $650.00', precio: 650 }
-      ]
-    }
-  ]);
+  textoCodigosModal = signal<string>('');
+  busquedaProductoModal = signal<string>('');
+  desplegarBusquedaProducto = signal<boolean>(false);
+  productosDisponibles = signal<ProductoConPrecios[]>([]);
+  cargandoPreciosProducto = signal(false);
 
   preciosDisponibles = computed(() => {
-    if (!this.productoSeleccionado()) {
-      return [];
-    }
-    const producto = this.productosDisponibles().find(p => p.id === this.productoSeleccionado());
+    if (!this.productoSeleccionado()) return [];
+    const producto = this.productosDisponibles().find((p) => p.id === this.productoSeleccionado());
     return producto ? producto.precios : [];
   });
 
-  precioSelectHabilitado = computed(() => {
-    return this.productoSeleccionado() !== '';
+  precioSelectHabilitado = computed(() => this.productoSeleccionado() !== '');
+
+  productosFiltradosModal = computed(() => {
+    const texto = this.busquedaProductoModal().toLowerCase().trim();
+    const lista = this.productosDisponibles();
+    if (!texto) return lista;
+    return lista.filter((p) => p.nombre.toLowerCase().includes(texto));
   });
 
-  // FASE 3: Filtros de búsqueda avanzada - MODIFICADO
-  textoBusqueda = signal<string>(''); // Solo busca código
-  productoFiltroSeleccionado = signal<string>(''); // Nuevo: filtro por producto
-  precioFiltroSeleccionado = signal<string>(''); // Nuevo: filtro por precio
+  textoProductoSeleccionado = computed(() => {
+    if (!this.productoSeleccionado()) return '';
+    const producto = this.productosDisponibles().find((p) => p.id === this.productoSeleccionado());
+    return producto ? producto.nombre : '';
+  });
 
-  // FASE 4: Control de dropdowns
-  dropdownProductoAbierto = signal(false);
-  dropdownPrecioAbierto = signal(false);
+  textoBusqueda = signal<string>('');
+  fechaCreacion = signal<string>('');
+  fechaExpiracion = signal<string>('');
 
-  // FASE 5: Datos de códigos (temporal)
-  codigos = signal<Codigo[]>([
-    {
-      id: 'df846764-246b-4470-914f-910a6068242d',
-      codigo: 'ABC123|pass123|info adicional',
-      nombre_producto: 'Pines Free Latam',
-      precio_producto: '1200 + 218 diamantes bonus',
-      cliente_email: 'josalejandroapp2017@gmail.com',
-      cliente_nombre: 'José Alejandro',
-      estado: 'disponible',
-      fecha_creacion: '2026-01-20 10:00:00',
-      fecha_expiracion: '2026-01-25 12:00:00',
-    },
-    {
-      id: 'a1b2c3d4-5678-90ab-cdef-1234567890ab',
-      codigo: 'XYZ789|secreto789',
-      nombre_producto: 'Recarga Movistar 50',
-      precio_producto: '$50.00',
-      cliente_email: 'maria.lopez@gmail.com',
-      cliente_nombre: 'María López',
-      estado: 'vendido',
-      fecha_creacion: '2026-01-19 14:30:00',
-      fecha_expiracion: '2026-01-24 14:30:00',
-    },
-    {
-      id: 'b2c3d4e5-6789-01bc-def2-234567890abc',
-      codigo: 'DEF456|clave456|datos extras',
-      nombre_producto: 'Netflix Premium 1 Mes',
-      precio_producto: '$120.00',
-      cliente_email: 'carlos.martinez@hotmail.com',
-      cliente_nombre: 'Carlos Martínez',
-      estado: 'expirado',
-      fecha_creacion: '2026-01-10 09:15:00',
-      fecha_expiracion: '2026-01-18 09:15:00',
-    },
-    {
-      id: 'c3d4e5f6-7890-12cd-ef34-34567890abcd',
-      codigo: 'GHI789|password789',
-      nombre_producto: 'Spotify Premium 3 Meses',
-      precio_producto: '$99.00',
-      cliente_email: 'ana.garcia@yahoo.com',
-      cliente_nombre: 'Ana García',
-      estado: 'usado',
-      fecha_creacion: '2026-01-18 11:45:00',
-      fecha_expiracion: '2026-01-28 11:45:00',
-    },
-    {
-      id: 'd4e5f6g7-8901-23de-f456-4567890abcde',
-      codigo: 'JKL012|key012',
-      nombre_producto: 'Xbox Game Pass 1 Mes',
-      precio_producto: '$150.00',
-      cliente_email: 'luis.hernandez@outlook.com',
-      cliente_nombre: 'Luis Hernández',
-      estado: 'reservado',
-      fecha_creacion: '2026-01-21 08:20:00',
-      fecha_expiracion: '2026-01-26 08:20:00',
-    },
-    {
-      id: 'e5f6g7h8-9012-34ef-5678-567890abcdef',
-      codigo: 'MNO345|pass345|más información',
-      nombre_producto: 'Steam Wallet $20',
-      precio_producto: '$20.00',
-      cliente_email: 'sofia.ramirez@gmail.com',
-      cliente_nombre: 'Sofía Ramírez',
-      estado: 'disponible',
-      fecha_creacion: '2026-01-21 12:10:00',
-      fecha_expiracion: '2026-01-30 12:10:00',
-    },
-    {
-      id: 'f6g7h8i9-0123-45fg-6789-67890abcdefg',
-      codigo: 'PQR678|secret678',
-      nombre_producto: 'Amazon Gift Card $50',
-      precio_producto: '$50.00',
-      cliente_email: 'pedro.fernandez@gmail.com',
-      cliente_nombre: 'Pedro Fernández',
-      estado: 'vendido',
-      fecha_creacion: '2026-01-20 16:30:00',
-      fecha_expiracion: '2026-01-27 16:30:00',
-    },
-    {
-      id: 'g7h8i9j0-1234-56gh-7890-7890abcdefgh',
-      codigo: 'STU901|clave901',
-      nombre_producto: 'PlayStation Plus 1 Mes',
-      precio_producto: '$160.00',
-      cliente_email: 'laura.diaz@hotmail.com',
-      cliente_nombre: 'Laura Díaz',
-      estado: 'disponible',
-      fecha_creacion: '2026-01-21 09:50:00',
-      fecha_expiracion: '2026-01-29 09:50:00',
-    },
-  ]);
+  codigos = signal<CodigoApi[]>([]);
 
-  // FASE 6: Paginación
   paginaActual = signal(1);
   codigosPorPagina = signal(10);
 
-  // FASE 7: Códigos filtrados según criterios - MODIFICADO
   codigosFiltrados = computed(() => {
     let resultado = this.codigos();
 
-    // Filtrar por estado badge superior (excepto total)
     if (this.estadoActivoFiltro() && this.estadoActivoFiltro() !== 'total') {
-      resultado = resultado.filter(c => c.estado === this.estadoActivoFiltro());
+      resultado = resultado.filter((c) => c.estado === this.estadoActivoFiltro());
     }
 
-    // Filtrar por búsqueda (solo código)
-    const busqueda = this.textoBusqueda().toLowerCase();
+    // Buscador de texto: busca en código, producto, precio y cliente
+    const busqueda = this.textoBusqueda().toLowerCase().trim();
     if (busqueda) {
-      resultado = resultado.filter(c =>
-        c.codigo.toLowerCase().includes(busqueda)
-      );
+      resultado = resultado.filter((c) => {
+        const codigo = c.codigo.toLowerCase();
+        const producto = c.nombreProducto.toLowerCase();
+        const precio = c.nombrePrecio.toLowerCase();
+        const cliente = c.correoCliente?.toLowerCase() ?? '';
+        return codigo.includes(busqueda) || 
+               producto.includes(busqueda) || 
+               precio.includes(busqueda) || 
+               cliente.includes(busqueda);
+      });
     }
 
-    // Filtrar por producto
-    if (this.productoFiltroSeleccionado()) {
-      const producto = this.productosDisponibles().find(p => p.id === this.productoFiltroSeleccionado());
-      if (producto) {
-        resultado = resultado.filter(c => c.nombre_producto === producto.nombre);
-      }
+    // Filtro por fecha de creación
+    const fechaCreacionFiltro = this.fechaCreacion();
+    if (fechaCreacionFiltro) {
+      const fechaFiltro = new Date(fechaCreacionFiltro);
+      fechaFiltro.setHours(0, 0, 0, 0);
+      resultado = resultado.filter((c) => {
+        const fechaCreacion = new Date(c.fechaCreacion);
+        fechaCreacion.setHours(0, 0, 0, 0);
+        return fechaCreacion.getTime() === fechaFiltro.getTime();
+      });
     }
 
-    // Filtrar por precio
-    if (this.precioFiltroSeleccionado()) {
-      const precio = this.obtenerPrecioPorId(this.precioFiltroSeleccionado());
-      if (precio) {
-        resultado = resultado.filter(c => c.precio_producto === precio.nombre);
-      }
-    }
-
-    return resultado;
-  });
-
-  // FASE 7.0: Códigos filtrados solo por producto/precio (para badges) - NUEVO
-  codigosFiltradosPorProductoPrecio = computed(() => {
-    let resultado = this.codigos();
-
-    // Filtrar por producto
-    if (this.productoFiltroSeleccionado()) {
-      const producto = this.productosDisponibles().find(p => p.id === this.productoFiltroSeleccionado());
-      if (producto) {
-        resultado = resultado.filter(c => c.nombre_producto === producto.nombre);
-      }
-    }
-
-    // Filtrar por precio
-    if (this.precioFiltroSeleccionado()) {
-      const precio = this.obtenerPrecioPorId(this.precioFiltroSeleccionado());
-      if (precio) {
-        resultado = resultado.filter(c => c.precio_producto === precio.nombre);
-      }
+    // Filtro por fecha de expiración
+    const fechaExpiracionFiltro = this.fechaExpiracion();
+    if (fechaExpiracionFiltro) {
+      const fechaFiltro = new Date(fechaExpiracionFiltro);
+      fechaFiltro.setHours(0, 0, 0, 0);
+      resultado = resultado.filter((c) => {
+        if (!c.fechaExpiracion) return false;
+        const fechaExp = new Date(c.fechaExpiracion);
+        fechaExp.setHours(0, 0, 0, 0);
+        return fechaExp.getTime() === fechaFiltro.getTime();
+      });
     }
 
     return resultado;
   });
 
-  // FASE 7.1: Obtener precio por ID
-  obtenerPrecioPorId(precioId: string): PrecioProducto | null {
-    for (const producto of this.productosDisponibles()) {
-      const precio = producto.precios.find(p => p.id === precioId);
-      if (precio) return precio;
-    }
-    return null;
-  }
-
-  // FASE 7.2: Obtener todos los precios disponibles para el dropdown
-  todosLosPreciosDisponibles = computed(() => {
-    const precios: { id: string; nombre: string; productoNombre: string }[] = [];
-    for (const producto of this.productosDisponibles()) {
-      for (const precio of producto.precios) {
-        precios.push({
-          id: precio.id,
-          nombre: precio.nombre,
-          productoNombre: producto.nombre
-        });
-      }
-    }
-    return precios;
-  });
 
   totalCodigos = computed(() => this.codigosFiltrados().length);
-  totalPaginas = computed(() =>
-    Math.ceil(this.totalCodigos() / this.codigosPorPagina())
-  );
+  totalPaginas = computed(() => Math.ceil(this.totalCodigos() / this.codigosPorPagina()));
 
-  // FASE 8: Códigos paginados
   codigosPaginados = computed(() => {
     const inicio = (this.paginaActual() - 1) * this.codigosPorPagina();
     const fin = inicio + this.codigosPorPagina();
     return this.codigosFiltrados().slice(inicio, fin);
   });
 
-  // FASE 9: Calcular totales por estado (para badges superiores) - MODIFICADO
   contadorPorEstado(estado: string): number {
-    // Usar códigos filtrados por producto/precio si hay filtros activos
-    const codigosBase = this.codigosFiltradosPorProductoPrecio();
+    const codigosBase = this.codigosFiltrados();
 
-    if (estado === 'total') {
-      return codigosBase.length;
-    }
-    return codigosBase.filter(c => c.estado === estado).length;
+    if (estado === 'total') return codigosBase.length;
+    return codigosBase.filter((c) => c.estado === estado).length;
   }
 
-  // FASE 10: Funciones de navegación
   paginasAMostrar = computed(() => {
     const total = this.totalPaginas();
     const actual = this.paginaActual();
     const paginas: number[] = [];
 
     if (total <= 7) {
-      for (let i = 1; i <= total; i++) {
-        paginas.push(i);
-      }
+      for (let i = 1; i <= total; i++) paginas.push(i);
     } else {
       if (actual <= 4) {
-        for (let i = 1; i <= 5; i++) {
-          paginas.push(i);
-        }
+        for (let i = 1; i <= 5; i++) paginas.push(i);
         paginas.push(-1);
         paginas.push(total);
       } else if (actual >= total - 3) {
         paginas.push(1);
         paginas.push(-1);
-        for (let i = total - 4; i <= total; i++) {
-          paginas.push(i);
-        }
+        for (let i = total - 4; i <= total; i++) paginas.push(i);
       } else {
         paginas.push(1);
         paginas.push(-1);
-        for (let i = actual - 1; i <= actual + 1; i++) {
-          paginas.push(i);
-        }
+        for (let i = actual - 1; i <= actual + 1; i++) paginas.push(i);
         paginas.push(-1);
         paginas.push(total);
       }
@@ -345,27 +190,93 @@ export class CodigosAdminPagina {
     return paginas;
   });
 
-  // FASE 11: Funciones de paginación
-  irAPagina(pagina: number) {
+  ngOnInit(): void {
+    this.cargarCodigos();
+  }
+
+  /** Carga los códigos desde la API */
+  cargarCodigos(): void {
+    this.estaCargando.set(true);
+    this.errorAlCargar.set(false);
+    this.codigosApi.obtenerTodos().subscribe({
+      next: (datos: CodigoApi[]) => {
+        this.codigos.set(datos);
+      },
+      error: () => {
+        this.errorAlCargar.set(true);
+        this.notificacion.error('No se pudieron cargar los códigos');
+      },
+      complete: () => this.estaCargando.set(false),
+    });
+  }
+
+  /** Carga productos con precios para el modal de agregar */
+  cargarProductosManuales(): void {
+    this.productosApi.obtenerParaCodigos().subscribe({
+      next: (lista) => {
+        const productos = lista.map((p) => ({
+          id: String(p.id_producto),
+          nombre: p.titulo,
+          handle: p.handle,
+          precios: p.precios.map((pr: { id_precio: number; nombre: string }) => ({
+            id: String(pr.id_precio),
+            nombre: pr.nombre,
+            precio: 0, // No se usa en el modal
+          })),
+        }));
+        this.productosDisponibles.set(productos);
+      },
+      error: () => {
+        this.notificacion.error('No se pudieron cargar los productos');
+      },
+    });
+  }
+
+  /** Carga precios de un producto seleccionado por handle */
+  cargarPreciosProducto(handle: string): void {
+    this.cargandoPreciosProducto.set(true);
+    this.productosApi.obtenerPorHandle(handle).subscribe({
+      next: (producto: ProductoDetalleApi | null) => {
+        if (producto?.precios?.length) {
+          this.productosDisponibles.update((lista) =>
+            lista.map((p) => {
+              if (p.handle === handle) {
+                return {
+                  ...p,
+                  precios: producto.precios.map((pr: PrecioApi) => ({
+                    id: String(pr.id_precio),
+                    nombre: pr.nombre,
+                    precio: parseFloat(pr.precioBase ?? '0'),
+                  })),
+                };
+              }
+              return p;
+            }),
+          );
+        }
+      },
+      error: () => this.notificacion.error('No se pudieron cargar los precios'),
+      complete: () => this.cargandoPreciosProducto.set(false),
+    });
+  }
+
+  irAPagina(pagina: number): void {
     if (pagina >= 1 && pagina <= this.totalPaginas()) {
       this.paginaActual.set(pagina);
     }
   }
 
-  paginaAnterior() {
-    if (this.paginaActual() > 1) {
-      this.paginaActual.update(pag => pag - 1);
-    }
+  paginaAnterior(): void {
+    if (this.paginaActual() > 1) this.paginaActual.update((p) => p - 1);
   }
 
-  paginaSiguiente() {
+  paginaSiguiente(): void {
     if (this.paginaActual() < this.totalPaginas()) {
-      this.paginaActual.update(pag => pag + 1);
+      this.paginaActual.update((p) => p + 1);
     }
   }
 
-  // FASE 14: Filtrar por badge de estado superior - MODIFICADO
-  filtrarPorEstado(estado: string) {
+  filtrarPorEstado(estado: string): void {
     if (this.estadoActivoFiltro() === estado) {
       this.estadoActivoFiltro.set(null);
     } else {
@@ -374,112 +285,187 @@ export class CodigosAdminPagina {
     this.paginaActual.set(1);
   }
 
-  // FASE 16: Limpiar filtros - MODIFICADO
-  limpiarFiltros() {
+  limpiarFiltros(): void {
     this.textoBusqueda.set('');
-    this.productoFiltroSeleccionado.set('');
-    this.precioFiltroSeleccionado.set('');
+    this.fechaCreacion.set('');
+    this.fechaExpiracion.set('');
     this.estadoActivoFiltro.set(null);
     this.paginaActual.set(1);
   }
 
-  // FASE 17: Abrir modal para agregar código
-  abrirModalAgregar() {
+  abrirModalAgregar(): void {
     this.modalAgregarAbierto.set(true);
     this.productoSeleccionado.set('');
     this.precioSeleccionado.set('');
+    this.busquedaProductoModal.set('');
+    this.desplegarBusquedaProducto.set(false);
     this.sinFechaExpiracion.set(false);
     this.fechaExpiracionCodigo.set('');
+    this.textoCodigosModal.set('');
+    this.productosDisponibles.set([]);
+    this.cargarProductosManuales();
   }
 
-  cerrarModalAgregar() {
+  cerrarModalAgregar(): void {
     this.modalAgregarAbierto.set(false);
     this.productoSeleccionado.set('');
     this.precioSeleccionado.set('');
+    this.busquedaProductoModal.set('');
+    this.desplegarBusquedaProducto.set(false);
     this.sinFechaExpiracion.set(false);
     this.fechaExpiracionCodigo.set('');
+    this.textoCodigosModal.set('');
   }
 
-  // FASE 17.1: Manejar selección de producto
-  onProductoSeleccionado(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    const productoId = select.value;
+  seleccionarProductoModal(productoId: string): void {
+    const producto = this.productosDisponibles().find((p) => p.id === productoId);
+    if (!producto) return;
     this.productoSeleccionado.set(productoId);
     this.precioSeleccionado.set('');
+    this.desplegarBusquedaProducto.set(false);
+    this.busquedaProductoModal.set('');
   }
 
-  // FASE 17.2: Manejar selección de precio
-  onPrecioSeleccionado(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    this.precioSeleccionado.set(select.value);
+  /** Selecciona el precio del producto en el modal de agregar */
+  seleccionarPrecioModal(precioId: string): void {
+    this.precioSeleccionado.set(precioId);
   }
 
-  // FASE 17.3: Alternar checkbox de sin fecha de expiración
-  alternarSinFechaExpiracion() {
-    this.sinFechaExpiracion.update(valor => !valor);
-    if (this.sinFechaExpiracion()) {
-      this.fechaExpiracionCodigo.set('');
-    }
+  alternarDesplegarBusquedaProducto(): void {
+    this.desplegarBusquedaProducto.update((v) => !v);
   }
 
-  // Alternar visibilidad de filtros
-  alternarFiltros() {
-    this.filtrosVisibles.update(visible => !visible);
+  cerrarBusquedaProducto(): void {
+    this.desplegarBusquedaProducto.set(false);
   }
 
-  // FASE 18: Acciones con códigos
-  eliminarCodigo(id: string) {
-    console.log('Eliminar código:', id);
+  limpiarProductoSeleccionado(): void {
+    this.productoSeleccionado.set('');
+    this.precioSeleccionado.set('');
+    this.busquedaProductoModal.set('');
+  }
+
+  alternarSinFechaExpiracion(): void {
+    this.sinFechaExpiracion.update((v) => !v);
+    if (this.sinFechaExpiracion()) this.fechaExpiracionCodigo.set('');
+  }
+
+  alternarFiltros(): void {
+    this.filtrosVisibles.update((v) => !v);
+  }
+
+  eliminarCodigo(id: number): void {
+    this.guardando.set(true);
+    this.codigosApi.eliminar(id).subscribe({
+      next: () => {
+        this.notificacion.exito('Código eliminado');
+        this.cargarCodigos();
+      },
+      error: (err: { error?: { mensaje?: string } }) => {
+        const msg = err?.error?.mensaje ?? 'No se pudo eliminar el código';
+        this.notificacion.error(msg);
+      },
+      complete: () => this.guardando.set(false),
+    });
+  }
+
+  actualizarEstadoCodigo(id: number, nuevoEstado: 'disponible' | 'vendido' | 'expirado'): void {
+    this.guardando.set(true);
+    this.codigosApi.actualizarEstado(id, { estado: nuevoEstado }).subscribe({
+      next: () => {
+        this.notificacion.exito('Estado actualizado');
+        this.cargarCodigos();
+      },
+      error: (err: { error?: { mensaje?: string } }) => {
+        const msg = err?.error?.mensaje ?? 'No se pudo actualizar el estado';
+        this.notificacion.error(msg);
+      },
+      complete: () => this.guardando.set(false),
+    });
   }
 
   truncarTexto(texto: string, limite: number): string {
-    if (texto.length <= limite) {
-      return texto;
-    }
+    if (!texto || texto.length <= limite) return texto;
     return texto.substring(0, limite) + '...';
   }
 
-  // FASE 19: Funciones para dropdowns de filtros - NUEVO
-  alternarDropdownProducto() {
-    this.dropdownProductoAbierto.update(abierto => !abierto);
-    this.dropdownPrecioAbierto.set(false);
+
+  /** Obtiene la fecha de expiración formateada para mostrar */
+  formatearFechaExpiracion(fecha: string | null): string {
+    if (!fecha) return '—';
+    try {
+      const d = new Date(fecha);
+      return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    } catch {
+      return fecha;
+    }
   }
 
-  alternarDropdownPrecio() {
-    this.dropdownPrecioAbierto.update(abierto => !abierto);
-    this.dropdownProductoAbierto.set(false);
+  /** Obtiene la fecha de creación formateada */
+  formatearFechaCreacion(fecha: string): string {
+    try {
+      const d = new Date(fecha);
+      return d.toLocaleString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return fecha;
+    }
   }
 
-  seleccionarProductoFiltro(productoId: string) {
-    this.productoFiltroSeleccionado.set(productoId);
-    this.precioFiltroSeleccionado.set(''); // Limpiar precio cuando cambia producto
-    this.dropdownProductoAbierto.set(false);
-    this.estadoActivoFiltro.set(null); // Limpiar filtro de estado
-    this.paginaActual.set(1);
-  }
+  /** Guarda los códigos del modal (uno por línea) en lote */
+  guardarCodigos(): void {
+    const idPrecio = this.precioSeleccionado() ? parseInt(this.precioSeleccionado(), 10) : 0;
+    if (!idPrecio) {
+      this.notificacion.advertencia('Selecciona un producto y precio');
+      return;
+    }
 
-  seleccionarPrecioFiltro(precioId: string) {
-    this.precioFiltroSeleccionado.set(precioId);
-    this.dropdownPrecioAbierto.set(false);
-    this.estadoActivoFiltro.set(null); // Limpiar filtro de estado
-    this.paginaActual.set(1);
-  }
+    const lineas = this.textoCodigosModal()
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
+    if (lineas.length === 0) {
+      this.notificacion.advertencia('Ingresa al menos un código');
+      return;
+    }
 
-  obtenerNombreProductoFiltro(): string {
-    if (!this.productoFiltroSeleccionado()) return 'Todos los productos';
-    const producto = this.productosDisponibles().find(p => p.id === this.productoFiltroSeleccionado());
-    return producto ? producto.nombre : 'Todos los productos';
-  }
+    const fechaExpiracion = this.sinFechaExpiracion()
+      ? undefined
+      : this.fechaExpiracionCodigo()
+        ? new Date(this.fechaExpiracionCodigo()).toISOString().slice(0, 10)
+        : undefined;
 
-  obtenerNombrePrecioFiltro(): string {
-    if (!this.precioFiltroSeleccionado()) return 'Todos los precios';
-    const precio = this.obtenerPrecioPorId(this.precioFiltroSeleccionado());
-    return precio ? precio.nombre : 'Todos los precios';
-  }
+    this.guardando.set(true);
 
-  // Cerrar todos los dropdowns
-  cerrarTodosLosDropdowns() {
-    this.dropdownProductoAbierto.set(false);
-    this.dropdownPrecioAbierto.set(false);
+    this.codigosApi
+      .crearEnLote({
+        id_precio: idPrecio,
+        codigos: lineas,
+        fecha_expiracion: fechaExpiracion,
+      })
+      .subscribe({
+        next: (resp) => {
+          this.guardando.set(false);
+          if (resp?.exito && resp.datos) {
+            const cantidadCreados = resp.datos.length;
+            this.notificacion.exito(`Se crearon ${cantidadCreados} código(s) correctamente`);
+            this.cerrarModalAgregar();
+            this.cargarCodigos();
+          } else {
+            const mensaje = resp?.mensaje ?? 'No se pudieron crear los códigos';
+            this.notificacion.error(mensaje);
+          }
+        },
+        error: (err: { error?: { mensaje?: string } }) => {
+          this.guardando.set(false);
+          const msg = err?.error?.mensaje ?? 'Error al crear los códigos';
+          this.notificacion.error(msg);
+        },
+      });
   }
 }

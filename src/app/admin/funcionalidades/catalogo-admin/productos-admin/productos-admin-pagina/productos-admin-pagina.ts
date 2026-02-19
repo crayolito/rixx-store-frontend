@@ -1,101 +1,86 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Producto, PRODUCTOS } from '../../../../../compartido/datos/productos.datos';
+import { BloqueEstadoTablaComponente } from '../../../../../compartido/componentes/bloque-estado-tabla/bloque-estado-tabla';
+import { ProductoApi } from '../../../../../compartido/modelos/producto.modelo';
+import { CategoriasApiServicio } from '../../../../../nucleo/servicios/categorias-api.servicio';
+import { ProductosApiServicio } from '../../../../../nucleo/servicios/productos-api.servicio';
 
 @Component({
   selector: 'app-productos-admin-pagina',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, BloqueEstadoTablaComponente],
   templateUrl: './productos-admin-pagina.html',
   styleUrl: './productos-admin-pagina.css',
 })
-export class ProductosAdminPagina {
+export class ProductosAdminPagina implements OnInit {
   Math = Math;
+  private productosApi = inject(ProductosApiServicio);
+  private categoriasApi = inject(CategoriasApiServicio);
 
-  // FASE 2: Estado de los dropdowns (abierto/cerrado)
+  estaCargando = signal(false);
+  filtrosVisibles = signal(true);
   dropdownCategoriaAbierto = signal(false);
   dropdownEstadoAbierto = signal(false);
-  dropdownDisponibilidadAbierto = signal(false);
+  dropdownTipoProcesoAbierto = signal(false);
 
-  // FASE 3: Valores seleccionados en cada filtro
-  categoriaSeleccionada = signal<string>('Todas las categorías');
+  categoriaSeleccionada = signal<string>('Todas las categorias');
   estadoSeleccionado = signal<string>('Todos');
-  disponibilidadSeleccionada = signal<string>('Todos');
+  tipoProcesoSeleccionado = signal<string>('Todos');
   textoBusqueda = signal<string>('');
 
-  // FASE 4: Opciones disponibles para cada filtro
-  opcionesCategoria = [
-    'Todas las categorías',
-    'Electrónica',
-    'Ropa',
-    'Hogar',
-    'Deportes'
-  ];
+  opcionesEstado = signal<string[]>(['Todos']);
+  opcionesCategoria = signal<string[]>(['Todas las categorias']);
+  opcionesTipoProceso = signal<string[]>(['Todos']);
 
-  opcionesEstado = [
-    'Todos',
-    'Activo',
-    'Borrador',
-    'Archivado',
-    'Pausado'
-  ];
+  productos = signal<ProductoApi[]>([]);
 
-  opcionesDisponibilidad = [
-    'Todos',
-    'En stock',
-    'Sin stock',
-    'Bajo stock'
-  ];
-
-  productos = signal<Producto[]>([...PRODUCTOS]);
-
-  // FASE 6: Paginación
-  paginaActual = signal(1);
-  productosPorPagina = signal(10);
-  totalProductos = computed(() => this.productos().length);
-
-  // FASE 7: Calcular total de páginas
-  totalPaginas = computed(() => {
-    return Math.ceil(this.totalProductos() / this.productosPorPagina());
+  productosFiltrados = computed(() => {
+    const lista = this.productos();
+    const busqueda = (this.textoBusqueda() ?? '').trim().toLowerCase();
+    const categoria = this.categoriaSeleccionada();
+    const estado = this.estadoSeleccionado();
+    const tipoProceso = this.tipoProcesoSeleccionado();
+    return lista.filter((p) => {
+      if (busqueda && !(p.titulo ?? '').toLowerCase().includes(busqueda)) return false;
+      if (categoria !== 'Todas las categorias' && !(p.categorias ?? []).includes(categoria))
+        return false;
+      if (estado !== 'Todos' && p.estado !== estado) return false;
+      if (tipoProceso !== 'Todos' && p.tipoProceso !== tipoProceso) return false;
+      return true;
+    });
   });
 
-  // FASE 8: Calcular productos a mostrar en la página actual
+  paginaActual = signal(1);
+  productosPorPagina = signal(15);
+  totalProductos = computed(() => this.productosFiltrados().length);
+  totalPaginas = computed(() => Math.ceil(this.totalProductos() / this.productosPorPagina()));
+
   productosPaginados = computed(() => {
     const inicio = (this.paginaActual() - 1) * this.productosPorPagina();
     const fin = inicio + this.productosPorPagina();
-    return this.productos().slice(inicio, fin);
+    return this.productosFiltrados().slice(inicio, fin);
   });
 
-  // FASE 9: Obtener números de página a mostrar
   paginasAMostrar = computed(() => {
     const total = this.totalPaginas();
     const actual = this.paginaActual();
     const paginas: number[] = [];
-
     if (total <= 7) {
-      for (let i = 1; i <= total; i++) {
-        paginas.push(i);
-      }
+      for (let i = 1; i <= total; i++) paginas.push(i);
     } else {
       if (actual <= 4) {
-        for (let i = 1; i <= 5; i++) {
-          paginas.push(i);
-        }
+        for (let i = 1; i <= 5; i++) paginas.push(i);
         paginas.push(-1);
         paginas.push(total);
       } else if (actual >= total - 3) {
         paginas.push(1);
         paginas.push(-1);
-        for (let i = total - 4; i <= total; i++) {
-          paginas.push(i);
-        }
+        for (let i = total - 4; i <= total; i++) paginas.push(i);
       } else {
         paginas.push(1);
         paginas.push(-1);
-        for (let i = actual - 1; i <= actual + 1; i++) {
-          paginas.push(i);
-        }
+        for (let i = actual - 1; i <= actual + 1; i++) paginas.push(i);
         paginas.push(-1);
         paginas.push(total);
       }
@@ -103,15 +88,41 @@ export class ProductosAdminPagina {
     return paginas;
   });
 
-  // FASE 10: Truncar texto del producto
+  ngOnInit(): void {
+    this.estaCargando.set(true);
+    this.productosApi.obtenerImportados().subscribe({
+      next: (lista) => {
+        this.productos.set(lista);
+        const estadosUnicos = [...new Set(lista.map((p) => p.estado).filter(Boolean))].sort();
+        this.opcionesEstado.set(['Todos', ...estadosUnicos]);
+        const procesosUnicos = [...new Set(lista.map((p) => p.tipoProceso).filter(Boolean))].sort();
+        this.opcionesTipoProceso.set(['Todos', ...procesosUnicos]);
+        this.estaCargando.set(false);
+      },
+      error: () => this.estaCargando.set(false),
+    });
+    this.categoriasApi.obtenerTodas().subscribe({
+      next: (categorias) => {
+        const nombres = categorias.map((c) => c.nombre);
+        this.opcionesCategoria.set(['Todas las categorias', ...nombres]);
+      },
+    });
+  }
+
   truncarTexto(texto: string, limite: number): string {
-    if (texto.length <= limite) {
-      return texto;
-    }
+    if (texto.length <= limite) return texto;
     return texto.substring(0, limite) + '...';
   }
 
-  // FASE 11: Formatear fecha
+  primeraLetraMayuscula(texto: string): string {
+    if (!texto || !texto.length) return texto;
+    return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+  }
+
+  categoriasTexto(producto: ProductoApi): string {
+    return (producto.categorias ?? []).join(', ');
+  }
+
   formatearFecha(fecha: Date): string {
     const dia = fecha.getDate().toString().padStart(2, '0');
     const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
@@ -121,93 +132,86 @@ export class ProductosAdminPagina {
     return `${año}-${mes}-${dia} ${horas}:${minutos}`;
   }
 
-  // FASE 12: Cambiar a página específica
-  irAPagina(pagina: number) {
+  irAPagina(pagina: number): void {
     if (pagina >= 1 && pagina <= this.totalPaginas()) {
       this.paginaActual.set(pagina);
     }
   }
 
-  // FASE 13: Ir a página anterior
-  paginaAnterior() {
+  paginaAnterior(): void {
     if (this.paginaActual() > 1) {
-      this.paginaActual.update(pag => pag - 1);
+      this.paginaActual.update((pag) => pag - 1);
     }
   }
 
-  // FASE 14: Ir a página siguiente
-  paginaSiguiente() {
+  paginaSiguiente(): void {
     if (this.paginaActual() < this.totalPaginas()) {
-      this.paginaActual.update(pag => pag + 1);
+      this.paginaActual.update((pag) => pag + 1);
     }
   }
 
-  // FASE 15: Alternar visibilidad del dropdown de categoría
-  alternarCategoria() {
-    this.dropdownCategoriaAbierto.update(abierto => !abierto);
+  alternarFiltros(): void {
+    this.filtrosVisibles.update((v) => !v);
+  }
+
+  alternarCategoria(): void {
+    this.dropdownCategoriaAbierto.update((abierto) => !abierto);
     this.dropdownEstadoAbierto.set(false);
-    this.dropdownDisponibilidadAbierto.set(false);
+    this.dropdownTipoProcesoAbierto.set(false);
   }
 
-  // FASE 16: Alternar visibilidad del dropdown de estado
-  alternarEstado() {
-    this.dropdownEstadoAbierto.update(abierto => !abierto);
+  alternarEstado(): void {
+    this.dropdownEstadoAbierto.update((abierto) => !abierto);
     this.dropdownCategoriaAbierto.set(false);
-    this.dropdownDisponibilidadAbierto.set(false);
+    this.dropdownTipoProcesoAbierto.set(false);
   }
 
-  // FASE 17: Alternar visibilidad del dropdown de disponibilidad
-  alternarDisponibilidad() {
-    this.dropdownDisponibilidadAbierto.update(abierto => !abierto);
+  alternarTipoProceso(): void {
+    this.dropdownTipoProcesoAbierto.update((abierto) => !abierto);
     this.dropdownCategoriaAbierto.set(false);
     this.dropdownEstadoAbierto.set(false);
   }
 
-  // FASE 18: Seleccionar una categoría
-  seleccionarCategoria(opcion: string) {
+  seleccionarCategoria(opcion: string): void {
     this.categoriaSeleccionada.set(opcion);
     this.dropdownCategoriaAbierto.set(false);
     this.paginaActual.set(1);
   }
 
-  // FASE 19: Seleccionar un estado
-  seleccionarEstado(opcion: string) {
+  seleccionarEstado(opcion: string): void {
     this.estadoSeleccionado.set(opcion);
     this.dropdownEstadoAbierto.set(false);
     this.paginaActual.set(1);
   }
 
-  // FASE 20: Seleccionar una disponibilidad
-  seleccionarDisponibilidad(opcion: string) {
-    this.disponibilidadSeleccionada.set(opcion);
-    this.dropdownDisponibilidadAbierto.set(false);
+  seleccionarTipoProceso(opcion: string): void {
+    this.tipoProcesoSeleccionado.set(opcion);
+    this.dropdownTipoProcesoAbierto.set(false);
     this.paginaActual.set(1);
   }
 
-  // FASE 21: Cerrar todos los dropdowns al hacer click fuera
-  cerrarTodosLosDropdowns() {
+  cerrarTodosLosDropdowns(): void {
     this.dropdownCategoriaAbierto.set(false);
     this.dropdownEstadoAbierto.set(false);
-    this.dropdownDisponibilidadAbierto.set(false);
+    this.dropdownTipoProcesoAbierto.set(false);
   }
 
-  limpiarFiltros() {
+  limpiarFiltros(): void {
     this.textoBusqueda.set('');
-    this.categoriaSeleccionada.set('Todas las categorías');
+    this.categoriaSeleccionada.set('Todas las categorias');
     this.estadoSeleccionado.set('Todos');
-    this.disponibilidadSeleccionada.set('Todos');
+    this.tipoProcesoSeleccionado.set('Todos');
     this.paginaActual.set(1);
   }
 
-  // FASE 22: Editar producto
-  editarProducto(id: string) {
-    console.log('Editar producto:', id);
-    // Aquí navegarías a la página de edición
-  }
-
-  // FASE 23: Eliminar producto
-  eliminarProducto(id: string) {
-    console.log('Eliminar producto:', id);
-    // Aquí mostrarías confirmación y eliminarías el producto
+  eliminarProducto(handle: string): void {
+    if (!confirm('¿Eliminar este producto?')) return;
+    this.productosApi.eliminar(handle).subscribe({
+      next: (r) => {
+        if (r?.exito) {
+          this.productos.update((lista) => lista.filter((p) => p.handle !== handle));
+        }
+      },
+    });
   }
 }

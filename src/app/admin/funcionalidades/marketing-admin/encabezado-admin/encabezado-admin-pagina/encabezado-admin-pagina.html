@@ -1,15 +1,20 @@
 <div class="contenedor-pagina">
   <section class="encabezado-admin-seccion encabezado-admin-tarjeta">
     <div class="encabezado-admin-cabecera-principal">
-      <h2 class="encabezado-admin-titulo">Encabezado</h2>
-      <div class="encabezado-admin-botones-cabecera">
-        @if (mensajeGuardado()) {
-        <span class="encabezado-admin-mensaje"
-          [class.encabezado-admin-mensaje--error]="mensajeGuardado()?.includes('incompletas')">{{
-          mensajeGuardado() }}</span>
+      <div class="encabezado-admin-titulo-contenedor">
+        <h2 class="encabezado-admin-titulo">Encabezado</h2>
+        @if (hayCambiosPendientes()) {
+        <span class="encabezado-admin-cambios-sin-guardar">• Cambios sin guardar</span>
         }
+      </div>
+      <div class="encabezado-admin-botones-cabecera">
         <button type="button" class="boton-secundario" (click)="volver()">Volver</button>
-        <button type="button" class="boton-primario" (click)="guardarConfiguracion()">Guardar</button>
+        @if (hayCambiosPendientes()) {
+        <button type="button" class="boton-secundario" (click)="cancelarCambios()" [disabled]="guardando()">Cancelar</button>
+        }
+        <button type="button" class="boton-primario" (click)="guardarConfiguracion()" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando...' : 'Guardar' }}
+        </button>
       </div>
     </div>
     <div class="encabezado-admin-fila-promocion-logo">
@@ -57,10 +62,18 @@
       [class.encabezado-admin-seccion-item--invalida]="seccionInvalida(seccion)">
       <div class="encabezado-admin-seccion-item-cabecera">
         <span class="encabezado-admin-seccion-item-numero">Sección {{ i + 1 }}</span>
-        @if (puedeQuitarSeccion()) {
-        <button type="button" class="boton-secundario encabezado-admin-boton-quitar"
-          (click)="quitarSeccion(i)">Quitar</button>
-        }
+        <div class="encabezado-admin-orden-y-quitar">
+          <div class="encabezado-admin-botones-orden">
+            <button type="button" class="boton-secundario encabezado-admin-boton-orden" title="Subir"
+              [disabled]="i === 0" (click)="moverSeccionArriba(i)">↑</button>
+            <button type="button" class="boton-secundario encabezado-admin-boton-orden" title="Bajar"
+              [disabled]="i === secciones().length - 1" (click)="moverSeccionAbajo(i)">↓</button>
+          </div>
+          @if (puedeQuitarSeccion()) {
+          <button type="button" class="boton-secundario encabezado-admin-boton-quitar"
+            (click)="quitarSeccion(i)">Quitar</button>
+          }
+        </div>
       </div>
 
       <div class="global-formulario-campo">
@@ -98,7 +111,9 @@
           {{ handleATitulo(cat.handle) }}
         </button>
         }
-        @if (categoriasFiltradasParaRedireccion(i).length === 0) {
+        @if (categorias().length === 0) {
+        <span class="encabezado-admin-sin-resultados">No hay categorías disponibles.</span>
+        } @else if (categoriasFiltradasParaRedireccion(i).length === 0) {
         <span class="encabezado-admin-sin-resultados">Ninguna categoría coincide con la búsqueda.</span>
         }
       </div>
@@ -122,7 +137,9 @@
           <span class="encabezado-admin-checkbox-texto">{{ handleATitulo(cat.handle) }}</span>
         </label>
         }
-        @if (categoriasFiltradasParaSeccion(i).length === 0) {
+        @if (categorias().length === 0) {
+        <span class="encabezado-admin-sin-resultados">No hay categorías disponibles.</span>
+        } @else if (categoriasFiltradasParaSeccion(i).length === 0) {
         <span class="encabezado-admin-sin-resultados">Ninguna categoría coincide con la búsqueda.</span>
         }
       </div>

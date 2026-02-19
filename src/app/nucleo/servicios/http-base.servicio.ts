@@ -20,6 +20,11 @@ export class HttpBaseServicio {
     return this.http.get<T>(`${API_BASE_URL}${url}`).pipe(this.reintentarConBackoff());
   }
 
+  // GET con opciones (headers para auth)
+  obtenerConOpciones<T>(url: string, opciones?: OpcionesHttp): Observable<T> {
+    return this.http.get<T>(`${API_BASE_URL}${url}`, { headers: opciones?.headers }).pipe(this.reintentarConBackoff());
+  }
+
   // POST
   enviarPost<T>(url: string, cuerpo: unknown, opciones?: OpcionesHttp): Observable<T> {
     return this.http.post<T>(`${API_BASE_URL}${url}`, cuerpo, { headers: opciones?.headers });
@@ -33,7 +38,12 @@ export class HttpBaseServicio {
   // PATCH
   actualizarParcial<T>(url: string, cuerpo: Record<string, unknown>): Observable<T> {
     return this.http.patch<T>(`${API_BASE_URL}${url}`, cuerpo).pipe(this.reintentarConBackoff());
-  };
+  }
+
+  // DELETE
+  eliminar<T>(url: string, opciones?: OpcionesHttp): Observable<T> {
+    return this.http.delete<T>(`${API_BASE_URL}${url}`, { headers: opciones?.headers });
+  }
 
   private reintentarConBackoff<T>() {
     return retry<T>({

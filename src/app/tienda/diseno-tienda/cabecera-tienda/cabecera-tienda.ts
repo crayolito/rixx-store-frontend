@@ -1,9 +1,12 @@
 import { Component, computed, HostListener, inject, OnInit, output, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { of, Subject } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { SeccionEncabezado } from '../../../compartido/modelos/configuracion.modelo';
 import { CarritoServicio } from '../../../compartido/servicios/carrito.servicio';
 import { ConfiguracionServicio } from '../../../compartido/servicios/configuracion.servicio';
 import { Sesion } from '../../../nucleo/servicios/sesion';
+import { ProductosApiServicio } from '../../../nucleo/servicios/productos-api.servicio';
 
 interface Idioma {
   codigo: string;
@@ -16,12 +19,15 @@ interface Pais {
   bandera: string;
 }
 
-interface ItemBusqueda {
+export interface ItemBusqueda {
   id: string;
   imagen: string;
   titulo: string;
   categoria: string;
 }
+
+const LIMITE_RESULTADOS_BUSQUEDA = 6;
+const IMAGEN_POR_DEFECTO = '/imagenes/imagen-nodisponible.jpg';
 
 @Component({
   selector: 'app-cabecera-tienda',
@@ -35,6 +41,9 @@ export class CabeceraTienda implements OnInit {
   private sesion = inject(Sesion);
   private router = inject(Router);
   private configuracion = inject(ConfiguracionServicio);
+  private productosApi = inject(ProductosApiServicio);
+
+  private busquedaInput$ = new Subject<string>();
 
   abrirModal = output<void>();
   abrirCarrito = output<void>();
@@ -42,6 +51,12 @@ export class CabeceraTienda implements OnInit {
   cantidadItemsCarrito = this.carritoServicio.cantidadItems;
   usuarioActual = this.sesion.usuarioActual;
   estaLogeado = this.sesion.estaLogueado;
+  nombreCorto = computed(() => {
+    const n = this.usuarioActual()?.nombre?.trim();
+    if (!n) return '';
+    const palabras = n.split(/\s+/);
+    return palabras.length > 1 ? palabras[0] + ' ' + palabras[1].charAt(0) + '.' : n;
+  });
 
   dropdownCategoriaAbierto = signal<string | null>(null);
   barraVisible = signal(true);
@@ -84,16 +99,46 @@ export class CabeceraTienda implements OnInit {
 
   textoBusqueda = signal('');
   busquedaDropdownVisible = signal(false);
-  readonly resultadosBusqueda: ItemBusqueda[] = [
-    { id: '1', imagen: '/imagenes/juego1.png', titulo: 'Pines Free Fire 1200 Diamantes', categoria: 'Juegos' },
-    { id: '2', imagen: '/imagenes/juego2.png', titulo: 'Diamantes Mobile Legends 500', categoria: 'Juegos' },
-    { id: '3', imagen: '/imagenes/juego3.png', titulo: 'Netflix Premium 3 Meses', categoria: 'Streaming' },
-    { id: '4', imagen: '/imagenes/juego4.png', titulo: 'Spotify Premium 6 Meses', categoria: 'Streaming' },
-  ];
+  resultadosBusqueda = signal<ItemBusqueda[]>([]);
+  busquedaCargando = signal(false);
+  readonly placeholderBusqueda = 'Buscar productos...';
   menuUsuarioAbierto = signal(false);
 
   ngOnInit() {
     this.manejarScroll();
+    this.busquedaInput$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((texto) => {
+          if (!texto?.trim()) {
+            this.resultadosBusqueda.set([]);
+            return of([]);
+          }
+          this.busquedaCargando.set(true);
+          return this.productosApi
+            .listarParaBusqueda(LIMITE_RESULTADOS_BUSQUEDA, texto.trim())
+            .pipe(
+              map((productos) =>
+                productos.map((p) => ({
+                  id: p.handle,
+                  imagen:
+                    p.imagenes?.smallSquare ??
+                    p.imagenes?.square ??
+                    p.imagenes?.rectangular ??
+                    IMAGEN_POR_DEFECTO,
+                  titulo: p.titulo ?? '',
+                  categoria: (p.categorias ?? [])[0] ?? '',
+                })),
+              ),
+              catchError(() => of([])),
+            );
+        }),
+      )
+      .subscribe((items) => {
+        this.resultadosBusqueda.set(items);
+        this.busquedaCargando.set(false);
+      });
   }
 
   @HostListener('window:scroll')
@@ -138,6 +183,7 @@ export class CabeceraTienda implements OnInit {
     const valor = (event.target as HTMLInputElement).value;
     this.textoBusqueda.set(valor);
     this.busquedaDropdownVisible.set(true);
+    this.busquedaInput$.next(valor);
   }
 
   cerrarBusquedaDropdown() {

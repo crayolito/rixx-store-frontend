@@ -1,17 +1,21 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import {
-  ConfiguracionGlobal,
-  ConfiguracionPie,
+  ConfPieDePagina,
   OpcionSeccionPie,
   RedSocialPie,
   SeccionPie,
   SeccionPieDePagina,
   TipoOpcionPie,
 } from '../../../../../compartido/modelos/configuracion.modelo';
+import { ConfiguracionApiServicio } from '../../../../../compartido/servicios/configuracion-api.servicio';
+import { NotificacionServicio } from '../../../../../compartido/servicios/notificacion';
+import { CategoriasApiServicio } from '../../../../../nucleo/servicios/categorias-api.servicio';
+import { CloudinaryApiServicio } from '../../../../../nucleo/servicios/cloudinary-api.servicio';
+import { ProductosApiServicio } from '../../../../../nucleo/servicios/productos-api.servicio';
 
-const CLAVE_CONFIGURACION_GLOBAL = 'configuracion-global';
 const NUM_SECCIONES = 4;
 
 export type TipoEnlacePie = 'inicio' | 'perfil' | 'checkout' | 'categoria' | 'producto' | 'privacidad' | 'terminos' | 'otra';
@@ -27,13 +31,18 @@ export interface PaginaTienda {
 export const PAGINAS_TIENDA: PaginaTienda[] = [
   { id: 'inicio', path: '/', titulo: 'Inicio' },
   { id: 'perfil', path: '/perfil', titulo: 'Mi perfil' },
-  { id: 'checkout', path: '/checkout', titulo: 'Checkout' },
   { id: 'categoria', path: '/categoria/', titulo: 'Categoría (slug)', conSlug: true },
   { id: 'producto', path: '/producto/', titulo: 'Producto (slug)', conSlug: true },
   { id: 'privacidad', path: '/privacidad', titulo: 'Privacidad' },
   { id: 'terminos', path: '/terminos', titulo: 'Términos de servicio' },
   { id: 'otra', path: '', titulo: 'Otra URL', customPath: true },
 ];
+
+/** Páginas que no deben mostrarse en el selector de enlaces del pie (checkout, carrito, etc.). */
+const IDS_PAGINAS_SENSIBLES: TipoEnlacePie[] = ['checkout'];
+
+/** Lista para el selector de enlaces: excluye checkout y otras páginas delicadas. */
+export const PAGINAS_TIENDA_ENLACES = PAGINAS_TIENDA.filter((p) => !IDS_PAGINAS_SENSIBLES.includes(p.id));
 
 export type TipoSeccionPie = 'acerca' | 'enlaces' | 'mi_cuenta' | 'ayuda';
 
@@ -60,6 +69,24 @@ const ETIQUETAS_REDES: Record<string, string> = {
   linkedin: 'LinkedIn',
 };
 
+interface EstadoGuardadoPie {
+  logoUrl: string;
+  redesSociales: RedSocialPie[];
+  secciones: SeccionPie[];
+}
+
+/** Item para selector de categoría en enlaces del pie */
+export interface CategoriaParaEnlace {
+  handle: string;
+  nombre: string;
+}
+
+/** Item para selector de producto en enlaces del pie */
+export interface ProductoParaEnlace {
+  handle: string;
+  titulo: string;
+}
+
 @Component({
   selector: 'app-pie-de-pagina-admin-pagina',
   standalone: true,
@@ -69,58 +96,99 @@ const ETIQUETAS_REDES: Record<string, string> = {
 })
 export class PieDePaginaAdminPagina implements OnInit {
   private router = inject(Router);
+  private configuracionApi = inject(ConfiguracionApiServicio);
+  private notificacion = inject(NotificacionServicio);
+  private categoriasApi = inject(CategoriasApiServicio);
+  private cloudinaryApi = inject(CloudinaryApiServicio);
+  private productosApi = inject(ProductosApiServicio);
 
   logoUrl = signal('');
   redesSociales = signal<RedSocialPie[]>([]);
   secciones = signal<SeccionPie[]>([]);
-  mensajeGuardado = signal<string | null>(null);
+  guardando = signal(false);
+
+  /** Listas para selectores de enlace: categoría y producto (slug = handle). */
+  categoriasParaEnlace = signal<CategoriaParaEnlace[]>([]);
+  productosParaEnlace = signal<ProductoParaEnlace[]>([]);
+
+  /** Estado guardado (carga o guardar exitoso); para comparar y restaurar en Cancelar. */
+  private estadoGuardado = signal<EstadoGuardadoPie | null>(null);
+
+  /** True si el formulario tiene cambios respecto al último estado guardado. */
+  hayCambiosPendientes = computed(() => {
+    const g = this.estadoGuardado();
+    if (!g) return false;
+    return (
+      this.logoUrl() !== g.logoUrl ||
+      JSON.stringify(this.redesSociales()) !== JSON.stringify(g.redesSociales) ||
+      JSON.stringify(this.secciones()) !== JSON.stringify(g.secciones)
+    );
+  });
 
   readonly numSecciones = NUM_SECCIONES;
   readonly etiquetasRedes = ETIQUETAS_REDES;
-  readonly paginasTienda = PAGINAS_TIENDA;
+  readonly paginasTienda = PAGINAS_TIENDA_ENLACES;
   readonly titulosSeccionPorDefecto = TITULOS_SECCION_POR_DEFECTO;
   readonly tiposOpcion: TipoOpcionPie[] = ['enlace', 'telefono', 'correo'];
 
   ngOnInit(): void {
-    this.cargarDesdeJson();
+    this.cargarListasParaEnlaces();
+    this.cargarConfiguracion();
   }
 
-  private obtenerConfiguracionGlobal(): ConfiguracionGlobal {
-    try {
-      const raw = localStorage.getItem(CLAVE_CONFIGURACION_GLOBAL);
-      if (raw) return JSON.parse(raw) as ConfiguracionGlobal;
-    } catch { }
-    return {};
+  /** Carga categorías y productos para los selectores de enlace (categoría/producto). */
+  private cargarListasParaEnlaces(): void {
+    forkJoin({
+      categorias: this.categoriasApi.obtenerTodas(),
+      productos: this.productosApi.obtenerImportados(),
+    }).subscribe({
+      next: ({ categorias, productos }) => {
+        this.categoriasParaEnlace.set(
+          categorias.map((c) => ({ handle: c.handle, nombre: c.nombre }))
+        );
+        this.productosParaEnlace.set(
+          productos.map((p) => ({ handle: p.handle, titulo: p.titulo }))
+        );
+      },
+      error: () => {
+        this.categoriasParaEnlace.set([]);
+        this.productosParaEnlace.set([]);
+      },
+    });
   }
 
-  private cargarDesdeJson(): void {
-    const aplicarPie = (global: ConfiguracionGlobal) => {
-      const pie = global?.pieDePagina;
-      if (pie && Array.isArray(pie.secciones) && pie.secciones.length >= NUM_SECCIONES) {
-        const redes = REDES_POR_DEFECTO.map((r) => ({
-          id: r.id,
-          url: (pie.redesSociales ?? []).find((x: RedSocialPie) => x.id === r.id)?.url ?? '',
-        }));
-        this.redesSociales.set(redes);
-        this.logoUrl.set(pie.logoUrl ?? '');
-        this.secciones.set(this.normalizarSecciones(pie.secciones));
-        return true;
-      }
-      return false;
-    };
-    fetch('/configuracion.json')
-      .then((r) => r.json())
-      .then((global: ConfiguracionGlobal) => {
-        if (aplicarPie(global)) return;
-        const local = this.obtenerConfiguracionGlobal();
-        if (aplicarPie(local)) return;
+  /** Carga el pie de página desde la API; si no hay datos, aplica valores por defecto. */
+  private cargarConfiguracion(): void {
+    this.configuracionApi.obtenerConfiguracion().subscribe({
+      next: (config) => {
+        const pie = config?.pieDePagina;
+        if (pie && Array.isArray(pie.secciones) && pie.secciones.length >= NUM_SECCIONES) {
+          const redes = REDES_POR_DEFECTO.map((r) => ({
+            id: r.id,
+            url: (pie.redesSociales ?? []).find((x: RedSocialPie) => x.id === r.id)?.url ?? '',
+          }));
+          this.logoUrl.set(pie.logoUrl ?? '');
+          this.redesSociales.set(redes);
+          this.secciones.set(this.normalizarSecciones(pie.secciones));
+        } else {
+          this.aplicarPorDefecto();
+        }
+        this.guardarEstadoComoOriginal();
+      },
+      error: () => {
         this.aplicarPorDefecto();
-      })
-      .catch(() => {
-        const local = this.obtenerConfiguracionGlobal();
-        if (aplicarPie(local)) return;
-        this.aplicarPorDefecto();
-      });
+        this.guardarEstadoComoOriginal();
+      },
+    });
+  }
+
+  /** Guarda el estado actual como referencia para Cancelar. */
+  private guardarEstadoComoOriginal(): void {
+    this.estadoGuardado.set({
+      logoUrl: this.logoUrl(),
+      redesSociales: JSON.parse(JSON.stringify(this.redesSociales())),
+      secciones: JSON.parse(JSON.stringify(this.secciones())),
+    });
   }
 
   private normalizarSecciones(lista: SeccionPie[] | SeccionPieDePagina[]): SeccionPie[] {
@@ -198,12 +266,21 @@ export class PieDePaginaAdminPagina implements OnInit {
     this.router.navigate(['/admin/inicio']);
   }
 
+  /** Restaura el formulario al último estado guardado. */
+  cancelarCambios(): void {
+    const g = this.estadoGuardado();
+    if (!g) return;
+    this.logoUrl.set(g.logoUrl);
+    this.redesSociales.set(JSON.parse(JSON.stringify(g.redesSociales)));
+    this.secciones.set(JSON.parse(JSON.stringify(g.secciones)));
+    this.notificacion.info('Cambios descartados');
+  }
+
   guardarConfiguracion(): void {
     const sec = this.secciones();
     const invalidas = sec.some((s) => !String(s.titulo ?? '').trim());
     if (invalidas) {
-      this.mensajeGuardado.set('Cada sección debe tener un título.');
-      setTimeout(() => this.mensajeGuardado.set(null), 4000);
+      this.notificacion.advertencia('Cada sección debe tener un título.');
       return;
     }
     const opcionesInvalidas = sec.some((s, idx) => {
@@ -211,23 +288,46 @@ export class PieDePaginaAdminPagina implements OnInit {
       return (s.opciones ?? []).some((o) => !this.opcionValida(o));
     });
     if (opcionesInvalidas) {
-      this.mensajeGuardado.set('Revisa cada opción: enlace (texto y página), teléfono (número), correo (email).');
-      setTimeout(() => this.mensajeGuardado.set(null), 4000);
+      this.notificacion.advertencia('Revisa cada opción: enlace (texto y página), teléfono (número), correo (email).');
       return;
     }
-    const seccionesGuardar = sec.map((s, idx) =>
-      this.tipoSeccion(idx) === 'acerca' ? { ...s, opciones: [] } : s
-    );
-    const pie: ConfiguracionPie = {
-      logoUrl: this.logoUrl() || '',
+    const pie = this.construirPieParaApi();
+    this.guardando.set(true);
+    this.configuracionApi.actualizarPieDePagina(pie).subscribe({
+      next: () => {
+        this.guardando.set(false);
+        this.guardarEstadoComoOriginal();
+        this.notificacion.exito('Configuración guardada correctamente');
+      },
+      error: () => {
+        this.guardando.set(false);
+        this.notificacion.error('No se pudo guardar la configuración');
+      },
+    });
+  }
+
+  /** Construye el payload del pie según el contrato PATCH /configuracion. */
+  private construirPieParaApi(): ConfPieDePagina {
+    const sec = this.secciones();
+    const seccionesGuardar = sec.map((s, idx) => {
+      if (this.tipoSeccion(idx) === 'acerca') {
+        return { id: s.id, titulo: s.titulo, descripcion: s.descripcion, opciones: [] };
+      }
+      const opciones = (s.opciones ?? []).map((o: OpcionSeccionPie) => ({
+        id: o.id,
+        tipo: o.tipo,
+        etiqueta: o.etiqueta,
+        path: o.path ?? '',
+        ...(o.numero !== undefined && { numero: o.numero }),
+        ...(o.correo !== undefined && { correo: o.correo }),
+      }));
+      return { id: s.id, titulo: s.titulo, descripcion: s.descripcion, opciones };
+    });
+    return {
+      logoUrl: this.logoUrl().trim(),
       redesSociales: this.redesSociales(),
-      secciones: seccionesGuardar,
-    };
-    let global = this.obtenerConfiguracionGlobal();
-    global.pieDePagina = pie;
-    localStorage.setItem(CLAVE_CONFIGURACION_GLOBAL, JSON.stringify(global));
-    this.mensajeGuardado.set('Configuración guardada correctamente.');
-    setTimeout(() => this.mensajeGuardado.set(null), 3000);
+      secciones: seccionesGuardar as SeccionPieDePagina[],
+    } as ConfPieDePagina;
   }
 
   opcionValida(o: OpcionSeccionPie): boolean {
@@ -385,11 +485,12 @@ export class PieDePaginaAdminPagina implements OnInit {
     );
   }
 
+  /** Tipo de enlace para el selector; páginas sensibles se mapean a 'otra' para no mostrarlas en la lista. */
   getTipoEnlace(path: string | undefined): TipoEnlacePie {
     const p = (path ?? '').trim();
     if (p === '/') return 'inicio';
     if (p === '/perfil') return 'perfil';
-    if (p === '/checkout') return 'checkout';
+    if (p === '/checkout') return 'otra';
     if (p === '/privacidad') return 'privacidad';
     if (p === '/terminos') return 'terminos';
     if (p.startsWith('/categoria/')) return 'categoria';
@@ -401,7 +502,7 @@ export class PieDePaginaAdminPagina implements OnInit {
     const p = (path ?? '').trim();
     if (p.startsWith('/categoria/')) return p.slice('/categoria/'.length);
     if (p.startsWith('/producto/')) return p.slice('/producto/'.length);
-    if (p === '/' || p === '/perfil' || p === '/checkout' || p === '/privacidad' || p === '/terminos') return '';
+    if (p === '/' || p === '/perfil' || p === '/privacidad' || p === '/terminos') return '';
     return p;
   }
 
@@ -411,13 +512,18 @@ export class PieDePaginaAdminPagina implements OnInit {
     );
   }
 
+  /** Sube el logo del pie a Cloudinary y asigna la URL. */
   manejarCambioLogo(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => this.logoUrl.set(reader.result as string);
-    reader.readAsDataURL(file);
+    if (file.size > 5 * 1024 * 1024) return;
+    this.cloudinaryApi.subirImagen(file).subscribe({
+      next: (url) => {
+        if (url) this.logoUrl.set(url);
+      },
+    });
+    input.value = '';
   }
 
   etiquetaTipo(tipo: TipoOpcionPie): string {

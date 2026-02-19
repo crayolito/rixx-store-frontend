@@ -358,10 +358,31 @@
   margin: 0;
 }
 
-.checkout-pagina__producto-cantidad {
+.checkout-pagina__producto-cantidad,
+.checkout-pagina__producto-variante {
   font-size: var(--texto-mini);
   color: var(--color-fondo-septimo);
   margin: 0;
+}
+
+.checkout-pagina__producto-datos {
+  font-size: var(--texto-mini);
+  color: var(--color-fondo-septimo);
+  background-color: rgba(255, 255, 255, 0.08);
+  padding: var(--espaciado-xxs) var(--espaciado-xs);
+  border-radius: var(--borde-radio-pequeno);
+  margin-top: var(--espaciado-xxs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xxs);
+}
+
+.checkout-pagina__producto-datos-titulo {
+  font-weight: var(--peso-semibold);
+}
+
+.checkout-pagina__producto-dato-linea {
+  display: block;
 }
 
 .checkout-pagina__producto-precio {

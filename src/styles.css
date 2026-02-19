@@ -6,10 +6,11 @@
 ║ 2. RESET BÁSICO ............................... línea 80   ║
 ║ 3. TIPOGRAFÍA BASE ............................ línea 110  ║
 ║ 4. ESTILOS BASE HTML ........................... línea 150 ║
-║ 5. COMPONENTES BASE - BOTONES .................. línea 180 ║
-║ 6. UTILIDADES - ESPACIADO ...................... línea 260 ║
-║ 7. ANIMACIONES Y TRANSICIONES .................. línea 290 ║
-║ 8. MEDIA QUERIES ............................... línea 310 ║
+║ 5. SCROLLBAR GLOBAL ............................ línea 165 ║
+║ 6. COMPONENTES BASE - BOTONES .................. línea 205 ║
+║ 7. UTILIDADES - ESPACIADO ...................... línea 285 ║
+║ 8. ANIMACIONES Y TRANSICIONES ................... línea 315 ║
+║ 9. MEDIA QUERIES ............................... línea 335 ║
 ╚════════════════════════════════════════════════════════════╝
 */
 
@@ -158,6 +159,31 @@ body {
   color: var(--color-texto-primario);
   background-color: var(--color-fondo-base);
   min-height: 100vh;
+}
+
+/* ─── Scrollbar global (track = fondo base, thumb = primario) ─── */
+html,
+* {
+  scrollbar-color: var(--color-primario) var(--color-fondo-base);
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-fondo-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primario);
+  border-radius: var(--borde-radio-pequeno);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primario-oscuro);
 }
 
 img,
@@ -312,7 +338,8 @@ button:focus-visible {
   background-color: var(--color-fondo-base);
   font-weight: var(--peso-semibold);
   color: var(--color-fondo-cuaternario);
-  padding: var(--espaciado-xxs) var(--espaciado-md);
+  padding: var(--espaciado-xs) var(--espaciado-md);
+  /* padding: var(--espaciado-xxs) var(--espaciado-md); */
   border-radius: var(--borde-radio-grande);
   box-shadow: var(--sombra-primaria-fina-3);
   text-align: center;
@@ -340,7 +367,7 @@ button:focus-visible {
   color: var(--color-fondo-base);
   font-weight: var(--peso-semibold);
   background-color: var(--color-fondo-octavo);
-  padding: var(--espaciado-xxs) var(--espaciado-md);
+  padding: var(--espaciado-xs) var(--espaciado-md);
   border-radius: var(--borde-radio-grande);
   text-align: center;
   display: flex;
@@ -675,6 +702,18 @@ button:focus-visible {
   background-color: #fff3cd;
   color: #856404;
   border: var(--borde-grosor) solid #ffeaa7;
+}
+
+.global-badge--manual {
+  background-color: #e2e3e5;
+  color: #383d41;
+  border: var(--borde-grosor) solid #d6d8db;
+}
+
+.global-badge--automatico {
+  background-color: #cce5ff;
+  color: #004085;
+  border: var(--borde-grosor) solid #b8daff;
 }
 
 .global-badge--agotado {
@@ -1237,11 +1276,61 @@ input[type="date"].global-filtros__input:not(:focus):invalid {
 /* ─── Contenedor de Tabla ─── */
 .global-tabla {
   box-shadow: var(--sombra-base-fina-1);
+  border-radius: var(--borde-radio-grande);
   border: var(--borde-grosor) solid var(--color-borde-suave);
   background-color: var(--color-fondo-cuaternario);
   color: var(--color-fondo-base);
   overflow: hidden;
   overflow-x: auto;
+}
+
+/* ─── Estado vacío y cargando de tabla ─── */
+.global-tabla-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaciado-md);
+  padding: var(--espaciado-3xl);
+  text-align: center;
+  min-height: 280px;
+}
+
+.global-tabla-vacio__icono {
+  width: 64px;
+  height: 64px;
+  opacity: 0.4;
+  filter: brightness(0) saturate(100%);
+}
+
+.global-tabla-vacio__titulo {
+  font-size: var(--texto-h3);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+  margin: 0;
+}
+
+.global-tabla-vacio__texto {
+  font-size: var(--texto-base);
+  color: var(--color-fondo-septimo);
+  margin: 0;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.global-tabla-vacio__spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-borde-suave);
+  border-top-color: var(--color-primario);
+  border-radius: 50%;
+  animation: girar-spinner 0.8s linear infinite;
+}
+
+@keyframes girar-spinner {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ─── Elemento Table ─── */
@@ -1295,12 +1384,11 @@ input[type="date"].global-filtros__input:not(:focus):invalid {
 
 /* ─── Celda con Imagen y Texto (Primera columna típica) ─── */
 .global-tabla__celda-principal {
-  display: flex;
+  /* display: flex; */
   flex-direction: row;
   align-items: center;
+  justify-content: center;
   gap: var(--espaciado-sm);
-  /* min-width: 300px; */
-  text-align: left !important;
 }
 
 .global-tabla__imagen {
@@ -1424,13 +1512,14 @@ input[type="date"].global-filtros__input:not(:focus):invalid {
   .global-tabla__celda-principal {
     display: flex;
     flex-direction: row;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
     gap: var(--espaciado-sm);
     padding-bottom: var(--espaciado-sm);
     border-bottom: var(--borde-grosor) solid var(--color-borde-suave);
     margin-bottom: var(--espaciado-xs);
     min-width: auto;
-    text-align: left !important;
+    /* text-align: left !important; */
   }
 
   .global-tabla__imagen {
@@ -1471,6 +1560,10 @@ input[type="date"].global-filtros__input:not(:focus):invalid {
 
   .global-tabla__celda--fuente::before {
     content: "Fuente: ";
+  }
+
+  .global-tabla__celda--telefono::before {
+    content: "Teléfono: ";
   }
 
   .global-tabla__celda-acciones::before {
@@ -1817,7 +1910,7 @@ input[type="date"].global-filtros__input:not(:focus):invalid {
   justify-content: center;
   border: var(--borde-grosor) dashed var(--color-borde);
   border-radius: var(--borde-radio-grande);
-  padding: var(--espaciado-xs) var(--espaciado-sm);
+  padding: var(--espaciado-xxs);
   transition: all var(--transicion-rapida);
   cursor: pointer;
 }

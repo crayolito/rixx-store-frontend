@@ -39,7 +39,18 @@
         <!-- Info del producto -->
         <div class="drawer-carrito__item-info">
           <h4 class="drawer-carrito__item-titulo">{{ item.titulo }}</h4>
-          <div class="drawer-carrito__item-precio">${{ item.precio }}</div>
+          @if (item.varianteNombre) {
+          <p class="drawer-carrito__item-variante">{{ item.varianteNombre }}</p>
+          }
+          <p class="drawer-carrito__item-precio">${{ item.precio | number:'1.2-2' }} c/u · {{ item.cantidad }} =
+            ${{ item.precioTotal | number:'1.2-2' }}</p>
+          @if (tieneDatosAdicionales(item)) {
+          <div class="drawer-carrito__item-datos">
+            @for (dato of obtenerDatosAdicionales(item); track dato.etiqueta) {
+            <span class="drawer-carrito__item-dato-linea">{{ dato.etiqueta }}: {{ dato.valor }}</span>
+            }
+          </div>
+          }
 
           <!-- Controles de cantidad -->
           <div class="drawer-carrito__item-controles">
@@ -56,7 +67,7 @@
 
         <!-- Precio total y eliminar -->
         <div class="drawer-carrito__item-acciones">
-          <div class="drawer-carrito__item-total">${{ item.precioTotal }}</div>
+          <div class="drawer-carrito__item-total">${{ item.precioTotal | number:'1.2-2' }}</div>
           <button class="drawer-carrito__boton-eliminar" (click)="eliminarItem(item.id)" aria-label="Eliminar producto">
             <img src="/iconos/ico-borrar.svg" alt="Eliminar">
           </button>

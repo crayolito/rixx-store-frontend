@@ -38,12 +38,28 @@ export class PieTienda {
   logoUrl = computed(() => this.pie()?.logoUrl?.trim() ?? '');
   currentYear = new Date().getFullYear();
 
+  /** Devuelve la URL del enlace: para teléfono usa numero, para correo usa correo; para enlace usa path. */
   urlEnlace(opcion: OpcionPieDePagina): string {
     const t = (opcion.tipo ?? 'enlace').toLowerCase();
-    const path = (opcion.path ?? '').trim();
-    if (t === 'telefono') return path.startsWith('tel:') ? path : `tel:${path}`;
-    if (t === 'correo') return path.startsWith('mailto:') ? path : `mailto:${path}`;
-    return path || '#';
+    if (t === 'telefono') {
+      const valor = (opcion.numero ?? opcion.path ?? '').trim().replace(/\s/g, '');
+      if (!valor) return '#';
+      return valor.startsWith('tel:') ? valor : `tel:${valor}`;
+    }
+    if (t === 'correo') {
+      const valor = (opcion.correo ?? opcion.path ?? '').trim();
+      if (!valor) return '#';
+      return valor.startsWith('mailto:') ? valor : `mailto:${valor}`;
+    }
+    return (opcion.path ?? '').trim() || '#';
+  }
+
+  /** Texto visible para opciones de contacto: número o correo según el tipo. */
+  textoContacto(opcion: OpcionPieDePagina): string {
+    const t = (opcion.tipo ?? '').toLowerCase();
+    if (t === 'telefono') return (opcion.numero ?? opcion.path ?? '').trim() || '—';
+    if (t === 'correo') return (opcion.correo ?? opcion.path ?? '').trim() || '—';
+    return (opcion.path ?? '').trim() || '—';
   }
 
   esEnlaceInterno(path: string): boolean {

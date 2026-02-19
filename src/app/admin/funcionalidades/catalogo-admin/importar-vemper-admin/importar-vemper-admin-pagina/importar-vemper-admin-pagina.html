@@ -1,8 +1,8 @@
 <div class="contenedor-flex">
 
+  <!-- Título y opciones -->
   <section class="titulo-opciones-contenedor">
     <div class="titulo-contenedor">
-      <img src="/iconos/ico-categorias.svg" alt="Icono categorías" class="icono-boton icono-color-base">
       <h3>Importar Vemper</h3>
     </div>
     <div class="opciones-contenedor">
@@ -12,12 +12,12 @@
     </div>
   </section>
 
+  <!-- Filtros -->
   @if (filtrosVisibles()) {
   <section class="global-filtros">
     <div class="global-filtros__item">
       <p class="global-filtros__titulo">Buscador</p>
       <div class="global-filtros__busqueda">
-        <img src="/iconos/ico-busqueda.svg" alt="Icono busqueda" class="icono-boton icono-color-base">
         <input type="text" placeholder="Nombre de la categoría..." class="global-filtros__input"
           [value]="textoBusqueda()" (input)="actualizarBusqueda($any($event.target).value)">
       </div>
@@ -25,15 +25,22 @@
     <div class="global-filtros__item">
       <button class="boton-secundario global-filtros__boton-icono" (click)="limpiarFiltros()" type="button"
         aria-label="Limpiar filtros">
-        <img src="/iconos/ico-limpiar.svg" alt="Icono limpiar filtros" class="icono-boton icono-color-base">
+        <img src="/iconos/ico-limpiar.svg" alt="Limpiar filtros" class="icono-boton icono-color-base">
       </button>
     </div>
   </section>
   }
 
+  <!-- Listado de categorías con Vemper -->
   <section class="seccion-grid">
-    @if (categoriasPaginadas().length === 0) {
-    <p class="grid-categorias__vacio">No se encontraron categorías</p>
+    @if (estaCargando()) {
+    <app-bloque-estado-tabla estado="cargando" mensajeCarga="Cargando categorías..." />
+    } @else if (categoriasPaginadas().length === 0) {
+    <app-bloque-estado-tabla
+      estado="vacio"
+      tituloVacio="No se encontraron categorías"
+      textoVacio="No hay categorías con Vemper o los filtros no coinciden. Ajusta el buscador."
+      iconoVacio="/iconos/ico-categorias.svg" />
     } @else {
     <div class="grid-categorias">
       @for (categoria of categoriasPaginadas(); track categoria.id) {
@@ -45,13 +52,13 @@
       }
     </div>
 
+    <!-- Paginación -->
     @if (totalPaginas() > 0) {
     <div class="global-paginacion">
       <div class="global-paginacion__controles">
         <button class="global-paginacion__boton global-paginacion__boton--anterior" (click)="paginaAnterior()"
-          [disabled]="paginaActual() === 1">
-          <img src="/iconos/ico-flecha-izquierda-tabla.svg" alt="Icono flecha izquierda"
-            class="icono-boton icono-color-base">
+          [disabled]="paginaActual() === 1" type="button" aria-label="Página anterior">
+          <span aria-hidden="true">‹</span>
         </button>
         <div class="global-paginacion__numeros">
           @for (pagina of paginasAMostrar(); track pagina) {
@@ -67,9 +74,8 @@
           }
         </div>
         <button class="global-paginacion__boton global-paginacion__boton--siguiente" (click)="paginaSiguiente()"
-          [disabled]="paginaActual() === totalPaginas()">
-          <img src="/iconos/ico-flecha-derecha-tabla.svg" alt="Icono flecha derecha"
-            class="icono-boton icono-color-base">
+          [disabled]="paginaActual() === totalPaginas()" type="button" aria-label="Página siguiente">
+          <span aria-hidden="true">›</span>
         </button>
       </div>
       <p class="global-paginacion__info">

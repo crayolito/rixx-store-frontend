@@ -1,0 +1,98 @@
+<!-- Tarjeta de saldo -->
+<div class="perfil-billetera-saldo">
+  <div class="perfil-billetera-saldo__contenido">
+    <div class="perfil-billetera-saldo__icono">
+      <img src="/iconos/ico-billetera.svg" alt="" aria-hidden="true">
+    </div>
+    <p class="perfil-billetera-saldo__etiqueta">Saldo disponible</p>
+    <p class="perfil-billetera-saldo__monto">${{ saldoActual() }}</p>
+    <p class="perfil-billetera-saldo__moneda">USD</p>
+  </div>
+  <div class="perfil-billetera-saldo__decoracion"></div>
+</div>
+
+<!-- Paquetes de recarga -->
+<div class="perfil-billetera-paquetes">
+  <label class="perfil-billetera-paquetes__etiqueta">Selecciona un monto</label>
+  <div class="perfil-billetera-paquetes__grid">
+    @for (paquete of paquetes; track paquete.id) {
+    <button class="perfil-billetera-paquete"
+      [class.perfil-billetera-paquete--activo]="paqueteSeleccionado()?.id === paquete.id"
+      (click)="seleccionarPaquete(paquete)" type="button">
+      <span class="perfil-billetera-paquete__monto">${{ paquete.monto }}</span>
+      <span class="perfil-billetera-paquete__moneda">USD</span>
+    </button>
+    } @empty {
+    <p class="perfil-billetera-historial__vacio">No hay paquetes de recarga disponibles</p>
+    }
+  </div>
+
+  <div class="perfil-billetera-custom">
+    <label class="perfil-billetera-custom__etiqueta">O ingresa un monto personalizado</label>
+    <div class="perfil-billetera-custom__input-contenedor">
+      <span class="perfil-billetera-custom__simbolo">$</span>
+      <input type="number" class="perfil-billetera-custom__input" placeholder="0.00" min="0" step="0.01"
+        [value]="cantidadEspecial()" (input)="actualizarCantidadEspecial($event)"
+        (focus)="seleccionarPaquete(null)">
+      <span class="perfil-billetera-custom__moneda">USD</span>
+    </div>
+  </div>
+</div>
+
+<!-- Métodos de pago -->
+<div class="perfil-billetera-metodos">
+  <label class="perfil-billetera-metodos__etiqueta">Método de pago</label>
+  <div class="perfil-billetera-metodos__lista">
+    @for (metodo of metodosPago; track metodo.id) {
+    <label class="perfil-billetera-metodo-card">
+      <div class="perfil-billetera-metodo-card__contenido">
+        <input type="radio" class="perfil-billetera-metodo-card__radio" name="metodo-pago" [value]="metodo.id"
+          [checked]="metodoPagoSeleccionado() === metodo.id" (change)="seleccionarMetodoPago(metodo.id)">
+        <img [src]="metodo.logo" [alt]="metodo.nombre" class="perfil-billetera-metodo-card__logo">
+        <div class="perfil-billetera-metodo-card__info">
+          <p class="perfil-billetera-metodo-card__nombre">{{ metodo.nombre }}</p>
+          <p class="perfil-billetera-metodo-card__descripcion">{{ metodo.descripcion }}</p>
+        </div>
+      </div>
+    </label>
+    } @empty {
+    <p class="perfil-billetera-historial__vacio">No hay métodos de pago disponibles</p>
+    }
+  </div>
+</div>
+
+<!-- Botón recargar -->
+<button class="perfil-billetera-recargar" (click)="recargarBilletera()" [disabled]="!puedeRecargar()" type="button">
+  Recargar
+</button>
+
+<!-- Historial de transacciones -->
+<div class="perfil-billetera-historial">
+  <h3 class="perfil-billetera-historial__titulo">
+    <img src="/iconos/ico-opcion-cronologia.svg" alt="" class="perfil-billetera-historial__icono"> Historial de
+    transacciones
+  </h3>
+  <div class="perfil-billetera-historial__lista">
+    @for (tx of transaccionesBilletera(); track tx.id) {
+    <div class="perfil-billetera-transaccion">
+      <div class="perfil-billetera-transaccion__info">
+        <span class="perfil-billetera-transaccion__fecha">{{ tx.fecha | date:'d MMM yyyy, H:mm' }}</span>
+        <span class="perfil-billetera-transaccion__tipo perfil-billetera-transaccion__tipo--{{ tx.tipo }}">{{ tx.tipo }}</span>
+        <span class="perfil-billetera-transaccion__descripcion">{{ tx.descripcion }}</span>
+      </div>
+      <div class="perfil-billetera-transaccion__monto"
+        [class.perfil-billetera-transaccion__monto--negativo]="tx.monto < 0">
+        {{ tx.monto >= 0 ? '+' : '' }}${{ tx.monto }} USD
+      </div>
+      @if (tx.saldoResultante != null) {
+      <span class="perfil-billetera-transaccion__saldo">Saldo: ${{ tx.saldoResultante }} USD</span>
+      }
+    </div>
+    } @empty {
+    <div class="perfil-pedidos-vacio">
+      <img src="/iconos/ico-billetera.svg" alt="Sin transacciones" class="perfil-pedidos-vacio__icono">
+      <p class="perfil-pedidos-vacio__texto">Empieza recargando tu billetera para ver tus transacciones</p>
+    </div>
+    }
+  </div>
+</div>

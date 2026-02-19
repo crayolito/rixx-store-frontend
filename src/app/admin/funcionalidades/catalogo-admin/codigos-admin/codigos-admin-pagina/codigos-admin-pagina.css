@@ -233,6 +233,137 @@
 }
 
 /* ═══════════════════════════════════════════════════════
+     FILTROS DE FECHA
+     ═══════════════════════════════════════════════════════ */
+.global-filtros__fechas {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espaciado-xs);
+  width: 100%;
+}
+
+.global-filtros__input--fecha {
+  flex: 1;
+  min-width: 0;
+  padding: var(--espaciado-xs) var(--espaciado-sm);
+  border: var(--borde-grosor) solid var(--color-borde);
+  border-radius: var(--borde-radio);
+  background-color: var(--color-fondo-cuaternario);
+  color: var(--color-fondo-base);
+  transition: all var(--transicion-rapida);
+}
+
+.global-filtros__input--fecha:focus {
+  outline: none;
+  border-color: var(--color-primario);
+  background-color: rgba(164, 196, 57, 0.05);
+}
+
+.global-filtros__separador {
+  color: var(--color-fondo-septimo);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-semibold);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+     MODAL AGREGAR CÓDIGOS - UNA COLUMNA + BUSCADOR
+     ═══════════════════════════════════════════════════════ */
+.codigos-modal--una-columna {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-sm);
+}
+
+.codigos-modal__busqueda-producto .global-formulario-campo__contenedor--busqueda {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espaciado-xs);
+  position: relative;
+}
+
+.codigos-modal__busqueda-producto .global-formulario-campo__contenedor--busqueda .global-formulario-campo__input {
+  flex: 1;
+  min-width: 0;
+}
+
+.codigos-modal__limpiar-seleccion {
+  padding: var(--espaciado-xxs);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-texto-secundario);
+}
+
+/* Lista desplegable con fondo claro y texto oscuro para que se lea bien */
+.codigos-modal__opciones-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xxs);
+  max-height: 14rem;
+  overflow-y: auto;
+  margin-top: var(--espaciado-xxs);
+  border: var(--borde-grosor) solid var(--color-borde-suave);
+  border-radius: var(--borde-radio);
+  background-color: var(--color-fondo-cuaternario);
+  color: var(--color-fondo-base);
+  padding: var(--espaciado-xxs);
+}
+
+.codigos-modal__opcion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaciado-xxs);
+  padding: var(--espaciado-xs);
+  border-radius: var(--borde-radio);
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background-color var(--transicion-rapida);
+  color: var(--color-fondo-base);
+}
+
+.codigos-modal__opcion:hover {
+  background-color: var(--color-fondo-quinario);
+}
+
+.codigos-modal__opcion-producto {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+}
+
+.codigos-modal__sin-resultados {
+  padding: var(--espaciado-sm);
+  text-align: center;
+  color: var(--color-fondo-septimo);
+  font-size: var(--texto-pequeno);
+}
+
+.codigos-modal__campo-deshabilitado .global-formulario-campo__contenedor {
+  opacity: 0.7;
+}
+
+.codigos-modal__sin-resultados p {
+  margin: 0;
+}
+
+.codigos-modal__fila-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--espaciado-xxs);
+}
+
+/* ═══════════════════════════════════════════════════════
        MEDIA QUERIES
        ═══════════════════════════════════════════════════════ */
 

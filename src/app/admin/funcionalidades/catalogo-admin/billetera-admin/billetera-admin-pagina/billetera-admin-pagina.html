@@ -105,6 +105,15 @@
 
   <!-- ===== SECCIÓN: TABLA DE TRANSACCIONES ===== -->
   <section class="global-tabla">
+    @if (estaCargando()) {
+    <app-bloque-estado-tabla estado="cargando" mensajeCarga="Cargando transacciones..." />
+    } @else if (errorAlCargar()) {
+    <app-bloque-estado-tabla estado="vacio" tituloVacio="Error al cargar"
+      textoVacio="No se pudieron cargar las transacciones. Intenta de nuevo." iconoVacio="/iconos/ico-billetera.svg" />
+    } @else if (transaccionesPaginadas().length === 0) {
+    <app-bloque-estado-tabla estado="vacio" tituloVacio="No se encontraron transacciones"
+      textoVacio="Ajusta los filtros o agrega una transacción." iconoVacio="/iconos/ico-billetera.svg" />
+    } @else {
     <table class="global-tabla__elemento">
       <thead class="global-tabla__cabecera">
         <tr>
@@ -175,6 +184,7 @@
         totalTransacciones()) }} de {{ totalTransacciones() }}
       </p>
     </div>
+    }
   </section>
 </div>
 
@@ -205,8 +215,14 @@
             (click)="$event.stopPropagation()">
         </div>
 
-        <!-- Lista de usuarios encontrados -->
-        @if (usuariosFiltrados().length > 0) {
+        <!-- Lista de usuarios (desde API) -->
+        @if (cargandoUsuariosModal()) {
+        <p class="formulario-ayuda">Cargando usuarios...</p>
+        } @else if (!busquedaUsuario() && usuariosDisponibles().length === 0) {
+        <p class="formulario-ayuda">No hay usuarios disponibles.</p>
+        } @else if (usuariosFiltrados().length === 0) {
+        <p class="formulario-ayuda">No hay coincidencias. Prueba con otro nombre o email.</p>
+        } @else {
         <div class="lista-usuarios">
           @for (usuario of usuariosFiltrados(); track usuario.id) {
           <button class="usuario-item" (click)="seleccionarUsuario(usuario)" type="button">
@@ -276,8 +292,8 @@
         Cancelar
       </button>
       <button type="button" class="boton-primario" (click)="guardarTransaccion()"
-        [disabled]="!usuarioSeleccionado() || !montoTransaccion()">
-        Guardar Transacción
+        [disabled]="!usuarioSeleccionado() || !montoTransaccion() || guardando()">
+        {{ guardando() ? 'Guardando...' : 'Guardar Transacción' }}
       </button>
     </div>
   </div>

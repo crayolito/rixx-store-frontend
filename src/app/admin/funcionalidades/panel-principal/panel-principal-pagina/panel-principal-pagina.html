@@ -1,10 +1,23 @@
 <div class="panel-principal-contenedor">
-  <!-- ===== SECCIÓN: INFORMACIÓN DEL ROL ===== -->
-  <section class="panel-rol">
-    <div class="panel-rol__icono-contenedor">
-      <img src="/iconos/icon-rol-usuario.svg" alt="Icono rol" class="panel-rol__icono">
+  <!-- ===== SECCIÓN: TÍTULO Y OPCIONES (como otras páginas admin) ===== -->
+  <section class="titulo-opciones-contenedor">
+    <div class="titulo-contenedor titulo-contenedor--en-linea">
+      <img src="/iconos/ico-cliente.svg" alt="Icono perfil" class="icono-boton icono-color-base">
+      <h3>Mi Perfil</h3>
+      @if (hayCambiosInfoPendientes()) {
+      <span class="panel-titulo-cambios">• Cambios sin guardar</span>
+      }
     </div>
-    <h3 class="panel-rol__titulo"> > ADMINISTRADOR</h3>
+    @if (hayCambiosInfoPendientes()) {
+    <div class="opciones-contenedor">
+      <button type="button" class="boton-secundario" (click)="cancelarInfo()" [disabled]="guardando()">
+        <p>Cancelar</p>
+      </button>
+      <button type="button" class="boton-primario" (click)="abrirConfirmacionGuardar()" [disabled]="guardando()">
+        <p>{{ guardando() ? 'Procesando...' : 'Guardar' }}</p>
+      </button>
+    </div>
+    }
   </section>
 
   <!-- ===== SECCIÓN: INFORMACIÓN DEL USUARIO ===== -->
@@ -13,26 +26,25 @@
       <h3 class="panel-seccion__titulo">Información del Usuario</h3>
     </div>
     <div class="panel-seccion__contenido">
-      <div class="panel-formulario-campos">
-        <div class="global-formulario-campo">
-          <label for="usuario-titulo" class="global-formulario-campo__etiqueta">Nombre</label>
-          <div class="global-formulario-campo__contenedor">
-            <input id="usuario-titulo" type="text" [value]="nombre()" (input)="onNombreChange($event)"
-              class="global-formulario-campo__input" placeholder="Ingrese el nombre">
-          </div>
+      <div class="global-formulario-campo">
+        <label for="usuario-titulo" class="global-formulario-campo__etiqueta">Nombre</label>
+        <div class="global-formulario-campo__contenedor">
+          <input id="usuario-titulo" type="text" [value]="nombre()" (input)="onNombreChange($event)"
+            class="global-formulario-campo__input" placeholder="Ingrese el nombre">
         </div>
-        <div class="global-formulario-campo">
-          <label for="usuario-correo" class="global-formulario-campo__etiqueta">Correo Electrónico</label>
-          <div class="global-formulario-campo__contenedor">
-            <input id="usuario-correo" type="email" [value]="correo()" (input)="onCorreoChange($event)"
-              class="global-formulario-campo__input" placeholder="correo@ejemplo.com">
-          </div>
+      </div>
+      <div class="global-formulario-campo">
+        <label for="usuario-correo" class="global-formulario-campo__etiqueta">Correo Electrónico</label>
+        <div class="global-formulario-campo__contenedor">
+          <input id="usuario-correo" type="email" [value]="correo()" (input)="onCorreoChange($event)"
+            class="global-formulario-campo__input" placeholder="correo@ejemplo.com">
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ===== SECCIÓN: CONTRASEÑA ===== -->
+  <!-- ===== SECCIÓN: CONTRASEÑA (solo si no es login social) ===== -->
+  @if (!tieneSocialLogin()) {
   <section class="panel-seccion">
     <div class="panel-seccion__cabecera">
       <h3 class="panel-seccion__titulo">Contraseña</h3>
@@ -42,75 +54,73 @@
           (change)="toggleCambiarContrasena($event)">
       </div>
     </div>
+    @if (puedeCambiarContrasena()) {
     <div class="panel-seccion__contenido">
-      <div class="panel-formulario-campos">
-        <div class="global-formulario-campo">
-          <label for="usuario-contrasena" class="global-formulario-campo__etiqueta">Actual</label>
-          <div class="global-formulario-campo__contenedor">
-            <input id="usuario-contrasena" [type]="mostrarContrasena() ? 'text' : 'password'" [(ngModel)]="contrasena"
-              class="global-formulario-campo__input"
-              [placeholder]="puedeCambiarContrasena() ? 'Nueva contraseña' : 'Contraseña actual'">
-            <button type="button" class="global-formulario-campo__boton-icono" (click)="toggleMostrarContrasena()"
-              [attr.aria-label]="mostrarContrasena() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
-              <img [src]="mostrarContrasena() ? '/iconos/ico-ojo-cerrado.svg' : '/iconos/ico-ojo-abierto.svg'"
-                [alt]="mostrarContrasena() ? 'Ocultar' : 'Mostrar'" class="icono-boton icono-color-blanco">
-            </button>
-          </div>
-        </div>
-        <div class="global-formulario-campo" [class.panel-seccion__contenido--oculto]="!puedeCambiarContrasena()">
-          <label for="usuario-confirmar-contrasena" class="global-formulario-campo__etiqueta">Confirmar</label>
-          <div class="global-formulario-campo__contenedor">
-            <input id="usuario-confirmar-contrasena" [type]="mostrarConfirmarContrasena() ? 'text' : 'password'"
-              [(ngModel)]="confirmarContrasena" class="global-formulario-campo__input"
-              placeholder="Confirmar nueva contraseña">
-            <button type="button" class="global-formulario-campo__boton-icono"
-              (click)="toggleMostrarConfirmarContrasena()"
-              [attr.aria-label]="mostrarConfirmarContrasena() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
-              <img [src]="mostrarConfirmarContrasena() ? '/iconos/ico-ojo-cerrado.svg' : '/iconos/ico-ojo-abierto.svg'"
-                [alt]="mostrarConfirmarContrasena() ? 'Ocultar' : 'Mostrar'" class="icono-boton icono-color-blanco">
-            </button>
-          </div>
+      <div class="global-formulario-campo">
+        <label for="usuario-contrasena-actual" class="global-formulario-campo__etiqueta">Contraseña actual</label>
+        <div class="global-formulario-campo__contenedor">
+          <input id="usuario-contrasena-actual" [type]="mostrarContrasena() ? 'text' : 'password'"
+            [value]="contrasenaActual()" (input)="actualizarContrasenaActual($event)"
+            class="global-formulario-campo__input" placeholder="Ingresa tu contraseña actual">
+          <button type="button" class="global-formulario-campo__boton-icono" (click)="toggleMostrarContrasena()"
+            [attr.aria-label]="mostrarContrasena() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+            <img [src]="mostrarContrasena() ? '/iconos/ico-ojo-cerrado.svg' : '/iconos/ico-ojo-abierto.svg'"
+              [alt]="mostrarContrasena() ? 'Ocultar' : 'Mostrar'" class="icono-boton icono-color-blanco">
+          </button>
         </div>
       </div>
+      <div class="global-formulario-campo">
+        <label for="usuario-contrasena-nueva" class="global-formulario-campo__etiqueta">Nueva contraseña</label>
+        <div class="global-formulario-campo__contenedor">
+          <input id="usuario-contrasena-nueva" [type]="mostrarNuevaContrasena() ? 'text' : 'password'"
+            [value]="nuevaContrasena()" (input)="actualizarNuevaContrasena($event)"
+            class="global-formulario-campo__input" placeholder="Ingresa la nueva contraseña">
+          <button type="button" class="global-formulario-campo__boton-icono" (click)="toggleMostrarNuevaContrasena()"
+            [attr.aria-label]="mostrarNuevaContrasena() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+            <img [src]="mostrarNuevaContrasena() ? '/iconos/ico-ojo-cerrado.svg' : '/iconos/ico-ojo-abierto.svg'"
+              [alt]="mostrarNuevaContrasena() ? 'Ocultar' : 'Mostrar'" class="icono-boton icono-color-blanco">
+          </button>
+        </div>
+      </div>
+      <div class="panel-seccion__botones">
+        <button type="button" class="boton-primario" (click)="cambiarContrasena()" [disabled]="guardando() || !puedeGuardarContrasena()">
+          <p>{{ guardando() ? 'Procesando...' : 'Cambiar contraseña' }}</p>
+        </button>
+      </div>
     </div>
+    }
   </section>
-
-  <!-- ===== SECCIÓN: CRONOLOGÍA ===== -->
+  } @else {
   <section class="panel-seccion">
     <div class="panel-seccion__cabecera">
-      <h3 class="panel-seccion__titulo">Cronología</h3>
+      <h3 class="panel-seccion__titulo">Contraseña</h3>
     </div>
     <div class="panel-seccion__contenido">
-      <div class="panel-cronologia">
-        <div class="panel-cronologia-item">
-          <img src="/iconos/ico-opcion-cronologia.svg" alt="Icono fecha" class="panel-cronologia-item__imagen">
-          <div class="panel-cronologia-item__contenido">
-            <h4 class="panel-cronologia-item__titulo">Fecha de Registro</h4>
-            <p class="panel-cronologia-item__fecha">2026-01-17 10:00:00</p>
-          </div>
-        </div>
-        <div class="panel-cronologia-item">
-          <img src="/iconos/ico-opcion-cronologia.svg" alt="Icono fecha" class="panel-cronologia-item__imagen">
-          <div class="panel-cronologia-item__contenido">
-            <h4 class="panel-cronologia-item__titulo">Fecha de Creación</h4>
-            <p class="panel-cronologia-item__fecha">2026-01-17 10:00:00</p>
-          </div>
-        </div>
-        <div class="panel-cronologia-item">
-          <img src="/iconos/ico-opcion-cronologia.svg" alt="Icono fecha" class="panel-cronologia-item__imagen">
-          <div class="panel-cronologia-item__contenido">
-            <h4 class="panel-cronologia-item__titulo">Fecha de Última Actualización</h4>
-            <p class="panel-cronologia-item__fecha">2026-01-17 10:00:00</p>
-          </div>
-        </div>
-        <div class="panel-cronologia-item">
-          <img src="/iconos/ico-opcion-cronologia.svg" alt="Icono fecha" class="panel-cronologia-item__imagen">
-          <div class="panel-cronologia-item__contenido">
-            <h4 class="panel-cronologia-item__titulo">Fecha de Último Inicio de Sesión</h4>
-            <p class="panel-cronologia-item__fecha">2026-01-17 10:00:00</p>
-          </div>
-        </div>
-      </div>
+      <p class="panel-seccion__mensaje">Esta cuenta está vinculada con Google. Para cambiar la contraseña, hazlo desde tu cuenta de Google.</p>
     </div>
   </section>
+  }
 </div>
+
+<!-- Modal de confirmación antes de guardar -->
+<app-modal [estaAbierto]="modalConfirmacionAbierto()" (cerrar)="cerrarConfirmacion()">
+  <div class="global-modal">
+    <div class="global-modal__cabecera">
+      <h3 class="global-modal__titulo">Confirmar cambios</h3>
+      <button type="button" class="global-modal__boton-cerrar" (click)="cerrarConfirmacion()" aria-label="Cerrar">
+        <img src="/iconos/ico-cerrar.svg" alt="Cerrar" class="icono-boton icono-color-secundario">
+      </button>
+    </div>
+    <div class="global-modal__contenido">
+      <p>¿Confirmas que deseas guardar los cambios de nombre y correo?</p>
+    </div>
+    <div class="global-modal__acciones">
+      <button type="button" class="boton-secundario" (click)="cerrarConfirmacion()">
+        <p>Cancelar</p>
+      </button>
+      <button type="button" class="boton-primario" (click)="ejecutarGuardar()" [disabled]="guardando()">
+        <p>{{ guardando() ? 'Procesando...' : 'Confirmar' }}</p>
+      </button>
+    </div>
+  </div>
+</app-modal>

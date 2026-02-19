@@ -6,8 +6,8 @@
       <h3>Usuarios</h3>
     </div>
     <div class="opciones-contenedor">
-      <button class="boton-secundario">
-        <p>Mostrar Filtros</p>
+      <button class="boton-secundario" (click)="alternarFiltros()">
+        <p>{{ filtrosVisibles() ? 'Ocultar Filtros' : 'Mostrar Filtros' }}</p>
       </button>
       <button class="boton-primario" (click)="abrirModalCrear()">
         <p>Agregar usuario</p>
@@ -16,6 +16,7 @@
   </section>
 
   <!-- ===== SECCIÓN: FILTROS Y BÚSQUEDA ===== -->
+  @if (filtrosVisibles()) {
   <section class="global-filtros" (click)="$event.stopPropagation()">
     <!-- Búsqueda unificada -->
     <div class="global-filtros__item">
@@ -23,7 +24,7 @@
       <div class="global-filtros__busqueda">
         <img src="/iconos/ico-busqueda.svg" alt="Icono busqueda" class="icono-boton icono-color-base">
         <input type="text" placeholder="Buscar por nombre o correo..." class="global-filtros__input"
-          [value]="textoBusqueda()" (input)="textoBusqueda.set($any($event.target).value)">
+          [value]="textoBusqueda()" (input)="actualizarBusqueda($event)">
       </div>
     </div>
 
@@ -57,7 +58,7 @@
         </button>
         @if (dropdownRolAbierto()) {
         <div class="global-filtros__dropdown-menu">
-          @for (opcion of opcionesRol; track opcion) {
+          @for (opcion of opcionesRol(); track opcion) {
           <button class="global-filtros__dropdown-opcion" (click)="seleccionarRol(opcion)" type="button">
             {{ opcion }}
           </button>
@@ -67,22 +68,17 @@
       </div>
     </div>
 
-    <!-- Filtro Fecha último acceso -->
+    <!-- Filtro Último acceso (selector de fecha) -->
     <div class="global-filtros__item">
       <p class="global-filtros__titulo">Último acceso</p>
-      <div class="global-filtros__dropdown" (click)="$event.stopPropagation()">
-        <button class="global-filtros__dropdown-boton" (click)="alternarFecha()" type="button">
-          <span>{{ fechaSeleccionada() }}</span>
-          <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="icono-boton icono-color-base">
+      <div class="global-filtros__busqueda global-filtros__campo-fecha">
+        <input type="date" class="global-filtros__input"
+          [value]="fechaUltimoAcceso()" (change)="actualizarFiltroFechaUltimoAcceso($event)">
+        @if (fechaUltimoAcceso()) {
+        <button type="button" class="global-filtros__limpiar-fecha" (click)="limpiarFiltroFechaUltimoAcceso()"
+          aria-label="Quitar filtro de fecha">
+          <img src="/iconos/ico-limpiar.svg" alt="Limpiar" class="icono-boton icono-color-base">
         </button>
-        @if (dropdownFechaAbierto()) {
-        <div class="global-filtros__dropdown-menu">
-          @for (opcion of opcionesFecha; track opcion) {
-          <button class="global-filtros__dropdown-opcion" (click)="seleccionarFecha(opcion)" type="button">
-            {{ opcion }}
-          </button>
-          }
-        </div>
         }
       </div>
     </div>
@@ -95,9 +91,19 @@
       </button>
     </div>
   </section>
+  }
 
   <!-- ===== SECCIÓN: TABLA DE USUARIOS ===== -->
   <section class="global-tabla">
+    @if (estaCargando()) {
+      <app-bloque-estado-tabla estado="cargando" mensajeCarga="Cargando usuarios..." />
+    } @else if (usuariosPaginados().length === 0) {
+      <app-bloque-estado-tabla
+        estado="vacio"
+        tituloVacio="No se encontraron usuarios"
+        textoVacio="No hay usuarios registrados o los filtros no coinciden con ningún resultado. Prueba ajustando los filtros o agrega un nuevo usuario."
+        iconoVacio="/iconos/ico-cliente.svg" />
+    } @else {
     <table class="global-tabla__elemento">
       <thead class="global-tabla__cabecera">
         <tr>
@@ -105,6 +111,8 @@
           <th>Correo</th>
           <th>Estado</th>
           <th>Rol</th>
+          <th>Teléfono</th>
+          <th>Saldo</th>
           <th>Último acceso</th>
           <th>Acciones</th>
         </tr>
@@ -112,10 +120,9 @@
       <tbody class="global-tabla__cuerpo">
         @for (usuario of usuariosPaginados(); track usuario.id) {
         <tr class="global-tabla__fila">
-          <!-- Celda nombre con imagen redonda -->
-          <td class="global-tabla__celda global-tabla__celda-principal">
-            <img [src]="usuario.fotoPerfil" [alt]="usuario.nombre" class="global-tabla__imagen-usuario">
-            <p class="global-tabla__texto-principal">{{ usuario.nombre }}</p>
+          <!-- Celda nombre como título centrado -->
+          <td class="global-tabla__celda global-tabla__celda-principal global-tabla__celda--nombre-titulo">
+            <p class="global-tabla__texto-titulo">{{ usuario.nombre }}</p>
           </td>
           <!-- Celda correo -->
           <td class="global-tabla__celda global-tabla__celda-info">
@@ -131,9 +138,17 @@
           <td class="global-tabla__celda global-tabla__celda-info">
             <p>{{ usuario.rol }}</p>
           </td>
+          <!-- Celda teléfono -->
+          <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--telefono">
+            <p>{{ usuario.telefono || '—' }}</p>
+          </td>
+          <!-- Celda Saldo -->
+          <td class="global-tabla__celda global-tabla__celda-info">
+            <p>{{ usuario.saldo != null ? (usuario.saldo | number:'1.2-2') : '—' }}</p>
+          </td>
           <!-- Celda último acceso -->
           <td class="global-tabla__celda global-tabla__celda-info">
-            <p>{{ formatearFecha(usuario.ultimoAcceso) }}</p>
+            <p>{{ formatearFechaISO(usuario.ultimoAcceso) }}</p>
           </td>
           <!-- Celda acciones -->
           <td class="global-tabla__celda global-tabla__celda-acciones">
@@ -157,8 +172,10 @@
         }
       </tbody>
     </table>
+    }
 
-    <!-- ===== PAGINACIÓN ===== -->
+    <!-- ===== PAGINACIÓN (solo si hay usuarios) ===== -->
+    @if (usuariosPaginados().length > 0) {
     <div class="global-paginacion">
       <div class="global-paginacion__controles">
         <button class="global-paginacion__boton global-paginacion__boton--anterior" (click)="paginaAnterior()"
@@ -190,6 +207,7 @@
         totalUsuarios()) }} de {{ totalUsuarios() }}
       </p>
     </div>
+    }
   </section>
 </div>
 
@@ -203,26 +221,30 @@
       </button>
     </div>
 
-    <div class="global-modal__contenido">
-      <!-- Foto de perfil -->
+    <form class="global-modal__contenido" autocomplete="off" (submit)="$event.preventDefault()">
+      <!-- Foto de perfil (subida a Cloudinary) -->
       <div class="formulario-imagenes">
         <label class="global-formulario-campo__etiqueta">Foto de perfil</label>
         <div class="formulario-imagenes__contenedor-imagenes">
           <label for="input-foto-usuario"
-            class="global-formulario-imagenes__contenedor global-formulario-imagenes__contenedor--clickeable">
-            @if (formulario().fotoPerfil && formulario().fotoPerfil !== '/imagenes/usuarios/default.jpg') {
-            <!-- Cuando HAY imagen: mostrar la imagen -->
+            class="global-formulario-imagenes__contenedor global-formulario-imagenes__contenedor--clickeable"
+            [class.usuarios-admin-modal__foto-deshabilitado]="subiendoFoto()">
+            @if (subiendoFoto()) {
+            <div class="usuarios-admin-modal__foto-cargando">
+              <div class="usuarios-admin-modal__foto-spinner" aria-hidden="true"></div>
+              <span>Subiendo...</span>
+            </div>
+            } @else if (formulario().fotoPerfil && formulario().fotoPerfil !== '/imagenes/usuarios/default.jpg') {
             <img [src]="formulario().fotoPerfil" alt="Foto de perfil" class="global-formulario-imagenes__preview"
               style="border-radius: 50%; width: 120px; height: 120px; object-fit: cover;">
             } @else {
-            <!-- Cuando NO hay imagen: mostrar icono y textos -->
             <img src="/iconos/ico-imagen.svg" alt="Icono imagen" class="icono-boton icono-color-secundario">
             <span class="global-formulario-imagenes__etiqueta1">Haz clic para subir foto de perfil</span>
-            <span class="global-formulario-imagenes__etiqueta2">PNG, JPG hasta 5MB</span>
+            <span class="global-formulario-imagenes__etiqueta2">PNG, JPG hasta 5MB (Cloudinary)</span>
             }
           </label>
           <input type="file" id="input-foto-usuario" accept="image/*" (change)="manejarCambioImagen($event)"
-            style="display: none;">
+            [disabled]="subiendoFoto()" style="display: none;">
         </div>
       </div>
 
@@ -231,6 +253,7 @@
         <label class="global-formulario-campo__etiqueta">Nombre completo</label>
         <div class="global-formulario-campo__contenedor">
           <input type="text" class="global-formulario-campo__input" placeholder="Ej: Juan Pérez García"
+            autocomplete="off" readonly (focus)="$event.target.removeAttribute('readonly')"
             [value]="formulario().nombre" (input)="actualizarNombre($event)">
         </div>
       </div>
@@ -240,22 +263,34 @@
         <label class="global-formulario-campo__etiqueta">Correo electrónico</label>
         <div class="global-formulario-campo__contenedor">
           <input type="email" class="global-formulario-campo__input" placeholder="Ej: usuario@ejemplo.com"
+            autocomplete="off" readonly (focus)="$event.target.removeAttribute('readonly')"
             [value]="formulario().email" (input)="actualizarEmail($event)">
         </div>
       </div>
 
-      <!-- Contraseña -->
+      <!-- Teléfono -->
       <div class="global-formulario-campo">
-        <label class="global-formulario-campo__etiqueta">
-          {{ usuarioEnEdicion() ? 'Contraseña (dejar vacío para mantener actual)' : 'Contraseña' }}
-        </label>
+        <label class="global-formulario-campo__etiqueta">Teléfono</label>
         <div class="global-formulario-campo__contenedor">
-          <input type="password" class="global-formulario-campo__input" placeholder="••••••••"
-            [value]="formulario().contrasena" (input)="actualizarContrasena($event)">
+          <input type="tel" class="global-formulario-campo__input" placeholder="Ej: +51987654321"
+            autocomplete="off" readonly (focus)="$event.target.removeAttribute('readonly')"
+            [value]="formulario().telefono" (input)="actualizarTelefono($event)">
         </div>
       </div>
 
-      <!-- Estado - RADIO BUTTONS -->
+      @if (!usuarioEnEdicion()) {
+      <!-- Contraseña (solo al crear) -->
+      <div class="global-formulario-campo">
+        <label class="global-formulario-campo__etiqueta">Contraseña</label>
+        <div class="global-formulario-campo__contenedor">
+          <input type="password" class="global-formulario-campo__input" placeholder="••••••••"
+            autocomplete="new-password" readonly (focus)="$event.target.removeAttribute('readonly')"
+            [value]="formulario().contrasena" (input)="actualizarContrasena($event)">
+        </div>
+      </div>
+      }
+
+      <!-- Estado: editable (Activo/Inactivo) -->
       <div class="global-formulario-campo">
         <label class="global-formulario-campo__etiqueta">Estado</label>
         <div class="global-formulario-opciones-radio">
@@ -272,33 +307,60 @@
         </div>
       </div>
 
-      <!-- Rol - RADIO BUTTONS -->
+      <!-- Rol - dinámico desde API -->
       <div class="global-formulario-campo">
         <label class="global-formulario-campo__etiqueta">Rol</label>
         <div class="global-formulario-opciones-radio">
+          @for (rol of roles(); track rol.id_rol) {
           <label class="global-formulario-opciones-radio__opcion">
-            <input type="radio" name="rol-usuario" value="Admin" [checked]="formulario().rol === 'Admin'"
-              (change)="actualizarRolAdmin()" class="global-radio__input">
-            <span class="global-formulario-opciones-radio__label">Admin</span>
+            <input type="radio" name="rol-usuario" [value]="rol.nombre" [checked]="formulario().rol === rol.nombre"
+              (change)="actualizarRol(rol.nombre)" class="global-radio__input">
+            <span class="global-formulario-opciones-radio__label">{{ rol.nombre }}</span>
           </label>
-          <label class="global-formulario-opciones-radio__opcion">
-            <input type="radio" name="rol-usuario" value="Usuario" [checked]="formulario().rol === 'Usuario'"
-              (change)="actualizarRolUsuario()" class="global-radio__input">
-            <span class="global-formulario-opciones-radio__label">Usuario</span>
-          </label>
-          <label class="global-formulario-opciones-radio__opcion">
-            <input type="radio" name="rol-usuario" value="Editor" [checked]="formulario().rol === 'Editor'"
-              (change)="actualizarRolEditor()" class="global-radio__input">
-            <span class="global-formulario-opciones-radio__label">Editor</span>
-          </label>
-          <label class="global-formulario-opciones-radio__opcion">
-            <input type="radio" name="rol-usuario" value="Soporte" [checked]="formulario().rol === 'Soporte'"
-              (change)="actualizarRolSoporte()" class="global-radio__input">
-            <span class="global-formulario-opciones-radio__label">Soporte</span>
-          </label>
+          }
         </div>
       </div>
-    </div>
+
+      <!-- Campos solo lectura (solo en edición) -->
+      @if (usuarioEnEdicion()) {
+      <div class="usuarios-admin-modal__solo-lectura">
+        <h4 class="usuarios-admin-modal__solo-lectura-titulo">Información solo consulta</h4>
+        <div class="usuarios-admin-modal__solo-lectura-grid">
+          <div class="usuarios-admin-modal__campo-lectura">
+            <span class="usuarios-admin-modal__campo-lectura-etiqueta">Login social</span>
+            <span class="global-badge global-badge--{{ usuarioEnEdicion()!.socialLogin ? 'activo' : 'neutro' }} global-badge--grande">
+              {{ usuarioEnEdicion()!.socialLogin ? 'Sí' : 'No' }}
+            </span>
+          </div>
+          <div class="usuarios-admin-modal__campo-lectura">
+            <span class="usuarios-admin-modal__campo-lectura-etiqueta">Nacionalidad</span>
+            @if (obtenerPaisPorCodigo(usuarioEnEdicion()!.nacionalidad)) {
+            <img [src]="obtenerPaisPorCodigo(usuarioEnEdicion()!.nacionalidad)!.bandera" alt="Bandera"
+              class="usuarios-admin-modal__bandera">
+            } @else {
+            <span class="usuarios-admin-modal__campo-lectura-valor">—</span>
+            }
+          </div>
+          <div class="usuarios-admin-modal__campo-lectura">
+            <span class="usuarios-admin-modal__campo-lectura-etiqueta">Saldo</span>
+            <span class="usuarios-admin-modal__campo-lectura-valor">{{ usuarioEnEdicion()!.saldo != null ? (usuarioEnEdicion()!.saldo | number:'1.2-2') : '—' }}</span>
+          </div>
+          <div class="usuarios-admin-modal__campo-lectura">
+            <span class="usuarios-admin-modal__campo-lectura-etiqueta">Último acceso</span>
+            <span class="usuarios-admin-modal__campo-lectura-valor">{{ formatearFechaISO(usuarioEnEdicion()!.ultimoAcceso) }}</span>
+          </div>
+          <div class="usuarios-admin-modal__campo-lectura">
+            <span class="usuarios-admin-modal__campo-lectura-etiqueta">Fecha de creación</span>
+            <span class="usuarios-admin-modal__campo-lectura-valor">{{ formatearFechaISO(usuarioEnEdicion()!.fechaCreacion) }}</span>
+          </div>
+          <div class="usuarios-admin-modal__campo-lectura">
+            <span class="usuarios-admin-modal__campo-lectura-etiqueta">Última actualización</span>
+            <span class="usuarios-admin-modal__campo-lectura-valor">{{ formatearFechaISO(usuarioEnEdicion()!.fechaActualizacion) }}</span>
+          </div>
+        </div>
+      </div>
+      }
+    </form>
 
     <div class="global-modal__acciones">
       <button type="button" class="boton-secundario" (click)="cerrarModal()">

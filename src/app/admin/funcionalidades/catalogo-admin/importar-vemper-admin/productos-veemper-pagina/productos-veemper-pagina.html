@@ -2,8 +2,10 @@
 
   <section class="titulo-opciones-contenedor">
     <div class="titulo-contenedor">
-      <img src="/iconos/ico-producto.svg" alt="Icono productos" class="icono-boton icono-color-base">
-      <h3>Productos Vemper – {{ nombreCategoria() }}</h3>
+      <button type="button" class="boton-volver" (click)="volver()" aria-label="Volver">
+        <img src="/iconos/ico-flecha-izquierda-tabla.svg" alt="Volver" class="icono-boton icono-color-base">
+      </button>
+      <h3>Productos Vemper</h3>
     </div>
     <div class="opciones-contenedor">
       <button class="boton-secundario" (click)="alternarFiltros()" type="button">
@@ -17,7 +19,7 @@
     <div class="global-filtros__item">
       <p class="global-filtros__titulo">Buscador</p>
       <div class="global-filtros__busqueda">
-        <img src="/iconos/ico-busqueda.svg" alt="Icono busqueda" class="icono-boton icono-color-base">
+        <img src="/iconos/ico-busqueda.svg" alt="Icono busqueda" class="icono-boton icono-boton-mediano icono-color-base">
         <input type="text" placeholder="Nombre del producto..." class="global-filtros__input" [value]="textoBusqueda()"
           (input)="actualizarBusqueda($any($event.target).value)">
       </div>
@@ -25,30 +27,30 @@
     <div class="global-filtros__item">
       <button class="boton-secundario global-filtros__boton-icono" (click)="limpiarFiltros()" type="button"
         aria-label="Limpiar filtros">
-        <img src="/iconos/ico-limpiar.svg" alt="Icono limpiar filtros" class="icono-boton icono-color-base">
+        <img src="/iconos/ico-limpiar.svg" alt="Icono limpiar filtros" class="icono-boton icono-boton-mediano icono-color-base">
       </button>
     </div>
   </section>
   }
 
   <section class="seccion-grid">
-    @if (productosPaginados().length === 0) {
-    <p class="grid-productos__vacio">No hay productos en esta categoría</p>
+    @if (estaCargando()) {
+    <app-bloque-estado-tabla estado="cargando" mensajeCarga="Cargando productos..." />
+    } @else if (productosPaginados().length === 0) {
+    <app-bloque-estado-tabla estado="vacio" tituloVacio="No se encontraron productos"
+      textoVacio="No hay productos Vemper en esta categoría o los filtros no coinciden."
+      iconoVacio="/iconos/ico-producto.svg" />
     } @else {
     <div class="grid-productos">
-      @for (producto of productosPaginados(); track producto.id) {
+      @for (producto of productosPaginados(); track producto.handle) {
       <article class="tarjeta-producto">
-        <h4 class="tarjeta-producto__titulo">{{ producto.nombre }}</h4>
-        <div class="tarjeta-producto__datos">
-          <span class="tarjeta-producto__precio">Precio base: {{ producto.precioBase }}</span>
-          <span class="tarjeta-producto__stock">Stock: {{ producto.stock }}</span>
-        </div>
-        @if (yaImportado(producto.id)) {
+        <h4 class="tarjeta-producto__titulo">{{ producto.titulo }}</h4>
+        @if (yaImportado(producto.handle)) {
         <span class="tarjeta-producto__importado">Importado</span>
         } @else {
         <button type="button" class="boton-primario tarjeta-producto__boton" (click)="importar(producto)"
-          [attr.aria-label]="'Importar ' + producto.nombre">
-          <p>Importar</p>
+          [disabled]="estaImportando(producto.handle)" [attr.aria-label]="'Importar ' + producto.titulo">
+          <p>{{ estaImportando(producto.handle) ? 'Importando...' : 'Importar' }}</p>
         </button>
         }
       </article>
@@ -59,7 +61,7 @@
     <div class="global-paginacion">
       <div class="global-paginacion__controles">
         <button class="global-paginacion__boton global-paginacion__boton--anterior" (click)="paginaAnterior()"
-          [disabled]="paginaActual() === 1">
+          [disabled]="paginaActual() === 1" type="button" aria-label="Página anterior">
           <img src="/iconos/ico-flecha-izquierda-tabla.svg" alt="Icono flecha izquierda"
             class="icono-boton icono-color-base">
         </button>
@@ -77,7 +79,7 @@
           }
         </div>
         <button class="global-paginacion__boton global-paginacion__boton--siguiente" (click)="paginaSiguiente()"
-          [disabled]="paginaActual() === totalPaginas()">
+          [disabled]="paginaActual() === totalPaginas()" type="button" aria-label="Página siguiente">
           <img src="/iconos/ico-flecha-derecha-tabla.svg" alt="Icono flecha derecha"
             class="icono-boton icono-color-base">
         </button>

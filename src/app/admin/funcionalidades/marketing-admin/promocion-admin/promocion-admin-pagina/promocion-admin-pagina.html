@@ -1,10 +1,20 @@
 <div class="contenedor-pagina">
   <section class="promocion-admin-seccion promocion-admin-tarjeta">
     <div class="promocion-admin-cabecera-principal">
-      <h2 class="promocion-admin-titulo">Promoción</h2>
+      <div class="promocion-admin-titulo-contenedor">
+        <h2 class="promocion-admin-titulo">Promoción</h2>
+        @if (hayCambiosPendientes()) {
+        <span class="promocion-admin-cambios-sin-guardar">• Cambios sin guardar</span>
+        }
+      </div>
       <div class="promocion-admin-botones-cabecera">
-        <a routerLink="/admin/inicio" class="boton-secundario">Volver</a>
-        <button type="button" class="boton-primario" (click)="guardarConfiguracion()">Guardar cambios</button>
+        <button type="button" class="boton-secundario" (click)="volver()">Volver</button>
+        @if (hayCambiosPendientes()) {
+        <button type="button" class="boton-secundario" (click)="cancelarCambios()" [disabled]="guardando()">Descartar</button>
+        }
+        <button type="button" class="boton-primario" (click)="guardarConfiguracion()" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando...' : 'Guardar' }}
+        </button>
       </div>
     </div>
 
@@ -17,9 +27,39 @@
       </div>
     </div>
 
-    <p class="promocion-admin-ayuda">Mínimo {{ minItems }} ítems, máximo {{ maxItems }}.</p>
+    <p class="promocion-admin-ayuda">Mínimo {{ minItems }} ítems, máximo {{ maxItems }}. Los elegidos se muestran arriba; la búsqueda solo filtra los productos que puedes agregar.</p>
 
-    <h3 class="promocion-admin-titulo-secundario">Productos</h3>
+    <h3 class="promocion-admin-titulo-secundario">Productos elegidos ({{ items().length }})</h3>
+    @if (items().length < minItems) {
+    <p class="promocion-admin-alerta">Agrega al menos {{ minItems }} productos.</p>
+    }
+    <p class="promocion-admin-hint">Arrastra para cambiar el orden.</p>
+    <div class="promocion-admin-lista-elegidos">
+      @for (item of items(); track item.handle; let i = $index) {
+      <div class="promocion-admin-item-elegido"
+        [class.promocion-admin-item-elegido--arrastrando]="estaArrastrando(i)"
+        draggable="true"
+        (dragstart)="iniciarArrastre($event, i)"
+        (dragover)="permitirSoltar($event)"
+        (drop)="soltar($event, i)"
+        (dragend)="finArrastre()">
+        <div class="promocion-admin-item-arrastrar" title="Arrastra para ordenar">
+          <img src="/iconos/icon-opciones.svg" alt="" class="promocion-admin-icono-arrastrar">
+        </div>
+        <span class="promocion-admin-item-titulo">{{ item.titulo }}</span>
+        <span class="promocion-admin-item-categoria">{{ categoriasParaItem(item) }}</span>
+        <button type="button" class="boton-secundario promocion-admin-boton-quitar"
+          [disabled]="items().length <= minItems" (click)="quitarItem(i)">
+          Quitar
+        </button>
+      </div>
+      }
+      @if (items().length === 0) {
+      <p class="promocion-admin-sin-elegidos">Aún no hay productos elegidos. Busca y agrega abajo.</p>
+      }
+    </div>
+
+    <h3 class="promocion-admin-titulo-secundario">Buscar y agregar productos</h3>
     <div class="promocion-admin-buscador-contenedor">
       <img src="/iconos/ico-busqueda.svg" alt="" class="promocion-admin-buscador-icono">
       <input type="text" class="global-formulario-campo__input promocion-admin-buscador-input"
@@ -27,19 +67,23 @@
         (input)="setBusqueda($any($event.target).value)">
     </div>
     <div class="promocion-admin-lista-productos">
-      @for (p of productosPaginados(); track p.id) {
+      @for (p of productosPaginados(); track p.handle) {
       <div class="promocion-admin-fila-producto">
         <label class="promocion-admin-checkbox">
-          <input type="checkbox" [checked]="estaSeleccionado(p)"
-            [disabled]="(!estaSeleccionado(p) && !puedeSeleccionarMas()) || (estaSeleccionado(p) && !puedeQuitarSeleccion())"
-            (change)="toggleSeleccion(p)">
+          <input type="checkbox" [disabled]="!puedeSeleccionarMas()" (change)="toggleSeleccion(p)">
         </label>
-        <img [src]="p.imagen" alt="" class="promocion-admin-fila-imagen">
-        <span class="promocion-admin-fila-titulo">{{ p.nombre }}</span>
+        <span class="promocion-admin-fila-titulo">{{ p.titulo }}</span>
+        <span class="promocion-admin-fila-categorias">{{ categoriasTexto(p) }}</span>
+        <button type="button" class="boton-secundario promocion-admin-boton-agregar"
+          [disabled]="!puedeSeleccionarMas()" (click)="toggleSeleccion(p)">
+          Agregar
+        </button>
       </div>
       }
       @if (productosPaginados().length === 0) {
-      <p class="promocion-admin-sin-resultados">Ningún producto coincide con la búsqueda.</p>
+      <p class="promocion-admin-sin-resultados">
+        {{ items().length >= productosDisponibles().length ? 'Todos los productos ya están elegidos.' : 'Ningún producto coincide con la búsqueda.' }}
+      </p>
       }
     </div>
     <div class="promocion-admin-paginacion">

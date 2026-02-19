@@ -1,4 +1,4 @@
-<div class="lista-codigos-contenedor" (click)="cerrarTodosLosDropdowns()">
+<div class="lista-codigos-contenedor">
   <!-- ===== SECCIÓN: TITULO Y OPCIONES ===== -->
   <section class="titulo-opciones-contenedor">
     <div class="titulo-contenedor">
@@ -34,60 +34,31 @@
   <!-- ===== SECCIÓN: FILTROS AVANZADOS ===== -->
   @if (filtrosVisibles()) {
   <section class="global-filtros" (click)="$event.stopPropagation()">
-    <!-- Buscador - SOLO POR CÓDIGO -->
+    <!-- Buscador de texto: código, producto, precio y cliente -->
     <div class="global-filtros__item">
       <p class="global-filtros__titulo">Buscador</p>
       <div class="global-filtros__busqueda">
         <img src="/iconos/ico-busqueda.svg" alt="Icono busqueda" class="icono-boton icono-color-base">
-        <input type="text" placeholder="Buscar por código..." class="global-filtros__input" [value]="textoBusqueda()"
-          (input)="textoBusqueda.set($any($event.target).value)">
+        <input type="text" placeholder="Buscar por código, producto, precio o cliente..." class="global-filtros__input" [value]="textoBusqueda()"
+          (input)="textoBusqueda.set($any($event.target).value); paginaActual.set(1)">
       </div>
     </div>
 
-    <!-- Dropdown Producto -->
+    <!-- Filtro Fecha Creación -->
     <div class="global-filtros__item">
-      <p class="global-filtros__titulo">Producto</p>
-      <div class="global-filtros__dropdown" (click)="$event.stopPropagation()">
-        <button class="global-filtros__dropdown-boton" (click)="alternarDropdownProducto()" type="button">
-          <span>{{ obtenerNombreProductoFiltro() }}</span>
-          <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="icono-boton icono-color-base">
-        </button>
-        @if (dropdownProductoAbierto()) {
-        <div class="global-filtros__dropdown-menu">
-          <button class="global-filtros__dropdown-opcion" (click)="seleccionarProductoFiltro('')" type="button">
-            Todos los productos
-          </button>
-          @for (producto of productosDisponibles(); track producto.id) {
-          <button class="global-filtros__dropdown-opcion" (click)="seleccionarProductoFiltro(producto.id)"
-            type="button">
-            {{ producto.nombre }}
-          </button>
-          }
-        </div>
-        }
+      <p class="global-filtros__titulo">Fecha Creación</p>
+      <div class="global-filtros__busqueda">
+        <input type="date" class="global-filtros__input" [value]="fechaCreacion()"
+          (input)="fechaCreacion.set($any($event.target).value); paginaActual.set(1)">
       </div>
     </div>
 
-    <!-- Dropdown Precio -->
+    <!-- Filtro Fecha Expiración -->
     <div class="global-filtros__item">
-      <p class="global-filtros__titulo">Precio</p>
-      <div class="global-filtros__dropdown" (click)="$event.stopPropagation()">
-        <button class="global-filtros__dropdown-boton" (click)="alternarDropdownPrecio()" type="button">
-          <span>{{ obtenerNombrePrecioFiltro() }}</span>
-          <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="icono-boton icono-color-base">
-        </button>
-        @if (dropdownPrecioAbierto()) {
-        <div class="global-filtros__dropdown-menu">
-          <button class="global-filtros__dropdown-opcion" (click)="seleccionarPrecioFiltro('')" type="button">
-            Todos los precios
-          </button>
-          @for (precio of todosLosPreciosDisponibles(); track precio.id) {
-          <button class="global-filtros__dropdown-opcion" (click)="seleccionarPrecioFiltro(precio.id)" type="button">
-            {{ precio.nombre }} ({{ precio.productoNombre }})
-          </button>
-          }
-        </div>
-        }
+      <p class="global-filtros__titulo">Fecha Expiración</p>
+      <div class="global-filtros__busqueda">
+        <input type="date" class="global-filtros__input" [value]="fechaExpiracion()"
+          (input)="fechaExpiracion.set($any($event.target).value); paginaActual.set(1)">
       </div>
     </div>
 
@@ -102,6 +73,15 @@
 
   <!-- ===== SECCIÓN: TABLA DE CÓDIGOS ===== -->
   <section class="global-tabla">
+    @if (estaCargando()) {
+    <app-bloque-estado-tabla estado="cargando" mensajeCarga="Cargando códigos..." />
+    } @else if (errorAlCargar()) {
+    <app-bloque-estado-tabla estado="vacio" tituloVacio="Error al cargar"
+      textoVacio="No se pudieron cargar los códigos. Intenta de nuevo." iconoVacio="/iconos/ico-codigo.svg" />
+    } @else if (codigosPaginados().length === 0) {
+    <app-bloque-estado-tabla estado="vacio" tituloVacio="No se encontraron códigos"
+      textoVacio="Ajusta los filtros o agrega un código." iconoVacio="/iconos/ico-codigo.svg" />
+    } @else {
     <table class="global-tabla__elemento">
       <thead class="global-tabla__cabecera">
         <tr>
@@ -110,36 +90,40 @@
           <th>Cliente</th>
           <th>Estado</th>
           <th>Fecha Creación</th>
+          <th>Fecha Exp.</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody class="global-tabla__cuerpo">
-        @for (codigo of codigosPaginados(); track codigo.id) {
+        @for (codigo of codigosPaginados(); track codigo.id_codigo) {
         <tr class="global-tabla__fila">
           <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--codigo">
             <p [title]="codigo.codigo">{{ truncarTexto(codigo.codigo, 30) }}</p>
           </td>
           <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--producto-precio">
             <div class="celda-producto-precio">
-              <p class="celda-producto-precio__nombre" [title]="codigo.nombre_producto">
-                {{ truncarTexto(codigo.nombre_producto, 30) }}
+              <p class="celda-producto-precio__nombre" [title]="codigo.nombreProducto">
+                {{ truncarTexto(codigo.nombreProducto, 30) }}
               </p>
-              <p class="celda-producto-precio__precio">{{ codigo.precio_producto }}</p>
+              <p class="celda-producto-precio__precio">{{ codigo.nombrePrecio }}</p>
             </div>
           </td>
           <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--cliente">
-            <p [title]="codigo.cliente_email">{{ truncarTexto(codigo.cliente_email, 25) }}</p>
+            <p [title]="codigo.correoCliente ?? ''">{{ truncarTexto(codigo.correoCliente ?? '—', 25) }}</p>
           </td>
           <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--estado">
-            <span class="global-badge" [class]="'global-badge--' + codigo.estado.toLowerCase()">
+            <span class="global-badge" [class]="'global-badge--' + codigo.estado">
               {{ codigo.estado }}
             </span>
           </td>
           <td class="global-tabla__celda global-tabla__celda-info global-tabla__celda--fecha-creacion">
-            <p>{{ codigo.fecha_creacion }}</p>
+            <p>{{ formatearFechaCreacion(codigo.fechaCreacion) }}</p>
+          </td>
+          <td class="global-tabla__celda global-tabla__celda-info">
+            <p>{{ formatearFechaExpiracion(codigo.fechaExpiracion) }}</p>
           </td>
           <td class="global-tabla__celda global-tabla__celda-acciones">
-            <button class="boton-secundario global-tabla__boton-accion" (click)="eliminarCodigo(codigo.id)">
+            <button class="boton-secundario global-tabla__boton-accion" (click)="eliminarCodigo(codigo.id_codigo)">
               <img src="/iconos/ico-borrar.svg" alt="Icono borrar" class="icono-boton icono-color-base">
               <p>Eliminar</p>
             </button>
@@ -148,6 +132,7 @@
         }
       </tbody>
     </table>
+    }
 
     <!-- ===== PAGINACIÓN ===== -->
     <div class="global-paginacion">
@@ -184,9 +169,9 @@
   </section>
 </div>
 
-<!-- ===== MODAL: AGREGAR CÓDIGO ===== -->
+<!-- ===== MODAL: AGREGAR CÓDIGO (una columna, sin editar código) ===== -->
 <app-modal [estaAbierto]="modalAgregarAbierto()" (cerrar)="cerrarModalAgregar()">
-  <div class="global-modal global-modal--ancho">
+  <div class="global-modal global-modal--ancho" (click)="cerrarBusquedaProducto()">
     <div class="global-modal__cabecera">
       <h3 class="global-modal__titulo">Agregar Códigos</h3>
       <button class="global-modal__boton-cerrar" (click)="cerrarModalAgregar()" type="button">
@@ -194,58 +179,66 @@
       </button>
     </div>
 
-    <div class="global-modal__contenido global-modal__contenido--grid">
-      <!-- Producto -->
-      <div class="global-formulario-campo">
+    <div class="global-modal__contenido codigos-modal--una-columna">
+      <!-- 1) Producto: primero se escoge el producto con buscador -->
+      <div class="global-formulario-campo codigos-modal__busqueda-producto" (click)="$event.stopPropagation()">
         <label class="global-formulario-campo__etiqueta">Producto *</label>
-        <div class="global-formulario-campo__contenedor">
-          <select class="global-formulario-campo__input" [value]="productoSeleccionado()"
-            (change)="onProductoSeleccionado($event)">
-            <option value="">Seleccionar producto...</option>
-            @for (producto of productosDisponibles(); track producto.id) {
-            <option [value]="producto.id">{{ producto.nombre }}</option>
-            }
-          </select>
+        <div class="global-formulario-campo__contenedor global-formulario-campo__contenedor--busqueda">
+          <img src="/iconos/ico-busqueda.svg" alt="Buscar" class="icono-boton icono-color-base">
+          <input type="text" class="global-formulario-campo__input" placeholder="Buscar producto..."
+            [value]="desplegarBusquedaProducto() ? busquedaProductoModal() : textoProductoSeleccionado()"
+            (input)="busquedaProductoModal.set($any($event.target).value); desplegarBusquedaProducto.set(true)"
+            (focus)="desplegarBusquedaProducto.set(true)">
+          @if (textoProductoSeleccionado() && !busquedaProductoModal()) {
+          <button type="button" class="codigos-modal__limpiar-seleccion"
+            (click)="limpiarProductoSeleccionado(); $event.stopPropagation()">
+            <img src="/iconos/ico-cerrar.svg" alt="Quitar" class="icono-boton icono-color-base">
+          </button>
+          }
         </div>
+        @if (desplegarBusquedaProducto()) {
+        <div class="codigos-modal__opciones-lista">
+          @if (productosFiltradosModal().length > 0) {
+          @for (producto of productosFiltradosModal(); track producto.id) {
+          <button type="button" class="codigos-modal__opcion" (click)="seleccionarProductoModal(producto.id)">
+            <span class="codigos-modal__opcion-producto">{{ producto.nombre }}</span>
+          </button>
+          }
+          } @else {
+          <div class="codigos-modal__sin-resultados">
+            <p>No se encontraron productos</p>
+          </div>
+          }
+        </div>
+        }
+        <label class="global-formulario-campo__ayuda">
+          Busca y selecciona el producto. Después elige el precio.
+        </label>
       </div>
 
-      <!-- Precio -->
-      <div class="global-formulario-campo">
+      <!-- 2) Precio: se habilita y muestra solo cuando hay producto seleccionado -->
+      <div class="global-formulario-campo" [class.codigos-modal__campo-deshabilitado]="!precioSelectHabilitado()">
         <label class="global-formulario-campo__etiqueta">Precio del producto *</label>
         <div class="global-formulario-campo__contenedor">
-          <select class="global-formulario-campo__input" [disabled]="!precioSelectHabilitado()"
-            [value]="precioSeleccionado()" (change)="onPrecioSeleccionado($event)">
-            @if (!precioSelectHabilitado()) {
+          <select class="global-formulario-campo__input" [disabled]="!precioSelectHabilitado() || cargandoPreciosProducto()"
+            [value]="precioSeleccionado()" (change)="seleccionarPrecioModal($any($event.target).value)">
+            @if (cargandoPreciosProducto()) {
+            <option value="">Cargando precios...</option>
+            } @else if (!precioSelectHabilitado()) {
             <option value="">Primero selecciona un producto</option>
             } @else {
             <option value="">Seleccionar precio...</option>
             @for (precio of preciosDisponibles(); track precio.id) {
-            <option [value]="precio.id">{{ precio.nombre }}</option>
+            <option [value]="precio.id">{{ precio.nombre }} — {{ precio.precio }}</option>
             }
             }
           </select>
         </div>
+        @if (precioSelectHabilitado()) {
         <label class="global-formulario-campo__ayuda">
-          @if (!precioSelectHabilitado()) {
-          Selecciona primero un producto para ver los precios disponibles
-          } @else {
-          Selecciona el precio del producto
-          }
+          Elige el precio del producto seleccionado.
         </label>
-      </div>
-
-      <!-- Estado -->
-      <div class="global-formulario-campo">
-        <label class="global-formulario-campo__etiqueta">Estado *</label>
-        <div class="global-formulario-campo__contenedor">
-          <select class="global-formulario-campo__input">
-            <option value="disponible">Disponible</option>
-            <option value="vendido">Vendido</option>
-            <option value="expirado">Expirado</option>
-            <option value="usado">Usado</option>
-            <option value="reservado">Reservado</option>
-          </select>
-        </div>
+        }
       </div>
 
       <!-- Códigos -->
@@ -253,17 +246,17 @@
         <label class="global-formulario-campo__etiqueta">Códigos *</label>
         <div class="global-formulario-campo__contenedor global-formulario-campo__contenedor--textarea">
           <textarea class="global-formulario-campo__textarea textarea-codigo" rows="6"
-            placeholder="Formato: codigo|contraseña|informacion_adicional&#10;&#10;Ejemplo:&#10;ABC123|pass123|info adicional&#10;XYZ789|secret789&#10;DEF456|clave456|datos extras&#10;&#10;Ingresa un código por línea. Cada línea será un código diferente."></textarea>
+            placeholder="Un código por línea.&#10;&#10;Ejemplo:&#10;ABC123-XYZ&#10;DEF456-UVW"
+            [value]="textoCodigosModal()" (input)="textoCodigosModal.set($any($event.target).value)"></textarea>
         </div>
         <label class="global-formulario-campo__ayuda">
-          <strong>Formato:</strong> codigo|contraseña|informacion_adicional (contraseña e información son opcionales)
+          Un código por línea.
         </label>
       </div>
 
-      <!-- Fecha de Expiración -->
+      <!-- Fecha de expiración (opcional, igual que antes) -->
       <div class="global-formulario-campo">
-        <div
-          style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--espaciado-xxs);">
+        <div class="codigos-modal__fila-checkbox">
           <div class="global-checkbox">
             <input type="checkbox" id="sin-fecha-expiracion" [checked]="sinFechaExpiracion()"
               (change)="alternarSinFechaExpiracion()" class="global-checkbox__input" />
@@ -273,7 +266,7 @@
           </div>
         </div>
         <div class="global-formulario-campo__contenedor">
-          <input type="datetime-local" class="global-formulario-campo__input" [disabled]="sinFechaExpiracion()"
+          <input type="date" class="global-formulario-campo__input" [disabled]="sinFechaExpiracion()"
             [value]="fechaExpiracionCodigo()" (input)="fechaExpiracionCodigo.set($any($event.target).value)">
         </div>
       </div>
@@ -283,8 +276,8 @@
       <button class="boton-secundario" (click)="cerrarModalAgregar()" type="button">
         Cancelar
       </button>
-      <button class="boton-primario" type="button">
-        Guardar códigos
+      <button class="boton-primario" type="button" (click)="guardarCodigos()" [disabled]="guardando()">
+        {{ guardando() ? 'Guardando...' : 'Guardar códigos' }}
       </button>
     </div>
   </div>

@@ -31,6 +31,19 @@
   margin-bottom: var(--espaciado-xs);
 }
 
+.pie-de-pagina-admin-titulo-contenedor {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  flex-wrap: wrap;
+}
+
+.pie-de-pagina-admin-cambios-sin-guardar {
+  color: var(--color-primario);
+  font-weight: var(--peso-semibold);
+  font-size: var(--texto-base);
+}
+
 .pie-de-pagina-admin-botones-cabecera {
   display: flex;
   flex-direction: row;

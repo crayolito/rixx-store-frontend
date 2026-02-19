@@ -17,6 +17,7 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
   gap: var(--espaciado-sm);
   padding: 0 var(--espaciado-md);
   color: var(--color-fondo-base);
@@ -101,6 +102,13 @@
   font-weight: var(--peso-medium);
   color: var(--color-fondo-base);
   font-size: var(--texto-pequeno);
+}
+
+.formulario-ayuda {
+  font-size: var(--texto-mini);
+  color: var(--color-fondo-septimo);
+  margin: 0;
+  font-style: italic;
 }
 
 .formulario-input-contenedor {

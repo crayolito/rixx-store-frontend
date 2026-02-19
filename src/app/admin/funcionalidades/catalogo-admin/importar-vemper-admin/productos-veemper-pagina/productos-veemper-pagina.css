@@ -27,7 +27,13 @@
 }
 
 .boton-volver {
-  text-decoration: none;
+  display: flex;
+  align-items: center;
+  padding: var(--espaciado-xs);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-fondo-base);
 }
 
 .opciones-contenedor {
@@ -36,6 +42,13 @@
   align-items: center;
   gap: var(--espaciado-xs);
   flex-wrap: wrap;
+}
+
+/* Iconos del buscador más visibles sobre fondo claro */
+.global-filtros .icono-boton {
+  width: 1.5rem;
+  height: 1.5rem;
+  filter: brightness(0) saturate(100%);
 }
 
 .seccion-grid {
@@ -82,19 +95,6 @@
   font-weight: 600;
   line-height: 1.3;
   color: var(--color-fondo-base);
-}
-
-.tarjeta-producto__datos {
-  display: flex;
-  flex-direction: column;
-  gap: var(--espaciado-xxs);
-  font-size: 0.875rem;
-  color: var(--color-texto-secundario);
-}
-
-.tarjeta-producto__precio,
-.tarjeta-producto__stock {
-  display: block;
 }
 
 .tarjeta-producto__boton {

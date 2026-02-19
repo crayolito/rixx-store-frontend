@@ -11,8 +11,8 @@
 }
 
 /* ═══════════════════════════════════════════════════════
-       TÍTULO Y OPCIONES
-       ═══════════════════════════════════════════════════════ */
+   TÍTULO Y OPCIONES
+   ═══════════════════════════════════════════════════════ */
 .titulo-opciones-contenedor {
   display: flex;
   flex-direction: row;
@@ -44,15 +44,6 @@
   flex-wrap: wrap;
 }
 
-/* ═══════════════════════════════════════════════════════
-       ESTILOS MÓVIL - CARDS (SOLO EN MÓVIL)
-       ═══════════════════════════════════════════════════════ */
-@media (max-width: 767px) {}
-
-/* ═══════════════════════════════════════════════════════
-       MEDIA QUERIES
-       ═══════════════════════════════════════════════════════ */
-
 /* ─── Tablet ─── */
 @media (min-width: 768px) {
   .lista-productos-contenedor {
@@ -75,7 +66,6 @@
 
 /* ─── Desktop ─── */
 @media (min-width: 1280px) {
-
   #boton-exportar,
   #boton-importar,
   #boton-mas-acciones {

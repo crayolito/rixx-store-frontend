@@ -1,6 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { BloqueEstadoTablaComponente } from '../../../../../compartido/componentes/bloque-estado-tabla/bloque-estado-tabla';
 import { Modal } from '../../../../../compartido/componentes/modal/modal';
+import { NotificacionServicio } from '../../../../../compartido/servicios/notificacion';
+import {
+  BilleteraApiServicio,
+  TransaccionBilleteraApi,
+} from '../../../../../nucleo/servicios/billetera-api.servicio';
+import {
+  UsuarioApiItem,
+  UsuarioApiServicio,
+} from '../../../../../nucleo/servicios/auth-api.servicio';
 
 // FASE 1: Interfaces
 interface Usuario {
@@ -28,12 +38,20 @@ interface TransaccionBilletera {
 @Component({
   selector: 'app-billetera-admin-pagina',
   standalone: true,
-  imports: [CommonModule, Modal],
+  imports: [CommonModule, Modal, BloqueEstadoTablaComponente],
   templateUrl: './billetera-admin-pagina.html',
   styleUrl: './billetera-admin-pagina.css',
 })
-export class BilleteraAdminPagina {
+export class BilleteraAdminPagina implements OnInit {
   Math = Math;
+
+  private billeteraApi = inject(BilleteraApiServicio);
+  private usuarioApi = inject(UsuarioApiServicio);
+  private notificacion = inject(NotificacionServicio);
+
+  estaCargando = signal(false);
+  errorAlCargar = signal(false);
+  guardando = signal(false);
 
   // FASE 2: Signals para control de UI
   filtrosVisibles = signal(true);
@@ -61,102 +79,63 @@ export class BilleteraAdminPagina {
   paginaActual = signal(1);
   transaccionesPorPagina = signal(15);
 
-  // FASE 7: Datos mock de usuarios para búsqueda
-  usuariosDisponibles: Usuario[] = [
-    { id: 'usr-001', nombre: 'Juan Pérez', email: 'juan.perez@email.com', saldoActual: 1500 },
-    { id: 'usr-002', nombre: 'María García', email: 'maria.garcia@email.com', saldoActual: 3200 },
-    { id: 'usr-003', nombre: 'Carlos López', email: 'carlos.lopez@email.com', saldoActual: 850 },
-    { id: 'usr-004', nombre: 'Ana Martínez', email: 'ana.martinez@email.com', saldoActual: 5400 },
-    { id: 'usr-005', nombre: 'Pedro Sánchez', email: 'pedro.sanchez@email.com', saldoActual: 2100 },
-  ];
+  // FASE 7: Usuarios cargados desde API para el modal de agregar saldo
+  usuariosDisponibles = signal<Usuario[]>([]);
+  cargandoUsuariosModal = signal(false);
 
-  // FASE 8: Datos mock de transacciones
-  transacciones = signal<TransaccionBilletera[]>([
-    {
-      id: '1',
-      usuarioId: 'usr-001',
-      usuarioNombre: 'Juan Pérez',
-      usuarioEmail: 'juan.perez@email.com',
-      saldoAnterior: 1000,
-      monto: 500,
-      nuevoSaldo: 1500,
-      tipoMovimiento: 'deposito',
-      metodoPago: 'Transferencia',
-      estado: 'completado',
-      nota: 'Recarga de saldo inicial',
-      fechaCreacion: new Date('2024-01-15'),
-    },
-    {
-      id: '2',
-      usuarioId: 'usr-002',
-      usuarioNombre: 'María García',
-      usuarioEmail: 'maria.garcia@email.com',
-      saldoAnterior: 3500,
-      monto: 300,
-      nuevoSaldo: 3200,
-      tipoMovimiento: 'retiro',
-      metodoPago: 'Efectivo',
-      estado: 'completado',
-      nota: 'Retiro solicitado por el usuario',
-      fechaCreacion: new Date('2024-01-14'),
-    },
-    {
-      id: '3',
-      usuarioId: 'usr-003',
-      usuarioNombre: 'Carlos López',
-      usuarioEmail: 'carlos.lopez@email.com',
-      saldoAnterior: 500,
-      monto: 350,
-      nuevoSaldo: 850,
-      tipoMovimiento: 'deposito',
-      metodoPago: 'Tarjeta',
-      estado: 'completado',
-      nota: 'Depósito por compra cancelada',
-      fechaCreacion: new Date('2024-01-13'),
-    },
-    {
-      id: '4',
-      usuarioId: 'usr-004',
-      usuarioNombre: 'Ana Martínez',
-      usuarioEmail: 'ana.martinez@email.com',
-      saldoAnterior: 5000,
-      monto: 400,
-      nuevoSaldo: 5400,
-      tipoMovimiento: 'deposito',
-      metodoPago: 'Transferencia',
-      estado: 'pendiente',
-      nota: 'Bonificación por programa de lealtad',
-      fechaCreacion: new Date('2024-01-12'),
-    },
-    {
-      id: '5',
-      usuarioId: 'usr-005',
-      usuarioNombre: 'Pedro Sánchez',
-      usuarioEmail: 'pedro.sanchez@email.com',
-      saldoAnterior: 2500,
-      monto: 400,
-      nuevoSaldo: 2100,
-      tipoMovimiento: 'retiro',
-      metodoPago: 'Efectivo',
-      estado: 'completado',
-      nota: 'Retiro manual aprobado',
-      fechaCreacion: new Date('2024-01-11'),
-    },
-  ]);
+  // FASE 8: Transacciones desde API
+  transacciones = signal<TransaccionBilletera[]>([]);
 
-  // FASE 9: Computed - Saldo total del sistema
+  // FASE 9: Computed - Saldo total del sistema (desde usuarios cargados en modal)
   saldoTotalSistema = computed(() => {
-    return this.usuariosDisponibles.reduce((total, usuario) => total + usuario.saldoActual, 0);
+    return this.usuariosDisponibles().reduce((total, usuario) => total + usuario.saldoActual, 0);
   });
+
+  ngOnInit(): void {
+    this.cargarTransacciones();
+  }
+
+  /** Carga las transacciones desde la API */
+  cargarTransacciones(): void {
+    this.estaCargando.set(true);
+    this.errorAlCargar.set(false);
+    const pagina = this.paginaActual();
+    const limite = Math.min(this.transaccionesPorPagina(), 100);
+    this.billeteraApi.listarTransacciones({ pagina, limite }).subscribe({
+      next: (datos) => {
+        const mapeadas: TransaccionBilletera[] = (datos?.datos ?? []).map((t: TransaccionBilleteraApi) => ({
+          id: String(t.id_transaccion),
+          usuarioId: String(t.id_usuario),
+          usuarioNombre: t.nombreUsuario ?? '',
+          usuarioEmail: t.emailUsuario ?? '',
+          saldoAnterior: t.saldo_anterior,
+          monto: t.monto,
+          nuevoSaldo: t.saldo_nuevo,
+          tipoMovimiento: t.tipo === 'recarga' ? 'deposito' : 'retiro',
+          metodoPago: 'Manual',
+          estado: 'completado',
+          nota: t.descripcion ?? '',
+          fechaCreacion: new Date(t.fecha_creacion),
+        }));
+        this.transacciones.set(mapeadas);
+      },
+      error: () => {
+        this.errorAlCargar.set(true);
+        this.notificacion.error('No se pudieron cargar las transacciones');
+      },
+      complete: () => this.estaCargando.set(false),
+    });
+  }
 
   // FASE 10: Computed - Filtrar usuarios en el modal
   usuariosFiltrados = computed(() => {
-    const busqueda = this.busquedaUsuario().toLowerCase();
-    if (!busqueda) return [];
+    const busqueda = this.busquedaUsuario().toLowerCase().trim();
+    if (!busqueda) return this.usuariosDisponibles();
 
-    return this.usuariosDisponibles.filter(usuario =>
-      usuario.nombre.toLowerCase().includes(busqueda) ||
-      usuario.email.toLowerCase().includes(busqueda)
+    return this.usuariosDisponibles().filter(
+      (usuario) =>
+        usuario.nombre.toLowerCase().includes(busqueda) ||
+        usuario.email.toLowerCase().includes(busqueda)
     );
   });
 
@@ -301,6 +280,33 @@ export class BilleteraAdminPagina {
   abrirModalAgregarSaldo() {
     this.modalAgregarSaldoAbierto.set(true);
     this.limpiarFormularioModal();
+    this.cargarUsuariosParaModal();
+  }
+
+  /** Carga usuarios desde la API para el selector del modal de agregar saldo */
+  cargarUsuariosParaModal(): void {
+    this.cargandoUsuariosModal.set(true);
+    this.usuarioApi.listarUsuarios(1, 100).subscribe({
+      next: (respuesta) => {
+        if (respuesta.exito && respuesta.datos) {
+          const datosArray = Array.isArray(respuesta.datos)
+            ? respuesta.datos
+            : (respuesta.datos as { datos: UsuarioApiItem[] }).datos ?? [];
+          const mapeados: Usuario[] = datosArray.map((u) => ({
+            id: String(u.id),
+            nombre: u.nombre,
+            email: u.email,
+            saldoActual: u.saldo ?? 0,
+          }));
+          this.usuariosDisponibles.set(mapeados);
+        }
+      },
+      error: () => {
+        this.notificacion.error('No se pudieron cargar los usuarios');
+        this.usuariosDisponibles.set([]);
+      },
+      complete: () => this.cargandoUsuariosModal.set(false),
+    });
   }
 
   cerrarModalAgregarSaldo() {
@@ -330,55 +336,39 @@ export class BilleteraAdminPagina {
     return this.tipoTransaccion() === 'deposito' ? 'Agregar saldo' : 'Restar saldo';
   }
 
-  guardarTransaccion() {
-    // PASO 1: Validar datos
+  guardarTransaccion(): void {
     const usuario = this.usuarioSeleccionado();
     const monto = parseFloat(this.montoTransaccion());
-
     if (!usuario || !monto || monto <= 0) {
-      alert('Por favor complete todos los campos correctamente');
+      this.notificacion.error('Complete todos los campos correctamente');
       return;
     }
-
-    // PASO 2: Calcular nuevo saldo
-    const saldoAnterior = usuario.saldoActual;
-    const nuevoSaldo = this.tipoTransaccion() === 'deposito'
-      ? saldoAnterior + monto
-      : saldoAnterior - monto;
-
-    if (nuevoSaldo < 0) {
-      alert('El saldo no puede ser negativo');
-      return;
-    }
-
-    // PASO 3: Crear nueva transacción
-    const nuevaTransaccion: TransaccionBilletera = {
-      id: Date.now().toString(),
-      usuarioId: usuario.id,
-      usuarioNombre: usuario.nombre,
-      usuarioEmail: usuario.email,
-      saldoAnterior: saldoAnterior,
-      monto: monto,
-      nuevoSaldo: nuevoSaldo,
-      tipoMovimiento: this.tipoTransaccion(),
-      metodoPago: 'Manual',
-      estado: 'completado',
-      nota: this.notaTransaccion() || 'Sin nota',
-      fechaCreacion: new Date(),
-    };
-
-    // PASO 4: Agregar a la lista
-    this.transacciones.update(lista => [nuevaTransaccion, ...lista]);
-
-    // PASO 5: Actualizar saldo del usuario
-    const usuarioIndex = this.usuariosDisponibles.findIndex(u => u.id === usuario.id);
-    if (usuarioIndex !== -1) {
-      this.usuariosDisponibles[usuarioIndex].saldoActual = nuevoSaldo;
-    }
-
-    // PASO 6: Cerrar modal
-    alert('Transacción guardada exitosamente');
-    this.cerrarModalAgregarSaldo();
+    const tipo = this.tipoTransaccion() === 'deposito' ? 'recarga' : 'compra';
+    this.guardando.set(true);
+    this.billeteraApi
+      .crearTransaccion({
+        idUsuario: Number(usuario.id),
+        tipo,
+        monto,
+        descripcion: this.notaTransaccion() || undefined,
+        idPedido: null,
+      })
+      .subscribe({
+        next: (resp) => {
+          if (resp?.exito) {
+            this.notificacion.exito('Transacción guardada');
+            this.cerrarModalAgregarSaldo();
+            this.cargarTransacciones();
+          } else {
+            this.notificacion.error(resp?.mensaje ?? 'Error al guardar');
+          }
+        },
+        error: (err) => {
+          const msg = err?.error?.mensaje ?? 'No se pudo guardar la transacción';
+          this.notificacion.error(msg);
+        },
+        complete: () => this.guardando.set(false),
+      });
   }
 
   limpiarFormularioModal() {

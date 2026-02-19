@@ -4,7 +4,7 @@
     <a class="tienda-categorias-productos__boton-ver-mas" [routerLink]="['/categoria', categoria().handle]">Ver Más</a>
   </div>
   <div class="tienda-categorias-productos__grid">
-    @for (producto of categoria().productos ?? categoria().productosOrdenados ?? []; track producto.handle) {
+    @for (producto of productosConEtiquetas(); track producto.handle) {
     <a class="tienda-categorias-productos__tarjeta" [routerLink]="['/producto', producto.handle]">
       <div class="tienda-categorias-productos__imagen-contenedor">
         <img class="tienda-categorias-productos__imagen" [src]="producto.imagen" [alt]="producto.titulo">

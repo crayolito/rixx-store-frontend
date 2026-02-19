@@ -61,19 +61,27 @@
         <div class="tienda-header__busqueda-contenedor">
           <div class="tienda-header__busqueda">
             <img src="/iconos/ico-busqueda.svg" alt="Buscar" class="busqueda-icono">
-            <input type="text" placeholder="Buscar en RixxStore" class="busqueda-input" [value]="textoBusqueda()"
+            <input type="text" [placeholder]="placeholderBusqueda" class="busqueda-input" [value]="textoBusqueda()"
               (input)="onBusquedaInput($event)" (focus)="onBusquedaFocus()">
           </div>
           @if (busquedaDropdownVisible()) {
           <div class="tienda-header__busqueda-dropdown">
-            @for (item of resultadosBusqueda; track item.id) {
-            <button type="button" class="tienda-header__busqueda-item" (click)="seleccionarResultado(item)">
-              <img [src]="item.imagen" [alt]="item.titulo" class="tienda-header__busqueda-item-imagen">
-              <div class="tienda-header__busqueda-item-datos">
-                <span class="tienda-header__busqueda-item-titulo">{{ item.titulo }}</span>
-                <span class="tienda-header__busqueda-item-categoria">{{ item.categoria }}</span>
-              </div>
-            </button>
+            @if (busquedaCargando()) {
+            <p class="tienda-header__busqueda-sin-resultados">Buscando...</p>
+            } @else {
+              @for (item of resultadosBusqueda(); track item.id) {
+              <button type="button" class="tienda-header__busqueda-item" (click)="seleccionarResultado(item)">
+                <img [src]="item.imagen" [alt]="item.titulo" class="tienda-header__busqueda-item-imagen"
+                  (error)="$any($event.target).src='/imagenes/imagen-nodisponible.jpg'">
+                <div class="tienda-header__busqueda-item-datos">
+                  <span class="tienda-header__busqueda-item-titulo">{{ item.titulo }}</span>
+                  <span class="tienda-header__busqueda-item-categoria">{{ item.categoria }}</span>
+                </div>
+              </button>
+              }
+              @if (resultadosBusqueda().length === 0 && !busquedaCargando()) {
+              <p class="tienda-header__busqueda-sin-resultados">Escribe para buscar productos.</p>
+              }
             }
           </div>
           }
@@ -83,7 +91,7 @@
           <button type="button" class="tienda-header__usuario-logueado" (click)="alternarMenuUsuario()"
             [class.menu-abierto]="menuUsuarioAbierto()">
             <img [src]="usuarioActual()?.fotoPerfil || '/iconos/ico-cliente.svg'" alt="Usuario" class="usuario-icono">
-            <span class="usuario-email">{{ usuarioActual()?.email }}</span>
+            <span class="usuario-nombre">{{ nombreCorto() || usuarioActual()?.nombre }}</span>
             <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="" class="tienda-header__usuario-flecha">
           </button>
           @if (menuUsuarioAbierto()) {

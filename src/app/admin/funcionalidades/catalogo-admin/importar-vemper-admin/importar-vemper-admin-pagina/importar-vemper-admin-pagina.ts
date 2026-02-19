@@ -1,7 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { BloqueEstadoTablaComponente } from '../../../../../compartido/componentes/bloque-estado-tabla/bloque-estado-tabla';
+import { NotificacionServicio } from '../../../../../compartido/servicios/notificacion';
+import { CategoriasApiServicio } from '../../../../../nucleo/servicios/categorias-api.servicio';
 
+/** Categoría mostrada en Importar Vemper (solo las que tienen idVemper) */
 interface CategoriaVemper {
   id: string;
   nombre: string;
@@ -11,49 +15,49 @@ interface CategoriaVemper {
 @Component({
   selector: 'app-importar-veemper-admin-pagina',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, BloqueEstadoTablaComponente],
   templateUrl: './importar-vemper-admin-pagina.html',
   styleUrl: './importar-vemper-admin-pagina.css',
 })
-export class ImportarVemperAdminPagina {
+export class ImportarVemperAdminPagina implements OnInit {
   private router = inject(Router);
+  private categoriasApi = inject(CategoriasApiServicio);
+  private notificacion = inject(NotificacionServicio);
+
   Math = Math;
 
+  /** Estado de carga inicial */
+  estaCargando = signal(false);
+  /** Texto del buscador */
   textoBusqueda = signal<string>('');
+  /** Lista de categorías con Vemper (idVemper no null) */
+  categorias = signal<CategoriaVemper[]>([]);
+  /** Muestra u oculta el panel de filtros */
+  filtrosVisibles = signal<boolean>(true);
+  /** Página actual de la paginación */
+  paginaActual = signal(1);
+  /** Cantidad de categorías por página */
+  categoriasPorPagina = signal(12);
 
-  categorias = signal<CategoriaVemper[]>([
-    { id: '1', nombre: 'Electrónica', productos: 45 },
-    { id: '2', nombre: 'Ropa', productos: 32 },
-    { id: '3', nombre: 'Hogar', productos: 18 },
-    { id: '4', nombre: 'Deportes', productos: 27 },
-    { id: '5', nombre: 'Libros', productos: 12 },
-    { id: '6', nombre: 'Juguetes', productos: 8 },
-    { id: '7', nombre: 'Belleza', productos: 35 },
-    { id: '8', nombre: 'Alimentos', productos: 22 },
-    { id: '9', nombre: 'Música', productos: 15 },
-    { id: '10', nombre: 'Jardín', productos: 19 },
-  ]);
-
+  /** Categorías filtradas por el texto de búsqueda */
   categoriasFiltradas = computed(() => {
-    let lista = this.categorias();
+    const lista = this.categorias();
     const busqueda = this.textoBusqueda().trim().toLowerCase();
-    if (busqueda) {
-      lista = lista.filter(cat => cat.nombre.toLowerCase().includes(busqueda));
-    }
-    return lista;
+    if (!busqueda) return lista;
+    return lista.filter((cat) => cat.nombre.toLowerCase().includes(busqueda));
   });
 
-  paginaActual = signal(1);
-  categoriasPorPagina = signal(12);
   totalCategorias = computed(() => this.categoriasFiltradas().length);
   totalPaginas = computed(() =>
-    Math.max(1, Math.ceil(this.totalCategorias() / this.categoriasPorPagina()))
+    Math.max(1, Math.ceil(this.totalCategorias() / this.categoriasPorPagina())),
   );
+  /** Categorías de la página actual */
   categoriasPaginadas = computed(() => {
     const inicio = (this.paginaActual() - 1) * this.categoriasPorPagina();
     const fin = inicio + this.categoriasPorPagina();
     return this.categoriasFiltradas().slice(inicio, fin);
   });
+  /** Números de página a mostrar en la paginación */
   paginasAMostrar = computed(() => {
     const total = this.totalPaginas();
     const actual = this.paginaActual();
@@ -80,33 +84,72 @@ export class ImportarVemperAdminPagina {
     return paginas;
   });
 
-  filtrosVisibles = signal<boolean>(false);
+  ngOnInit(): void {
+    this.cargarCategorias();
+  }
 
-  actualizarBusqueda(valor: string) {
+  /** Carga las categorías desde la API y deja solo las que tienen idVemper */
+  cargarCategorias(): void {
+    this.estaCargando.set(true);
+    this.categoriasApi.obtenerTodas().subscribe({
+      next: (lista) => {
+        const conVemper = lista.filter((c) => c.idVemper != null && c.idVemper !== '');
+        this.categorias.set(
+          conVemper.map((c) => ({
+            id: String(c.id_categoria),
+            nombre: c.nombre,
+            productos: c.cantidadProductos ?? 0,
+          })),
+        );
+      },
+      error: () => {
+        this.estaCargando.set(false);
+        this.notificacion.error('No se pudieron cargar las categorías');
+      },
+      complete: () => this.estaCargando.set(false),
+    });
+  }
+
+  /** Actualiza el texto de búsqueda y vuelve a la primera página */
+  actualizarBusqueda(valor: string): void {
     this.textoBusqueda.set(valor);
     this.paginaActual.set(1);
   }
 
-  alternarFiltros() {
-    this.filtrosVisibles.update(v => !v);
+  /** Muestra u oculta el panel de filtros */
+  alternarFiltros(): void {
+    this.filtrosVisibles.update((v) => !v);
   }
 
-  limpiarFiltros() {
+  /** Limpia el buscador y vuelve a la primera página */
+  limpiarFiltros(): void {
     this.textoBusqueda.set('');
     this.paginaActual.set(1);
   }
 
-  irAPagina(pagina: number) {
-    if (pagina >= 1 && pagina <= this.totalPaginas()) this.paginaActual.set(pagina);
-  }
-  paginaAnterior() {
-    if (this.paginaActual() > 1) this.paginaActual.update(p => p - 1);
-  }
-  paginaSiguiente() {
-    if (this.paginaActual() < this.totalPaginas()) this.paginaActual.update(p => p + 1);
+  /** Va a la página indicada si está dentro del rango */
+  irAPagina(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.totalPaginas()) {
+      this.paginaActual.set(pagina);
+    }
   }
 
-  verProductos(categoria: CategoriaVemper) {
+  /** Pasa a la página anterior */
+  paginaAnterior(): void {
+    if (this.paginaActual() > 1) {
+      this.paginaActual.update((p) => p - 1);
+    }
+  }
+
+  /** Pasa a la página siguiente */
+  paginaSiguiente(): void {
+    if (this.paginaActual() < this.totalPaginas()) {
+      this.paginaActual.update((p) => p + 1);
+    }
+  }
+
+  /** Navega a la página de productos Vemper de la categoría */
+  verProductos(categoria: CategoriaVemper): void {
     this.router.navigate(['/admin/catalogo/importar-vemper/categoria', categoria.id, 'productos']);
   }
 }
