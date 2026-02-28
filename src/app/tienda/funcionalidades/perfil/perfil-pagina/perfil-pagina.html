@@ -46,10 +46,9 @@
       <section class="perfil-seccion perfil-seccion--pedidos">
         <div class="perfil-seccion__header">
           <h2 class="perfil-seccion__titulo">Mis Pedidos</h2>
-          <p class="perfil-seccion__subtitulo">Revisa tus compras y códigos Gift Card</p>
+          <p class="perfil-seccion__subtitulo">Revisa el estado y el detalle de tus compras</p>
         </div>
-        <app-pedidos [pedidosAutomaticos]="pedidosAutomaticos()" [pedidosGiftCard]="pedidosGiftCard()">
-        </app-pedidos>
+        <app-pedidos [pedidos]="pedidos()" [cargando]="pedidosCargando()" (refrescar)="cargarPedidos()" />
       </section>
       }
 

@@ -1,18 +1,17 @@
-<!-- Switch: Recarga directa o Gift Cards -->
-<div class="perfil-pedidos-switch">
+<!-- Filtro por estado (solo los que existen en los pedidos) -->
+<div class="perfil-pedidos-filtros-estado">
+  @for (opcion of estadosOpciones(); track opcion.valor ?? 'todos') {
   <button type="button" class="perfil-pedidos-switch__btn"
-    [class.perfil-pedidos-switch__btn--activo]="tipoPedidoVista() === 'recarga_directa'"
-    (click)="tipoPedidoVista.set('recarga_directa')">Recarga directa</button>
-  <button type="button" class="perfil-pedidos-switch__btn"
-    [class.perfil-pedidos-switch__btn--activo]="tipoPedidoVista() === 'gift_cards'"
-    (click)="tipoPedidoVista.set('gift_cards')">Gift Cards</button>
+    [class.perfil-pedidos-switch__btn--activo]="estadoFiltro() === opcion.valor"
+    (click)="filtrarPorEstado(opcion.valor)">{{ opcion.nombre }}</button>
+  }
 </div>
 
-<!-- Filtros -->
+<!-- Filtros fecha y nombre -->
 <div class="perfil-pedidos-filtros">
   <div class="perfil-pedidos-filtros__grupo perfil-pedidos-filtros__grupo--nombre">
-    <label class="perfil-pedidos-filtros__label">Nombre producto</label>
-    <input type="text" class="perfil-pedidos-filtros__input" placeholder="Buscar por nombre"
+    <label class="perfil-pedidos-filtros__label">Buscar</label>
+    <input type="text" class="perfil-pedidos-filtros__input" placeholder="Número de pedido o producto"
       [value]="filtroNombreProducto()" (input)="filtroNombreProducto.set($any($event.target).value)">
   </div>
   <div class="perfil-pedidos-filtros__grupo">
@@ -27,145 +26,118 @@
   </div>
 </div>
 
-<!-- Pedidos recarga directa -->
-@if (tipoPedidoVista() === 'recarga_directa') {
+<!-- Lista de pedidos (paginada: 4 por página) -->
 <div class="perfil-pedidos-apartado">
-  <h3 class="perfil-pedidos-apartado__titulo">Pedidos automáticos / Compra directa</h3>
+  @if (cargando()) {
+  <p class="perfil-pedidos-cargando">Cargando pedidos...</p>
+  } @else if (pedidosFiltrados().length === 0) {
+  <div class="perfil-pedidos-vacio">
+    <img src="/iconos/ico-orden.svg" alt="Sin pedidos" class="perfil-pedidos-vacio__icono">
+    <p class="perfil-pedidos-vacio__texto">No hay pedidos o no coinciden con los filtros</p>
+    <button type="button" class="boton-primario perfil-billetera__boton" (click)="refrescar.emit()">Actualizar</button>
+  </div>
+  } @else {
   <div class="perfil-pedidos">
-    @for (pedido of pedidosAutomaticosFiltrados(); track pedido.id) {
+    @for (pedido of pedidosEnPagina(); track pedido.id_pedido) {
     <div class="perfil-pedido-card">
       <div class="perfil-pedido-card__header">
         <div class="perfil-pedido-card__header-info">
-          <p class="perfil-pedido-card__fecha">{{ pedido.fecha_compra | date:'d MMM yyyy, h:mm a' }}</p>
+          <p class="perfil-pedido-card__fecha">{{ pedido.fecha | date:'d MMM yyyy' }}</p>
+          <span class="perfil-pedido-card__badge perfil-pedido-card__badge--{{ pedido.estado }}">{{ pedido.estado }}</span>
         </div>
         <button class="boton-primario perfil-billetera__boton" (click)="reordenar(pedido)" type="button">Reordenar</button>
-        <span class="perfil-pedido-card__badge perfil-pedido-card__badge--{{pedido.estado}}">{{ pedido.estado }}</span>
       </div>
+      <p class="perfil-pedido-card__numero">Pedido {{ pedido.numero_pedido }}</p>
       <div class="perfil-pedido-card__productos">
-        @for (prod of pedido.productos; track prod.id; let index = $index) {
-        @if (index < limiteProductosVisibles || mostrarTodosProductos(pedido.id)) {
+        @for (detalle of pedido.detalles ?? []; track detalle.id_detalle; let index = $index) {
+        @if (index < limiteProductosVisibles || mostrarTodosProductos(pedido.id_pedido)) {
         <div class="perfil-pedido-card__producto">
-          <img [src]="prod.imagen || '/imagenes/producto-default.png'" [alt]="prod.nombre"
-            class="perfil-pedido-card__producto-imagen">
+          @if (detalle.imagenes?.square || detalle.imagenUrl) {
+          <img [src]="detalle.imagenes?.square ?? detalle.imagenUrl" alt="" class="perfil-pedido-card__producto-imagen" />
+          }
           <div class="perfil-pedido-card__producto-info">
-            <p class="perfil-pedido-card__producto-nombre">{{ prod.nombre }}</p>
-            <p class="perfil-pedido-card__producto-cantidad">Cantidad: {{ prod.cantidad }}</p>
+            <div class="perfil-pedido-card__producto-titulo">
+              <p class="perfil-pedido-card__producto-nombre">{{ detalle.nombreProducto ?? detalle.nombrePrecio ?? 'Ítem' }}</p>
+              @if (detalle.estado_entrega) {
+              <span class="perfil-pedido-card__detalle-badge perfil-pedido-card__detalle-badge--{{ detalle.estado_entrega }}">{{ detalle.estado_entrega }}</span>
+              }
+            </div>
+            @if (detalle.nombreProducto && detalle.nombrePrecio) {
+            <p class="perfil-pedido-card__producto-precio-nombre">{{ detalle.nombrePrecio }}</p>
+            }
+            <p class="perfil-pedido-card__producto-cantidad">Cantidad: {{ detalle.cantidad }}</p>
+            <div class="perfil-pedido-card__producto-montos">
+              @if (detalle.precio_unitario != null) {
+              <span class="perfil-pedido-card__producto-unitario">${{ detalle.precio_unitario }} USD × {{ detalle.cantidad }}</span>
+              }
+              <span class="perfil-pedido-card__producto-subtotal">${{ detalle.subtotal }} USD</span>
+            </div>
+            @if (detalle.codigo) {
+            <div class="perfil-pedido-card__codigo-caja">
+              <div class="perfil-pedido-card__codigo-caja-inner">
+                <p class="perfil-pedido-card__codigo-titulo">Código</p>
+                <p class="perfil-pedido-card__codigo-valor">{{ detalle.codigo.codigo }}</p>
+              </div>
+              <button type="button" class="perfil-pedido-card__codigo-copiar" (click)="copiarCodigo(detalle.codigo.codigo)"
+                title="Copiar código" aria-label="Copiar código">
+                <img src="/iconos/ico-copiar.svg" alt="" />
+              </button>
+            </div>
+            }
+            @if (detalle.valores_campos_legibles && detalle.valores_campos_legibles.length > 0) {
+            <div class="perfil-pedido-card__valores-dinamicos-caja">
+              <p class="perfil-pedido-card__valores-dinamicos-titulo">Datos que nos proporcionaste</p>
+              <ul class="perfil-pedido-card__valores-dinamicos">
+                @for (campo of detalle.valores_campos_legibles; track campo.etiqueta) {
+                <li class="perfil-pedido-card__valores-dinamicos-item">
+                  <span class="perfil-pedido-card__valores-dinamicos-etiqueta">{{ campo.etiqueta }}:</span>
+                  <span class="perfil-pedido-card__valores-dinamicos-valor">{{ campo.valor }}</span>
+                </li>
+                }
+              </ul>
+            </div>
+            }
           </div>
         </div>
         }
         }
-        @if (pedido.productos.length > limiteProductosVisibles && !mostrarTodosProductos(pedido.id)) {
-        <button class="perfil-pedido-card__producto-mas" (click)="mostrarMasProductos(pedido.id)" type="button">
-          <span>+{{ pedido.productos.length - limiteProductosVisibles }} más</span>
+        @if ((pedido.detalles?.length ?? 0) > limiteProductosVisibles && !mostrarTodosProductos(pedido.id_pedido)) {
+        <button class="perfil-pedido-card__producto-mas" (click)="mostrarMasProductos(pedido.id_pedido)" type="button">
+          <span>+{{ (pedido.detalles?.length ?? 0) - limiteProductosVisibles }} más</span>
+        </button>
+        }
+        @if (pedidoTieneCodigos(pedido)) {
+        <button type="button" class="perfil-pedido-card__copiar-todos" (click)="copiarTodosCodigos(pedido)">
+          <img src="/iconos/ico-copiar.svg" alt="" />
+          <span>Copiar todos los códigos</span>
         </button>
         }
       </div>
-      @if (pedido.datosEntrega && (pedido.datosEntrega.idJugador || pedido.datosEntrega.idServer) &&
-      mostrarTodosProductos(pedido.id)) {
-      <div class="perfil-pedido-card__detalle">
-        @if (pedido.datosEntrega.idJugador) {
-        <p class="perfil-pedido-card__detalle-item"><strong>ID Jugador:</strong> {{ pedido.datosEntrega.idJugador }}</p>
-        }
-        @if (pedido.datosEntrega.idServer) {
-        <p class="perfil-pedido-card__detalle-item"><strong>ID Servidor:</strong> {{ pedido.datosEntrega.idServer }}</p>
-        }
-      </div>
-      }
       <div class="perfil-pedido-card__footer">
         <div class="perfil-pedido-card__resumen">
           <div class="perfil-pedido-card__resumen-item">
             <span class="perfil-pedido-card__resumen-label">Productos:</span>
-            <span class="perfil-pedido-card__resumen-valor">{{ pedido.productos.length }}</span>
+            <span class="perfil-pedido-card__resumen-valor">{{ cantidadItems(pedido) }}</span>
           </div>
           <div class="perfil-pedido-card__resumen-item perfil-pedido-card__resumen-item--total">
             <span class="perfil-pedido-card__resumen-label">Total:</span>
-            <span class="perfil-pedido-card__total-monto">${{ pedido.total_compra }} USD</span>
+            <span class="perfil-pedido-card__total-monto">${{ pedido.total }} USD</span>
           </div>
         </div>
       </div>
     </div>
-    } @empty {
-    <div class="perfil-pedidos-vacio">
-      <img src="/iconos/ico-orden.svg" alt="Sin pedidos" class="perfil-pedidos-vacio__icono">
-      <p class="perfil-pedidos-vacio__texto">Empieza con tu primera compra de recarga directa</p>
-    </div>
     }
   </div>
-</div>
-}
-
-<!-- Pedidos Gift Card -->
-@if (tipoPedidoVista() === 'gift_cards') {
-<div class="perfil-pedidos-apartado">
-  <h3 class="perfil-pedidos-apartado__titulo">Pedidos Gift Card (códigos manuales)</h3>
-  @if (!identidadVerificada()) {
-  <div class="perfil-pedidos-gift-bloque">
-    <p class="perfil-pedidos-gift-aviso">Para ver tus códigos PIN debes verificar tu identidad.</p>
-    <button class="perfil-pedidos-gift-boton" (click)="verCodigosGiftCard()" type="button">
-      <img src="/iconos/ico-codigo.svg" alt="" class="perfil-pedidos-gift-boton__icono"> Ver códigos Gift Card
-    </button>
-  </div>
+  @if (totalPaginas() > 1) {
+  <nav class="perfil-pedidos-paginacion" aria-label="Paginación de pedidos">
+    <button type="button" class="perfil-pedidos-paginacion__btn"
+      [disabled]="paginaActual() <= 1"
+      (click)="irPagina(paginaActual() - 1)">Anterior</button>
+    <span class="perfil-pedidos-paginacion__info">Página {{ paginaActual() }} de {{ totalPaginas() }}</span>
+    <button type="button" class="perfil-pedidos-paginacion__btn"
+      [disabled]="paginaActual() >= totalPaginas()"
+      (click)="irPagina(paginaActual() + 1)">Siguiente</button>
+  </nav>
   }
-  @if (identidadVerificada()) {
-  <div class="perfil-pedidos">
-    @for (pedido of pedidosGiftCardFiltrados(); track pedido.id) {
-    <div class="perfil-gift-card">
-      <div class="perfil-gift-card__header">
-        <h4 class="perfil-gift-card__nombre">{{ pedido.nombre }}</h4>
-        <p class="perfil-gift-card__fecha">Fecha de emisión: {{ pedido.fechaEmision | date:'d MMM yyyy, h:mm a' }}</p>
-      </div>
-      <div class="perfil-gift-card__codigos">
-        @for (codigo of pedido.codigos; track $index) {
-        <div class="perfil-gift-card__codigo-fila">
-          <span class="perfil-gift-card__codigo-serial">Serial: {{ codigo.serial ?? 'N/A' }}</span>
-          <span class="perfil-gift-card__codigo-pin">PIN: {{ codigo.pin ?? 'N/A' }}</span>
-          <button type="button" class="perfil-gift-card__copiar"
-            (click)="copiarCodigoIndividual((codigo.serial ?? '') + ' ' + (codigo.pin ?? ''))" title="Copiar">
-            <img src="/iconos/ico-copiar.svg" alt="Copiar" class="perfil-gift-card__copiar-icono">
-          </button>
-        </div>
-        }
-      </div>
-      <div class="perfil-gift-card__valor">Valor total: ${{ pedido.valorTotal }} USD</div>
-      <div class="perfil-gift-card__instrucciones-bloque">
-        <span class="perfil-gift-card__instrucciones-label">Instrucciones</span>
-        <p class="perfil-gift-card__instrucciones">{{ pedido.instrucciones || 'Sin instrucciones específicas.' }}</p>
-      </div>
-      <button type="button" class="perfil-gift-card__copiar-todo" (click)="copiarTodoGiftCard(pedido)"
-        title="Copia todos los códigos, valor e instrucciones">
-        <img src="/iconos/ico-copiar.svg" alt="Copiar todo" class="perfil-gift-card__copiar-icono"> Copiar todo
-      </button>
-    </div>
-    } @empty {
-    <div class="perfil-pedidos-vacio">
-      <img src="/iconos/ico-codigo.svg" alt="Sin Gift Cards" class="perfil-pedidos-vacio__icono">
-      <p class="perfil-pedidos-vacio__texto">Empieza con tu primera compra de Gift Card</p>
-    </div>
-    }
-  </div>
   }
 </div>
-}
-
-<!-- Modal verificar identidad -->
-<app-modal [estaAbierto]="modalVerificarIdentidadAbierto()" (cerrar)="cerrarModalVerificarIdentidad()">
-  <div class="perfil-modal-verificar">
-    <div class="perfil-modal-verificar__icono">
-      <img src="/iconos/ico-configuracion.svg" alt="" aria-hidden="true">
-    </div>
-    <h3 class="perfil-modal-verificar__titulo">Verificar Identidad</h3>
-    <p class="perfil-modal-verificar__descripcion">Para acceder a tus códigos PIN de forma segura, ingresa la
-      contraseña de tu cuenta.</p>
-    <label class="perfil-modal-verificar__label">Contraseña</label>
-    <div class="global-formulario-campo">
-      <div class="global-formulario-campo__contenedor">
-        <input type="password" class="global-formulario-campo__input" placeholder="Ingresa tu contraseña"
-          [value]="contrasenaVerificacion()" (input)="actualizarContrasenaVerificacion($event)">
-      </div>
-    </div>
-    <div class="perfil-modal-verificar__acciones">
-      <button type="button" class="perfil-modal-verificar__cancelar" (click)="cerrarModalVerificarIdentidad()">Cancelar</button>
-      <button type="button" class="perfil-modal-verificar__verificar" (click)="verificarIdentidad()">Verificar</button>
-    </div>
-  </div>
-</app-modal>

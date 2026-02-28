@@ -229,7 +229,7 @@
             } @else {
             <option value="">Seleccionar precio...</option>
             @for (precio of preciosDisponibles(); track precio.id) {
-            <option [value]="precio.id">{{ precio.nombre }} — {{ precio.precio }}</option>
+            <option [value]="precio.id">{{ precio.nombre }} — {{ precio.inventario }} disponibles</option>
             }
             }
           </select>

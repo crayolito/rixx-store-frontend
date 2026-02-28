@@ -43,11 +43,13 @@
 <div class="perfil-billetera-metodos">
   <label class="perfil-billetera-metodos__etiqueta">Método de pago</label>
   <div class="perfil-billetera-metodos__lista">
-    @for (metodo of metodosPago; track metodo.id) {
+    @for (metodo of metodosPago(); track metodo.id_metodo_pago) {
     <label class="perfil-billetera-metodo-card">
       <div class="perfil-billetera-metodo-card__contenido">
-        <input type="radio" class="perfil-billetera-metodo-card__radio" name="metodo-pago" [value]="metodo.id"
-          [checked]="metodoPagoSeleccionado() === metodo.id" (change)="seleccionarMetodoPago(metodo.id)">
+        <input type="radio" class="perfil-billetera-metodo-card__radio" name="metodo-pago"
+          [value]="metodo.id_metodo_pago"
+          [checked]="metodoPagoSeleccionado() === metodo.id_metodo_pago"
+          (change)="seleccionarMetodoPago(metodo.id_metodo_pago)">
         <img [src]="metodo.logo" [alt]="metodo.nombre" class="perfil-billetera-metodo-card__logo">
         <div class="perfil-billetera-metodo-card__info">
           <p class="perfil-billetera-metodo-card__nombre">{{ metodo.nombre }}</p>

@@ -79,10 +79,19 @@ export class BilleteraApiServicio {
       );
   }
 
-  /** Crea una transacción (recarga, reembolso o compra) */
+  /** Crea una transacción (recarga, reembolso o compra). Admin: cualquier tipo; usuario: recarga según backend. */
   crearTransaccion(cuerpo: CuerpoCrearTransaccion): Observable<RespuestaCrearTransaccion> {
     return this.httpBase.enviarPost<RespuestaCrearTransaccion>(
       '/billetera/transacciones',
+      cuerpo,
+      this.headersConAuth()
+    );
+  }
+
+  /** Compra con billetera (usuario). POST /billetera/compra */
+  compraConBilletera(cuerpo: { monto: number; descripcion?: string; idPedido?: number | null }): Observable<RespuestaCrearTransaccion> {
+    return this.httpBase.enviarPost<RespuestaCrearTransaccion>(
+      '/billetera/compra',
       cuerpo,
       this.headersConAuth()
     );

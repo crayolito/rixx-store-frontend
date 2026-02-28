@@ -1,6 +1,9 @@
 <!-- ═══════════════════════════════════════════════════════════════
      CHECKOUT - CONTENEDOR PRINCIPAL
      ═══════════════════════════════════════════════════════════════ -->
+<!-- Notificaciones toast (necesario porque checkout está fuera del layout-tienda) -->
+<app-notificacion-toast></app-notificacion-toast>
+
 <div class="checkout-pagina">
   @if (!mostrarQR()) {
   <!-- ─── VISTA PRINCIPAL: Formulario y resumen ─── -->
@@ -97,14 +100,16 @@
         <div class="checkout-pagina__seccion">
           <h2 class="checkout-pagina__seccion-titulo">Método de Pago</h2>
           <div class="checkout-pagina__metodos-pago">
-            @for (metodo of metodosPago(); track metodo.id) {
-            @if (metodo.activo) {
+            @for (metodo of metodosPago(); track metodo.id_metodo_pago) {
+            @if (metodo.activo !== false) {
             <label class="checkout-pagina__metodo-pago"
-              [class.checkout-pagina__metodo-pago--seleccionado]="metodoPagoSeleccionado() === metodo.id">
+              [class.checkout-pagina__metodo-pago--seleccionado]="metodoPagoSeleccionado() === metodo.id_metodo_pago">
               <div class="checkout-pagina__metodo-contenido">
                 <div class="checkout-pagina__metodo-radio"></div>
-                <input type="radio" name="metodo-pago" class="checkout-pagina__radio-input" [value]="metodo.id"
-                  [checked]="metodoPagoSeleccionado() === metodo.id" (change)="seleccionarMetodoPago(metodo.id)">
+                <input type="radio" name="metodo-pago" class="checkout-pagina__radio-input"
+                  [value]="metodo.id_metodo_pago"
+                  [checked]="metodoPagoSeleccionado() === metodo.id_metodo_pago"
+                  (change)="seleccionarMetodoPago(metodo.id_metodo_pago)">
                 <img [src]="metodo.logo" [alt]="metodo.nombre" class="checkout-pagina__metodo-logo">
                 <div class="checkout-pagina__metodo-info">
                   <p class="checkout-pagina__metodo-nombre">{{ metodo.nombre }}</p>
@@ -160,13 +165,14 @@
             </div>
           </div>
 
-          <!-- Botón procesar pago -->
+          <!-- Botón confirmar pedido: deshabilitado solo mientras se procesa -->
           <button type="button" class="boton-primario checkout-pagina__boton-procesar"
-            [disabled]="!formularioValido() || estaProcesando()" (click)="procesarPago()">
+            [disabled]="estaProcesando()"
+            (click)="procesarPago()">
             @if (estaProcesando()) {
-            <span>Generando QR de Pago...</span>
+            <span>Procesando pedido...</span>
             } @else {
-            <span>Procesar Pago</span>
+            <span>Confirmar pedido</span>
             }
           </button>
         </div>
@@ -186,7 +192,7 @@
 
       <div class="checkout-pagina__qr-detalles">
         <div class="checkout-pagina__qr-imagen-contenedor">
-          <img src="/iconos/qr-binance.png" alt="QR Binance" class="checkout-pagina__qr-imagen">
+          <img [src]="qrImagen() || '/iconos/qr-binance.png'" alt="QR Binance" class="checkout-pagina__qr-imagen">
         </div>
 
         <div class="checkout-pagina__qr-datos">
@@ -199,10 +205,21 @@
             <span class="checkout-pagina__qr-dato-label">Código de nota (6 dígitos):</span>
             <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--codigo">{{ datosPago()?.nota
               }}</span>
+            <button type="button" class="boton-secundario" (click)="copiarCodigoNota()">
+              Copiar código
+            </button>
           </div>
           <div class="checkout-pagina__qr-dato-item">
             <span class="checkout-pagina__qr-dato-label">Estado:</span>
-            <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--estado">Esperando Pago</span>
+            <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--estado">
+              @if (estadoPago() === 'pagado') {
+              Pago recibido
+              } @else if (estadoPago() === 'expirado') {
+              Tiempo expirado
+              } @else {
+              Esperando pago
+              }
+            </span>
           </div>
           <div class="checkout-pagina__qr-dato-item">
             <span class="checkout-pagina__qr-dato-label">Tiempo restante:</span>
@@ -210,6 +227,14 @@
               formatearTiempo(tiempoRestante())
               }}</span>
           </div>
+          @if (datosPago()?.tipoCambioAplicado) {
+          <div class="checkout-pagina__qr-dato-item">
+            <span class="checkout-pagina__qr-dato-label">Tipo de cambio de referencia:</span>
+            <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--codigo">
+              1 {{ datosPago()?.moneda || 'USDT' }} = {{ datosPago()?.tipoCambioAplicado | number:'1.2-2' }} Bs
+            </span>
+          </div>
+          }
         </div>
       </div>
 
@@ -241,7 +266,7 @@
 
       <div class="checkout-pagina__qr-detalles">
         <div class="checkout-pagina__qr-imagen-contenedor">
-          <img src="/iconos/qr-veripagos.png" alt="QR VeriPagos" class="checkout-pagina__qr-imagen">
+          <img [src]="qrImagen() || '/iconos/qr-veripagos.png'" alt="QR VeriPagos" class="checkout-pagina__qr-imagen">
         </div>
 
         <div class="checkout-pagina__qr-datos">
@@ -249,6 +274,19 @@
             <span class="checkout-pagina__qr-dato-label">Monto a pagar:</span>
             <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--monto">{{ datosPago()?.monto |
               number:'1.2-2' }} Bs</span>
+          </div>
+          <div class="checkout-pagina__qr-dato-item">
+            <span class="checkout-pagina__qr-dato-label">Monto original del pedido:</span>
+            <span class="checkout-pagina__qr-dato-valor">
+              ${{ datosPago()?.montoOriginal | number:'1.2-2' }} {{ datosPago()?.monedaOriginal || 'USD' }}
+            </span>
+          </div>
+          <div class="checkout-pagina__qr-dato-item">
+            <span class="checkout-pagina__qr-dato-label">Tipo de cambio aplicado:</span>
+            <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--codigo">
+              1 {{ datosPago()?.monedaOriginal || 'USD' }} =
+              {{ datosPago()?.tipoCambioAplicado | number:'1.2-2' }} Bs
+            </span>
           </div>
           <div class="checkout-pagina__qr-dato-item">
             <span class="checkout-pagina__qr-dato-label">Descripción:</span>

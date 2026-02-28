@@ -1,55 +1,51 @@
 <div class="contenedor-metodos-pago" (click)="cerrarTodosLosDropdowns()">
-  <!-- ===== SECCIÓN: TITULO Y OPCIONES ===== -->
   <section class="titulo-opciones-contenedor">
     <div class="titulo-contenedor">
       <img src="/iconos/ico-configuracion.svg" alt="Icono métodos de pago" class="icono-boton icono-color-base">
       <h3>Métodos de Pago</h3>
     </div>
+    <div class="opciones-contenedor">
+      <button type="button" class="boton-primario" (click)="abrirModalCrear()">
+        Crear
+      </button>
+    </div>
   </section>
 
-  <!-- ===== SECCIÓN: TABLA DE MÉTODOS DE PAGO ===== -->
   <section class="global-tabla">
+    @if (cargando()) {
+    <app-bloque-estado-tabla estado="cargando" mensajeCarga="Cargando métodos de pago..." />
+    } @else if (errorAlCargar()) {
+    <app-bloque-estado-tabla estado="vacio" tituloVacio="Error al cargar"
+      textoVacio="No se pudieron cargar los métodos de pago. Revisa tu conexión y vuelve a intentar."
+      iconoVacio="/iconos/ico-configuracion.svg" />
+    <div class="metodos-pago-reintentar">
+      <button type="button" class="boton-secundario" (click)="cargarMetodos()">Reintentar</button>
+    </div>
+    } @else if (metodosPago().length === 0) {
+    <app-bloque-estado-tabla estado="vacio" tituloVacio="Aún no hay métodos de pago"
+      textoVacio="Crea tu primer método de pago para que los clientes puedan elegir cómo pagar."
+      iconoVacio="/iconos/ico-configuracion.svg" />
+    } @else {
     <table class="global-tabla__elemento">
-      <!-- CABECERA DE LA TABLA -->
       <thead class="global-tabla__cabecera">
         <tr>
           <th>Método</th>
           <th>Información</th>
-          <th>Estado</th>
           <th>Acciones</th>
         </tr>
       </thead>
-
-      <!-- CUERPO DE LA TABLA -->
       <tbody class="global-tabla__cuerpo">
-        @for (metodo of metodosPago(); track metodo.id) {
+        @for (metodo of metodosPago(); track metodo.id_metodo_pago) {
         <tr class="global-tabla__fila">
-          <!-- COLUMNA: MÉTODO (Logo) -->
           <td class="global-tabla__celda global-tabla__celda-logo">
             <img [src]="metodo.logo" [alt]="metodo.nombre" class="metodo-pago-logo" />
           </td>
-
-          <!-- COLUMNA: INFORMACIÓN (Nombre y Descripción) -->
           <td class="global-tabla__celda global-tabla__celda--informacion">
             <div class="metodo-pago-info">
               <p class="metodo-pago-info__nombre">{{ metodo.nombre }}</p>
               <p class="metodo-pago-info__descripcion">{{ metodo.descripcion }}</p>
             </div>
           </td>
-
-          <!-- COLUMNA: ESTADO (Switch) -->
-          <td class="global-tabla__celda global-tabla__celda--estado-switch">
-            <label class="switch-estado">
-              <input type="checkbox" class="switch-estado__input" [checked]="metodo.activo"
-                (change)="cambiarEstado(metodo.id)" />
-              <span class="switch-estado__slider"></span>
-              <span class="switch-estado__texto">
-                {{ metodo.activo ? 'Activado' : 'Desactivado' }}
-              </span>
-            </label>
-          </td>
-
-          <!-- COLUMNA: ACCIONES -->
           <td class="global-tabla__celda global-tabla__celda-acciones">
             <ul class="global-tabla__lista-acciones">
               <li>
@@ -64,38 +60,75 @@
         }
       </tbody>
     </table>
+    }
   </section>
 </div>
 
-<!-- ===== MODAL: EDITAR MÉTODO DE PAGO ===== -->
+<!-- ===== MODAL: CREAR / EDITAR MÉTODO DE PAGO ===== -->
 <app-modal [estaAbierto]="modalAbierto()" (cerrar)="cerrarModal()">
   <div class="global-modal">
 
-    <!-- Cabecera -->
     <div class="global-modal__cabecera">
-      <h3 class="global-modal__titulo">Editar {{ metodoEnEdicion()?.nombre }}</h3>
+      <h3 class="global-modal__titulo">
+        {{ modoCreacion() ? 'Nuevo método de pago' : 'Editar ' + (metodoEnEdicion()?.nombre || '') }}
+      </h3>
       <button type="button" class="global-modal__boton-cerrar" (click)="cerrarModal()" aria-label="Cerrar modal">
         <img src="/iconos/ico-cerrar.svg" alt="Cerrar" class="icono-boton icono-color-base">
       </button>
     </div>
 
-    <!-- Contenido -->
     <div class="global-modal__contenido global-modal__contenido--grid">
 
-      <!-- CAMPO: NOMBRE -->
       <div class="formulario-grupo">
-        <label class="formulario-etiqueta">Nombre</label>
-        <input type="text" class="formulario-input" placeholder="Nombre del método de pago"
+        <label class="formulario-etiqueta">Nombre <span class="formulario-obligatorio">*</span></label>
+        <input type="text" class="formulario-input" placeholder="Ej: Yape, Plin, Transferencia"
           [value]="metodoEnEdicion()?.nombre" (input)="actualizarCampo('nombre', $any($event.target).value)" />
       </div>
 
-      <!-- CAMPO: DESCRIPCIÓN -->
       <div class="formulario-grupo">
         <label class="formulario-etiqueta">Descripción</label>
-        <input type="text" class="formulario-input" placeholder="Descripción del método de pago"
+        <input type="text" class="formulario-input" placeholder="Ej: Paga con Yape escaneando el QR"
           [value]="metodoEnEdicion()?.descripcion"
           (input)="actualizarCampo('descripcion', $any($event.target).value)" />
       </div>
+
+      <div class="formulario-grupo">
+        <label class="formulario-etiqueta">Logo del método</label>
+        <div class="metodo-pago-subida">
+          <input type="file" accept="image/*" (change)="subirLogo($event)" [disabled]="subiendoLogo()"
+            class="metodo-pago-subida__input" #inputLogo>
+          <button type="button" class="boton-secundario metodo-pago-subida__boton" (click)="inputLogo.click()"
+            [disabled]="subiendoLogo()">
+            {{ subiendoLogo() ? 'Subiendo...' : (metodoEnEdicion()?.logo ? 'Cambiar logo' : 'Subir logo') }}
+          </button>
+        </div>
+      </div>
+
+      <div class="formulario-grupo">
+        <label class="formulario-etiqueta">Tipo de QR</label>
+        <select class="formulario-input" [value]="metodoEnEdicion()?.qrTipo ?? ''"
+          (change)="actualizarCampo('qrTipo', $any($event.target).value === '' ? '' : $any($event.target).value)">
+          <option value="">Sin QR</option>
+          <option value="estatico">Estático (imagen fija)</option>
+          <option value="dinamico">Dinámico</option>
+        </select>
+        <p class="formulario-ayuda">Si es estático, debes subir la imagen del QR más abajo.</p>
+      </div>
+
+      @if (metodoEnEdicion()?.qrTipo === 'estatico') {
+      <div class="formulario-grupo">
+        <label class="formulario-etiqueta">Imagen del QR <span class="formulario-obligatorio">*</span></label>
+        <div class="metodo-pago-subida">
+          <input type="file" accept="image/*" (change)="subirQrImagen($event)" [disabled]="subiendoQr()"
+            class="metodo-pago-subida__input" #inputQr>
+          <button type="button" class="boton-secundario metodo-pago-subida__boton" (click)="inputQr.click()"
+            [disabled]="subiendoQr()">
+            {{ subiendoQr() ? 'Subiendo...' : (metodoEnEdicion()?.qrImagen ? 'Cambiar imagen QR' : 'Subir imagen del
+            QR') }}
+          </button>
+        </div>
+      </div>
+      }
 
       <!-- CAMPO: API KEY -->
       <div class="formulario-grupo">
@@ -125,41 +158,21 @@
         </div>
       </div>
 
-      <!-- CAMPO: TASA DE CAMBIO (Solo para QR Boliviano) -->
-      @if (metodoEnEdicion()?.tipo === 'qr-boliviano') {
       <div class="formulario-grupo campo-completo">
-        <label class="formulario-etiqueta">Tasa de Cambio USD → Bs</label>
-        <input type="number" step="0.1" class="formulario-input" placeholder="Ej: 10.7"
-          [value]="metodoEnEdicion()?.tasaCambio" (input)="actualizarCampo('tasaCambio', +$any($event.target).value)" />
-        <p class="formulario-ayuda">
-          Configura la tasa de cambio para el método de pago QR Boliviano
-        </p>
+        <label class="formulario-etiqueta">Tasa de cambio (opcional)</label>
+        <input type="number" step="0.01" class="formulario-input" placeholder="Ej: 3.75 (USD a moneda local)"
+          [value]="metodoEnEdicion()?.tipo_cambio ?? metodoEnEdicion()?.tasaCambio"
+          (input)="actualizarCampo('tasaCambio', +$any($event.target).value)" />
+        <p class="formulario-ayuda">Solo si aplica conversión de moneda para este método.</p>
       </div>
-
-      <!-- MENSAJE INFORMATIVO -->
-      <div class="mensaje-informativo campo-completo">
-        <div class="mensaje-informativo__icono">
-          <img src="/iconos/ico-informacion.svg" alt="Información" class="icono-boton icono-color-base" />
-        </div>
-        <div class="mensaje-informativo__contenido">
-          <p class="mensaje-informativo__titulo">Esta tasa se aplica automáticamente:</p>
-          <ul class="mensaje-informativo__lista">
-            <li>• Al generar QR de pago en Veri Pagos</li>
-            <li>• Los clientes verán el monto en bolivianos (Bs)</li>
-            <li>• El precio en USD se multiplica por esta tasa</li>
-          </ul>
-        </div>
-      </div>
-      }
     </div>
 
-    <!-- Footer -->
     <div class="global-modal__acciones">
-      <button type="button" class="boton-secundario" (click)="cerrarModal()">
+      <button type="button" class="boton-secundario" (click)="cerrarModal()" [disabled]="guardando()">
         Cancelar
       </button>
-      <button type="button" class="boton-primario" (click)="guardarCambios()">
-        Guardar Cambios
+      <button type="button" class="boton-primario" (click)="guardarCambios()" [disabled]="guardando()">
+        {{ guardando() ? 'Guardando...' : (modoCreacion() ? 'Crear método de pago' : 'Guardar cambios') }}
       </button>
     </div>
   </div>

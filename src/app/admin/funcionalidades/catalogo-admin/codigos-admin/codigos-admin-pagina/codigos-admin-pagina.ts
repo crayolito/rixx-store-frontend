@@ -15,6 +15,7 @@ interface PrecioProducto {
   id: string;
   nombre: string;
   precio: number;
+  inventario: number;
   bonificacion?: string;
 }
 
@@ -218,10 +219,11 @@ export class CodigosAdminPagina implements OnInit {
           id: String(p.id_producto),
           nombre: p.titulo,
           handle: p.handle,
-          precios: p.precios.map((pr: { id_precio: number; nombre: string }) => ({
+          precios: p.precios.map((pr) => ({
             id: String(pr.id_precio),
             nombre: pr.nombre,
-            precio: 0, // No se usa en el modal
+            precio: 0,
+            inventario: pr.inventario ?? 0,
           })),
         }));
         this.productosDisponibles.set(productos);
@@ -247,6 +249,7 @@ export class CodigosAdminPagina implements OnInit {
                     id: String(pr.id_precio),
                     nombre: pr.nombre,
                     precio: parseFloat(pr.precioBase ?? '0'),
+                    inventario: pr.inventario ?? 0,
                   })),
                 };
               }

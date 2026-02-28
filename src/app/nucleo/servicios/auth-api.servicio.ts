@@ -1,6 +1,8 @@
 import { HttpHeaders } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { catchError, map, Observable, of, switchMap } from "rxjs";
+import type { PedidoApi } from "../../compartido/modelos/pedido.modelo";
+import type { RespuestaRecargas } from "../../compartido/modelos/recarga.modelo";
 import { HttpBaseServicio } from "./http-base.servicio";
 import type { UsuarioSesion } from "./sesion";
 import { Sesion } from "./sesion";
@@ -35,7 +37,8 @@ export interface RespuestaListarUsuarios {
   totalPaginas?: number;
 }
 
-interface RespuestaLogin {
+/** Respuesta de login: Admin sin saldo/pedidos/recargas; Cliente/Revendedor con saldo, pedidos y recargas. */
+export interface RespuestaLogin {
   exito: boolean;
   datos: {
     token: string;
@@ -51,6 +54,9 @@ interface RespuestaLogin {
     telefono?: string;
     nacionalidad?: string;
     tieneContrasena?: boolean;
+    saldo?: number;
+    pedidos?: { datos: PedidoApi[]; total: number };
+    recargas?: RespuestaRecargas;
   };
 }
 
@@ -71,12 +77,23 @@ function extraerIdRolDelToken(token: string): number | undefined {
   }
 }
 
+const PERMISOS_MINIMOS_CLIENTE = ['ver_perfil', 'ver_checkout', 'ver_billetera'];
+
 function permisosPorRolAdmin(rolNombre: string): string[] {
   const nombre = (rolNombre ?? '').toLowerCase();
   if (nombre.includes('admin') || nombre === 'administrador') {
     return ['acceder_admin', 'ver_perfil', 'ver_checkout', 'ver_billetera', 'gestionar_usuarios', 'gestionar_productos'];
   }
-  return ['ver_perfil', 'ver_checkout', 'ver_billetera'];
+  return [...PERMISOS_MINIMOS_CLIENTE];
+}
+
+/** Asegura que un cliente siempre tenga al menos permisos de perfil, checkout y billetera. */
+function asegurarPermisosCliente(permisos: string[], rolNombre: string): string[] {
+  const nombre = (rolNombre ?? '').toLowerCase();
+  if (nombre.includes('admin') || nombre === 'administrador') return permisos;
+  const unicos = new Set(permisos);
+  PERMISOS_MINIMOS_CLIENTE.forEach((p) => unicos.add(p));
+  return Array.from(unicos);
 }
 
 function mapearDatosLoginASesion(datos: RespuestaLogin['datos'], permisos: string[] = [], rolNombre: string = 'Cliente'): UsuarioSesion {
@@ -95,6 +112,8 @@ function mapearDatosLoginASesion(datos: RespuestaLogin['datos'], permisos: strin
     socialLogin,
     telefono: datos.telefono,
     nacionalidad: datos.nacionalidad,
+    ...(datos.saldo != null && { saldo: datos.saldo }),
+    ...(datos.tieneContrasena != null && { tieneContrasena: datos.tieneContrasena }),
   };
 }
 
@@ -121,7 +140,8 @@ export class UsuarioApiServicio {
               const miRol = rolesResp.datos.find((r) => r.id_rol === idRol)
                 ?? rolesResp.datos.find((r) => r.nombre.toLowerCase() === rolDelBackend.toLowerCase())
                 ?? rolesResp.datos.find((r) => rolDelBackend.toLowerCase().includes(r.nombre.toLowerCase()));
-              const permisos = miRol?.permisos ?? permisosPorRolAdmin(rolDelBackend);
+              const permisosBackend = miRol?.permisos ?? permisosPorRolAdmin(rolDelBackend);
+              const permisos = asegurarPermisosCliente(Array.isArray(permisosBackend) ? permisosBackend : [], rolDelBackend);
               const rolNombre = miRol?.nombre ?? rolDelBackend;
               this.sesion.guardarSesion(mapearDatosLoginASesion(datos, permisos, rolNombre));
             } else {

@@ -40,6 +40,17 @@ export class HttpBaseServicio {
     return this.http.patch<T>(`${API_BASE_URL}${url}`, cuerpo).pipe(this.reintentarConBackoff());
   }
 
+  // PATCH con opciones (headers para auth)
+  actualizarParcialConOpciones<T>(
+    url: string,
+    cuerpo: Record<string, unknown>,
+    opciones?: OpcionesHttp,
+  ): Observable<T> {
+    return this.http
+      .patch<T>(`${API_BASE_URL}${url}`, cuerpo, { headers: opciones?.headers })
+      .pipe(this.reintentarConBackoff());
+  }
+
   // DELETE
   eliminar<T>(url: string, opciones?: OpcionesHttp): Observable<T> {
     return this.http.delete<T>(`${API_BASE_URL}${url}`, { headers: opciones?.headers });

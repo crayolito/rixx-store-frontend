@@ -42,7 +42,7 @@ export interface PrecioApi {
   margenCliente: string;
   margenRevendedor: string;
   margenMayorista: string;
-  stock: number | null;
+  inventario: number | null;
   orden: number;
   estado: string;
   fechaCreacion: string;
@@ -72,6 +72,7 @@ export interface ProductoParaCodigosApi {
   precios: {
     id_precio: number;
     nombre: string;
+    inventario: number;
   }[];
 }
 

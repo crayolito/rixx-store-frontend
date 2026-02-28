@@ -11,7 +11,10 @@
   gap: var(--espaciado-md);
   padding: var(--espaciado-md);
   min-height: 100vh;
+  max-width: var(--ancho-contenedor-base);
+  margin: 0 auto;
 }
+
 
 /* ─── Cabecera ─── */
 .cabecera-metodos-pago {
@@ -208,8 +211,11 @@
 /* ─── Título y Opciones ─── */
 .titulo-opciones-contenedor {
   display: flex;
-  flex-direction: column;
-  gap: var(--espaciado-sm);
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--espaciado-md);
   margin-bottom: var(--espaciado-md);
 }
 
@@ -217,6 +223,48 @@
   display: flex;
   align-items: center;
   gap: var(--espaciado-sm);
+}
+
+.opciones-contenedor {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+}
+
+.opciones-contenedor .boton-primario {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaciado-xs);
+}
+
+.metodos-pago-reintentar {
+  display: flex;
+  justify-content: center;
+  padding: var(--espaciado-lg);
+  gap: var(--espaciado-sm);
+}
+
+.formulario-obligatorio {
+  color: var(--color-error, #ef4444);
+}
+
+.metodo-pago-subida {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaciado-sm);
+}
+
+.metodo-pago-subida__input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.metodo-pago-subida__boton {
+  flex-shrink: 0;
 }
 
 .titulo-contenedor h3 {

@@ -27,13 +27,17 @@
         </p>
         }
         <!-- Fila 2: icono + categorías -->
-        <!-- Fila 3: icono info + nota debe estar logueado para comprar -->
-        @if (requiereLogin()) {
-        <p class="tienda-producto-detalle__info tienda-producto-detalle__aviso-login">
+        <!-- Fila 3: categorías; aviso para "Comprar ahora" (requiere iniciar sesión) -->
+        @if ((p.categorias ?? []).length || requiereLogin()) {
+        <p class="tienda-producto-detalle__info" [class.tienda-producto-detalle__aviso-login]="requiereLogin()">
           <img src="/iconos/ico-informacion.svg" alt="Info" class="icono-boton icono-color-blanco" />
-          <span>{{ (p.categorias ?? []).join(', ') }} - Debes estar logueado o registrado para comprar este producto.
-            <a routerLink="/" [queryParams]="{ login: 'checkout' }">Inicia sesión</a>
-          </span>
+          @if ((p.categorias ?? []).length) {
+          <span>{{ (p.categorias ?? []).join(', ') }}</span>
+          }
+          @if (requiereLogin()) {
+          <span>{{ (p.categorias ?? []).length ? ' - ' : '' }}Para <strong>Comprar ahora</strong> debes
+            <a routerLink="/" [queryParams]="{ login: 'checkout' }">iniciar sesión o registrarte</a>. Puedes agregar al carrito sin cuenta.</span>
+          }
         </p>
         }
 
@@ -51,24 +55,47 @@
       <!-- ─── Columna izquierda: variantes y acordeones ─── -->
       <div class="tienda-producto-detalle__izquierda">
         <div class="tienda-producto-detalle__variantes">
+          <!-- Mensaje cuando el producto no tiene stock en ningún precio -->
+          @if (productoTodoAgotado()) {
+          <div class="tienda-producto-detalle__alerta-agotado" role="alert">
+            <div class="tienda-producto-detalle__alerta-cuerpo">
+              <span class="tienda-producto-detalle__alerta-icono">
+                <img src="/iconos/ico-informacion.svg" alt="" width="20" height="20" />
+              </span>
+              <div class="tienda-producto-detalle__alerta-textos">
+                <p class="tienda-producto-detalle__alerta-texto">Este producto no está disponible por el momento</p>
+                <p class="tienda-producto-detalle__alerta-subtexto">Estamos reponiendo stock. Te invitamos a volver pronto
+                  o contactar a soporte si quieres saber cuándo podría estar disponible de nuevo.</p>
+              </div>
+            </div>
+          </div>
+          }
           <!-- Lista de variantes (desktop) -->
           <div class="tienda-producto-detalle__variantes-lista tienda-producto-detalle__variantes-lista--desktop">
             @for (variante of variantes(); track variante.id) {
-            <button type="button" class="tienda-producto-detalle__variante" [disabled]="!variante.disponible"
+            <button type="button" class="tienda-producto-detalle__variante"
+              [class.tienda-producto-detalle__variante--agotada]="!variante.disponible" [disabled]="!variante.disponible"
               (click)="seleccionarVariante(variante.id)">
               <input type="radio" name="variante" class="global-radio__input" [value]="variante.id"
-                [checked]="varianteSeleccionada() === variante.id" (change)="seleccionarVariante(variante.id)" />
+                [checked]="varianteSeleccionada() === variante.id && variante.disponible"
+                [disabled]="!variante.disponible" (change)="variante.disponible && seleccionarVariante(variante.id)" />
               <span class="tienda-producto-detalle__variante-nombre">{{ variante.nombre }}</span>
               <div class="tienda-producto-detalle__variante-contenido">
+                @if (variante.disponible) {
                 <span class="tienda-producto-detalle__variante-precio">${{ variante.precio | number:'1.2-2' }}</span>
+                } @else {
+                <span class="tienda-producto-detalle__variante-agotado">Agotado</span>
+                }
               </div>
             </button>
             }
           </div>
+          @if (!productoTodoAgotado()) {
           <button type="button" class="tienda-producto-detalle__boton-seleccionar-paquete"
             (click)="abrirBottomSheetVariantes()">
             SELECCIONAR PAQUETE
           </button>
+          }
 
           <!-- Acordeones: solo se muestran si tienen contenido -->
           <div class="tienda-producto-detalle__dropdowns">
@@ -169,6 +196,12 @@
               <span class="tienda-producto-detalle__resumen-label">Variante:</span>
               <span class="tienda-producto-detalle__resumen-valor">{{ va.nombre }}</span>
             </div>
+            @if (va.inventario != null) {
+            <div class="tienda-producto-detalle__resumen-item">
+              <span class="tienda-producto-detalle__resumen-label">Disponibles:</span>
+              <span class="tienda-producto-detalle__resumen-valor">{{ va.inventario }} unidades</span>
+            </div>
+            }
             <div class="tienda-producto-detalle__resumen-item">
               <span class="tienda-producto-detalle__resumen-label">Cantidad:</span>
               <div class="tienda-producto-detalle__cantidad-controls">
@@ -176,23 +209,29 @@
                   (click)="decrementarCantidad()">-</button>
                 <span class="tienda-producto-detalle__cantidad-valor">{{ cantidad() }}</span>
                 <button type="button" class="tienda-producto-detalle__cantidad-boton"
-                  (click)="incrementarCantidad()">+</button>
+                  [disabled]="cantidad() >= cantidadMaxima()" (click)="incrementarCantidad()">+</button>
               </div>
             </div>
             <div class="tienda-producto-detalle__resumen-item tienda-producto-detalle__resumen-item--total">
               <span class="tienda-producto-detalle__resumen-label">Total:</span>
               <span class="tienda-producto-detalle__resumen-precio">${{ precioTotal() | number:'1.2-2' }}</span>
             </div>
+            } @else if (productoTodoAgotado()) {
+            <p class="tienda-producto-detalle__resumen-sin-stock">No hay variantes disponibles para seleccionar.</p>
             }
           </div>
         </div>
 
-        <!-- Botones de acción -->
+        <!-- Aviso cuando ya tiene el máximo en el carrito (stock cubierto) -->
+        @if (varianteActual() && cantidadMaxima() === 0 && (varianteActual()?.inventario ?? 0) > 0) {
+        <p class="tienda-producto-detalle__resumen-sin-stock">Ya tienes el máximo disponible en el carrito ({{ varianteActual()!.inventario }} unidades). No puedes agregar más hasta que bajes la cantidad en el carrito.</p>
+        }
+        <!-- Botones de acción: agregar al carrito (sin login, con campos); comprar ahora (con login y campos) -->
         <div class="tienda-producto-detalle__acciones">
-          <button type="button" class="boton-primario tienda-producto-detalle__boton" [disabled]="!puedeComprar()"
-            (click)="agregarAlCarrito()">Agregar al carrito</button>
-          <button type="button" class="boton-primario tienda-producto-detalle__boton" (click)="comprarAhora()">Comprar
-            ahora</button>
+          <button type="button" class="boton-primario tienda-producto-detalle__boton"
+            [disabled]="productoTodoAgotado() || cantidadMaxima() === 0 || cantidad() < 1" (click)="agregarAlCarrito()">Agregar al carrito</button>
+          <button type="button" class="boton-primario tienda-producto-detalle__boton"
+            [disabled]="!puedeComprarAhora() || productoTodoAgotado() || cantidadMaxima() === 0 || cantidad() < 1" (click)="comprarAhora()">Comprar ahora</button>
         </div>
       </div>
     </div>
@@ -214,12 +253,18 @@
     <div class="tienda-producto-detalle__bottom-sheet-lista">
       @for (variante of variantes(); track variante.id) {
       <button type="button" class="tienda-producto-detalle__variante tienda-producto-detalle__variante--sheet"
-        [disabled]="!variante.disponible" (click)="seleccionarVariante(variante.id)">
+        [class.tienda-producto-detalle__variante--agotada]="!variante.disponible" [disabled]="!variante.disponible"
+        (click)="variante.disponible && seleccionarVariante(variante.id)">
         <input type="radio" name="variante-sheet" class="global-radio__input" [value]="variante.id"
-          [checked]="varianteSeleccionada() === variante.id" (change)="seleccionarVariante(variante.id)" />
+          [checked]="varianteSeleccionada() === variante.id && variante.disponible" [disabled]="!variante.disponible"
+          (change)="variante.disponible && seleccionarVariante(variante.id)" />
         <span class="tienda-producto-detalle__variante-nombre">{{ variante.nombre }}</span>
         <div class="tienda-producto-detalle__variante-contenido">
+          @if (variante.disponible) {
           <span class="tienda-producto-detalle__variante-precio">${{ variante.precio | number:'1.2-2' }}</span>
+          } @else {
+          <span class="tienda-producto-detalle__variante-agotado">Agotado</span>
+          }
         </div>
       </button>
       }

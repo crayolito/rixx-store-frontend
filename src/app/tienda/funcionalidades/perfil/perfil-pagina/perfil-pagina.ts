@@ -1,12 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import type { PedidoApi } from '../../../../compartido/modelos/pedido.modelo';
+import { PedidosApiServicio } from '../../../../nucleo/servicios/pedidos-api.servicio';
+import { Sesion } from '../../../../nucleo/servicios/sesion';
+import { NotificacionServicio } from '../../../../compartido/servicios/notificacion';
 import { Banner } from '../componentes/banner/banner';
 import { Billetera } from '../componentes/billetera/billetera';
 import { DatosPersonales, type DatosPersonalesGuardados } from '../componentes/datos-personales/datos-personales';
 import { Pedidos } from '../componentes/pedidos/pedidos';
-import { Sesion } from '../../../../nucleo/servicios/sesion';
-import type { PedidoAutomatico, PedidoGiftCard } from '../modelos/perfil.modelo';
 
 /**
  * Página principal del perfil de usuario.
@@ -28,13 +30,15 @@ export class PerfilPagina implements OnInit {
   nacionalidad = signal('');
   fotoPerfil = signal('/imagenes/foto-perfil1.png');
 
-  pedidosAutomaticos = signal<PedidoAutomatico[]>([]);
-  pedidosGiftCard = signal<PedidoGiftCard[]>([]);
+  pedidos = signal<PedidoApi[]>([]);
+  pedidosCargando = signal(false);
 
   tieneSocialLogin = computed(() => this.sesion.usuarioActual()?.socialLogin === true);
 
   private route = inject(ActivatedRoute);
   private sesion = inject(Sesion);
+  private pedidosApi = inject(PedidosApiServicio);
+  private notificacion = inject(NotificacionServicio);
 
   ngOnInit(): void {
     const u = this.sesion.usuarioActual();
@@ -44,12 +48,30 @@ export class PerfilPagina implements OnInit {
       this.telefono.set(u.telefono ?? '');
       this.nacionalidad.set(u.nacionalidad ?? '');
       this.fotoPerfil.set(u.fotoPerfil ?? '/imagenes/foto-perfil1.png');
+      if (u.id != null) this.cargarPedidos();
     }
     this.route.queryParams.subscribe((params) => {
       const seccion = params['seccion'];
       if (seccion === 'pedidos' || seccion === 'billetera') {
         this.seccionActiva.set(seccion);
       }
+    });
+  }
+
+  /** Carga los pedidos del usuario desde la API. */
+  cargarPedidos(): void {
+    const idUsuario = this.sesion.usuarioActual()?.id;
+    if (idUsuario == null) return;
+    this.pedidosCargando.set(true);
+    this.pedidosApi.listarPedidos({ idUsuario }).subscribe({
+      next: (lista) => {
+        this.pedidos.set(lista);
+        this.pedidosCargando.set(false);
+      },
+      error: () => {
+        this.notificacion.error('Error al cargar los pedidos');
+        this.pedidosCargando.set(false);
+      },
     });
   }
 

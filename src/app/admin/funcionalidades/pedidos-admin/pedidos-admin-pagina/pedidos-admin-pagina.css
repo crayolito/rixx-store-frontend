@@ -38,6 +38,23 @@
   flex-wrap: wrap;
 }
 
+.pedidos-admin-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaciado-xs);
+  padding: 0 var(--espaciado-md);
+}
+
+.pedidos-admin-badge {
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.pedidos-admin-badge--activo {
+  border-color: var(--color-primario);
+  font-weight: var(--peso-semibold);
+}
+
 /* ═══════════════════════════════════════════════════════
        MEDIA QUERIES
        ═══════════════════════════════════════════════════════ */
@@ -152,101 +169,144 @@
   color: var(--color-fondo-base);
 }
 
-.detalle-pedido__productos-tabla {
+/* ─── Lista de productos (tarjetas) ─── */
+.detalle-pedido__productos-lista {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  border: 1px solid var(--color-borde-suave);
-  border-radius: var(--borde-radio);
-  overflow: hidden;
+  gap: var(--espaciado-sm);
 }
 
-.detalle-pedido__productos-cabecera {
-  display: grid;
-  grid-template-columns: 1fr 3rem 4.5rem 4.5rem;
-  gap: var(--espaciado-sm);
+.detalle-pedido__producto-tarjeta {
   padding: var(--espaciado-sm) var(--espaciado-md);
   background: var(--color-fondo-cuaternario);
-  font-size: var(--texto-codigo);
-  font-weight: var(--peso-semibold);
-  color: var(--color-fondo-septimo);
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--borde-radio);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.detalle-pedido__productos-th {
-  text-align: right;
-}
-
-.detalle-pedido__productos-th--nombre {
-  text-align: left;
-}
-
-.detalle-pedido__producto-fila {
-  display: grid;
-  grid-template-columns: 1fr 3rem 4.5rem 4.5rem;
+.detalle-pedido__producto-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   gap: var(--espaciado-sm);
-  align-items: center;
-  padding: var(--espaciado-sm) var(--espaciado-md);
-  border-top: 1px solid var(--color-borde-suave);
-  background: var(--color-fondo-quinario);
-  font-size: var(--texto-base);
+  margin-bottom: var(--espaciado-xs);
+}
+
+.detalle-pedido__producto-nombres {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
 }
 
 .detalle-pedido__producto-nombre {
-  font-weight: var(--peso-medium);
+  margin: 0;
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
   color: var(--color-fondo-base);
+  line-height: 1.3;
 }
 
-.detalle-pedido__producto-cantidad {
-  text-align: right;
-  color: var(--color-fondo-base);
+.detalle-pedido__producto-precio-nombre {
+  font-size: var(--texto-codigo);
+  font-weight: var(--peso-normal);
+  color: var(--color-fondo-septimo);
 }
 
-.detalle-pedido__producto-precio {
-  text-align: right;
-  font-weight: var(--peso-medium);
-  color: var(--color-fondo-base);
-}
-
-.detalle-pedido__producto-total {
-  text-align: right;
+.detalle-pedido__producto-subtotal {
   font-weight: var(--peso-bold);
   color: var(--color-primario);
+  flex-shrink: 0;
 }
+
+.detalle-pedido__producto-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaciado-sm);
+  font-size: var(--texto-codigo);
+  color: var(--color-fondo-septimo);
+  margin-bottom: var(--espaciado-xs);
+}
+
+.detalle-pedido__producto-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.detalle-pedido__producto-meta-item strong {
+  font-weight: var(--peso-medium);
+  color: var(--color-fondo-base);
+}
+
+.detalle-pedido__producto-campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaciado-xxs);
+  margin-bottom: var(--espaciado-xs);
+  font-size: var(--texto-codigo);
+}
+
+.detalle-pedido__producto-campo {
+  padding: 0.125rem 0.5rem;
+  background: var(--color-fondo-quinario);
+  border-radius: var(--borde-radio);
+  color: var(--color-fondo-base);
+}
+
+.detalle-pedido__producto-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaciado-xs);
+  padding-top: var(--espaciado-xs);
+  border-top: 1px dashed var(--color-borde-suave);
+}
+
+.detalle-pedido__boton-accion {
+  padding: 0.375rem 0.75rem;
+  font-size: var(--texto-codigo);
+}
+
 
 .detalle-pedido__resumen {
   padding: var(--espaciado-md);
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-  border: 2px solid var(--color-primario);
+  background: linear-gradient(135deg, var(--color-fondo-quinario) 0%, var(--color-fondo-sexto) 100%);
+  border: 1px solid var(--color-borde-suave);
   border-radius: var(--borde-radio);
 }
 
 .detalle-pedido__resumen-titulo {
-  margin: 0 0 var(--espaciado-md) 0;
-  font-weight: var(--peso-bold);
+  margin: 0 0 var(--espaciado-sm) 0;
+  font-size: var(--texto-base);
+  font-weight: var(--peso-semibold);
   color: var(--color-fondo-base);
 }
 
 .detalle-pedido__resumen-lista {
   display: flex;
   flex-direction: column;
-  gap: var(--espaciado-xs);
+  gap: 0;
 }
 
-.detalle-pedido__resumen-item {
+.detalle-pedido__resumen-fila {
   display: flex;
   justify-content: space-between;
-  padding: var(--espaciado-xs);
-  background: var(--color-fondo-cuaternario);
-  border-radius: var(--borde-radio);
+  align-items: center;
+  padding: var(--espaciado-xs) 0;
+  border-bottom: 1px solid var(--color-borde-suave);
 }
 
-.detalle-pedido__resumen-item--costo {
-  border-left: 3px solid #dc3545;
+.detalle-pedido__resumen-fila:last-child {
+  border-bottom: none;
 }
 
-.detalle-pedido__resumen-item--ganancia {
-  padding: var(--espaciado-xs);
-  border-left: 4px solid #28a745;
+.detalle-pedido__resumen-fila--descuento .detalle-pedido__resumen-valor {
+  color: #28a745;
+}
+
+.detalle-pedido__resumen-fila--total {
+  padding-top: var(--espaciado-sm);
+  margin-top: var(--espaciado-xxs);
+  border-top: 2px solid var(--color-primario);
 }
 
 .detalle-pedido__resumen-etiqueta {
@@ -254,23 +314,15 @@
   color: var(--color-fondo-base);
 }
 
-.detalle-pedido__resumen-etiqueta--destacado {
-  font-weight: var(--peso-bold);
-  font-size: var(--texto-base);
-}
-
 .detalle-pedido__resumen-valor {
-  font-weight: var(--peso-bold);
+  font-weight: var(--peso-semibold);
   color: var(--color-fondo-base);
 }
 
-.detalle-pedido__resumen-valor--costo {
-  color: #dc3545;
-}
-
-.detalle-pedido__resumen-valor--ganancia {
-  color: #28a745;
-  font-size: var(--texto-grande);
+.detalle-pedido__resumen-valor--total {
+  font-weight: var(--peso-bold);
+  font-size: var(--texto-h3);
+  color: var(--color-primario);
 }
 
 .global-tabla__lista-acciones--iconos {

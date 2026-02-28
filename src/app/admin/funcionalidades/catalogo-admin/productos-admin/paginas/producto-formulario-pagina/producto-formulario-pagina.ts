@@ -41,7 +41,7 @@ interface Precio {
   porcentajeDescuento: number;
   soloClienteFinal: boolean;
   precioActivo: boolean;
-  stock?: number;
+  inventario?: number;
   orden?: number;
 }
 
@@ -380,7 +380,7 @@ export class ProductoFormularioPagina {
       porcentajeDescuento: 0,
       soloClienteFinal: false,
       precioActivo: pr.estado === 'activo',
-      stock: pr.stock ?? undefined,
+      inventario: pr.inventario ?? undefined,
       orden: indice,
     }));
   }
@@ -520,7 +520,7 @@ export class ProductoFormularioPagina {
               id_precio: p.id_precio,
               nombre: p.nombre,
               precioBase: p.precioBase,
-              stock: p.stock ?? 0,
+              inventario: p.inventario ?? 0,
               estado: p.precioActivo ? 'activo' : 'inactivo',
               orden,
             }
@@ -531,7 +531,7 @@ export class ProductoFormularioPagina {
               margenCliente: p.margenClienteFinal,
               margenRevendedor: p.margenRevendedor,
               margenMayorista: p.margenMayorista,
-              stock: p.stock ?? 0,
+              inventario: p.inventario ?? 0,
               orden,
               estado: p.precioActivo ? 'activo' : 'inactivo',
             },
@@ -588,7 +588,7 @@ export class ProductoFormularioPagina {
         margenCliente: p.margenClienteFinal,
         margenRevendedor: p.margenRevendedor,
         margenMayorista: p.margenMayorista,
-        stock: p.stock ?? 0,
+        inventario: p.inventario ?? 0,
         orden,
         estado: p.precioActivo ? 'activo' : 'inactivo',
       }));
@@ -769,6 +769,7 @@ export class ProductoFormularioPagina {
       porcentajeDescuento: 0,
       soloClienteFinal: false,
       precioActivo: this.precioActivo(),
+      inventario: this.precioEditando()?.inventario ?? 0,
       orden: this.precios().length,
     };
 

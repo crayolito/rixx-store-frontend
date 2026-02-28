@@ -43,14 +43,14 @@ export const routes: Routes = [
       },
     ],
   },
-  // ===== CHECKOUT (SIN HEADER/FOOTER) =====
+  // ===== CHECKOUT (SIN HEADER/FOOTER) - Acceso sin login (compra como invitado) =====
   {
     path: 'checkout',
     loadComponent: () =>
       import('./tienda/funcionalidades/checkout/checkout-pagina/checkout-pagina').then(
         (m) => m.CheckoutPagina,
       ),
-    canActivate: [bloquearAdminGuard, crearGuardPorPermiso('ver_checkout', 'checkout')],
+    canActivate: [bloquearAdminGuard],
   },
   // ===== ADMIN =====
   {

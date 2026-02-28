@@ -27,7 +27,7 @@ export interface PrecioCrearCuerpo {
   margenCliente: number;
   margenRevendedor: number;
   margenMayorista: number;
-  stock: number;
+  inventario: number;
   orden: number;
   estado: string;
 }
@@ -41,7 +41,7 @@ export interface PrecioActualizarCuerpo {
   margenCliente?: number;
   margenRevendedor?: number;
   margenMayorista?: number;
-  stock?: number;
+  inventario?: number;
   orden?: number;
   estado?: string;
 }

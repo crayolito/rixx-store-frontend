@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   OnInit,
   signal,
@@ -22,6 +23,7 @@ interface VarianteProducto {
   id: string;
   nombre: string;
   precio: number;
+  inventario: number | null;
   disponible: boolean;
 }
 
@@ -61,20 +63,51 @@ export class ProductoDetallePagina implements OnInit {
   /* ─── Computed: reglas de negocio ─── */
   readonly estaLogueado = computed(() => this.sesion.estaLogueado());
   readonly requiereLogin = computed(() => !this.estaLogueado());
-  readonly puedeComprar = computed(() => this.estaLogueado());
+  /** Solo "Comprar ahora" exige estar logueado; "Agregar al carrito" no. */
+  readonly puedeComprarAhora = computed(() => this.estaLogueado());
 
-  /* ─── Computed: variantes desde precios del producto ─── */
+  /* ─── Computed: variantes desde precios del producto. Inventario null = stock ilimitado. ─── */
   readonly variantes = computed((): VarianteProducto[] => {
     const p = this.producto();
     if (!p?.precios?.length) return [];
-    return p.precios
+    const mapeadas = p.precios
       .filter((pr) => pr.estado === 'activo')
-      .map((pr) => ({
-        id: String(pr.id_precio),
-        nombre: pr.nombre,
-        precio: this.precioDesdePrecioApi(pr),
-        disponible: true,
-      }));
+      .map((pr) => {
+        const inv = pr.inventario;
+        const disponible = inv == null ? true : inv > 0;
+        return {
+          id: String(pr.id_precio),
+          nombre: pr.nombre,
+          precio: this.precioDesdePrecioApi(pr),
+          inventario: pr.inventario,
+          disponible,
+        };
+      });
+    // Con stock primero, agotadas al final
+    return [...mapeadas].sort((a, b) => (a.disponible === b.disponible ? 0 : a.disponible ? -1 : 1));
+  });
+
+  /** Producto sin stock en ninguno de sus precios */
+  readonly productoTodoAgotado = computed(() => {
+    const vars = this.variantes();
+    return vars.length > 0 && vars.every((v) => !v.disponible);
+  });
+
+  /** Variantes con stock disponible */
+  readonly variantesConStock = computed(() => this.variantes().filter((v) => v.disponible));
+
+  /** Variantes agotadas (sin stock) */
+  readonly variantesAgotadas = computed(() => this.variantes().filter((v) => !v.disponible));
+
+  /** Cantidad ya en el carrito para el producto y variante actuales (mismo handle + varianteId) */
+  readonly cantidadEnCarritoParaVarianteActual = computed(() => {
+    const p = this.producto();
+    const va = this.varianteActual();
+    const items = this.carritoServicio.items();
+    if (!p?.handle || !va?.id) return 0;
+    return items
+      .filter((i) => i.handleProducto === p.handle && i.varianteId === va.id)
+      .reduce((sum, i) => sum + i.cantidad, 0);
   });
 
   /* ─── Computed: opciones del selector de servidor (Vemper o fijas) ─── */
@@ -90,8 +123,28 @@ export class ProductoDetallePagina implements OnInit {
     const vars = this.variantes();
     const sel = this.varianteSeleccionada();
     const encontrada = vars.find((v) => v.id === sel);
-    return encontrada ?? vars[0] ?? null;
+    // Solo devolver variante si está disponible; si es agotada, usar primera disponible
+    if (encontrada?.disponible) return encontrada;
+    return vars.find((v) => v.disponible) ?? null;
   });
+
+  /** Cantidad máxima que se puede agregar: inventario menos lo que ya está en el carrito (evita superar stock) */
+  readonly cantidadMaxima = computed(() => {
+    const va = this.varianteActual();
+    const enCarrito = this.cantidadEnCarritoParaVarianteActual();
+    if (!va || va.inventario == null) return Math.max(1, 999 - enCarrito);
+    const disponible = Math.max(0, va.inventario - enCarrito);
+    return disponible;
+  });
+
+  constructor() {
+    effect(() => {
+      const max = this.cantidadMaxima();
+      const cant = this.cantidad();
+      if (max === 0 || cant > max) this.cantidad.set(max);
+    });
+  }
+
   readonly precioTotal = computed(() => {
     const variante = this.varianteActual();
     return variante ? variante.precio * this.cantidad() : 0;
@@ -122,14 +175,19 @@ export class ProductoDetallePagina implements OnInit {
           if (!p) {
             this.errorCarga.set('Producto no encontrado');
           } else {
+            this.errorCarga.set(null);
             if (p.servidorDinamico && p.handle) {
               this.productosApi.obtenerServidores(p.handle).subscribe({
                 next: (srv: Record<string, string>) => this.servidoresDisponibles.set(srv),
                 error: () => this.servidoresDisponibles.set({}),
               });
             }
-            const primerPrecio = p.precios?.find((pr) => pr.estado === 'activo');
-            if (primerPrecio) this.varianteSeleccionada.set(String(primerPrecio.id_precio));
+            const preciosActivos = p.precios?.filter((pr) => pr.estado === 'activo') ?? [];
+            const primerDisponible = preciosActivos.find(
+              (pr) => pr.inventario == null || (pr.inventario ?? 0) > 0,
+            );
+            const precioInicial = primerDisponible ?? preciosActivos[0];
+            if (precioInicial) this.varianteSeleccionada.set(String(precioInicial.id_precio));
           }
         },
         error: () => {
@@ -193,9 +251,10 @@ export class ProductoDetallePagina implements OnInit {
     this.bottomSheetVariantesAbierto.set(false);
   }
 
-  /* ─── Acciones: cantidad ─── */
+  /* ─── Acciones: cantidad (respetando inventario) ─── */
   incrementarCantidad(): void {
-    this.cantidad.update((cant) => cant + 1);
+    const max = this.cantidadMaxima();
+    this.cantidad.update((cant) => (cant < max ? cant + 1 : cant));
   }
   decrementarCantidad(): void {
     if (this.cantidad() > 1) {
@@ -203,12 +262,17 @@ export class ProductoDetallePagina implements OnInit {
     }
   }
 
-  /* ─── Agrega el item al carrito ─── */
+  /* ─── Agrega el item al carrito (no exige login; sí exige campos dinámicos si los hay) ─── */
   agregarAlCarrito(): void {
     const p = this.producto();
     const variante = this.varianteActual();
     if (!p || !variante) return;
-    if (!this.validarPuedeComprarAhora()) return;
+    if (this.productoTodoAgotado()) {
+      this.notificacion.advertencia('Este producto no tiene stock disponible. No puedes agregarlo al carrito.');
+      return;
+    }
+    if (!this.validarInventarioParaCantidad()) return;
+    if (!this.validarCamposRequeridos()) return;
 
     const img = this.obtenerImagenJuego(p);
     const camposDinamicos: Record<string, string> = { ...this.valoresCamposDinamicos() };
@@ -230,15 +294,40 @@ export class ProductoDetallePagina implements OnInit {
     this.notificacion.exito('Producto agregado al carrito');
   }
 
-  /* ─── Valida que se cumplan las condiciones para comprar y muestra notificación si falta algo ─── */
-  private validarPuedeComprarAhora(): boolean {
-    const p = this.producto();
-    if (!p) return false;
-
-    if (!this.sesion.estaLogueado()) {
-      this.notificacion.advertencia('Debes iniciar sesión o registrarte para comprar.');
+  /* ─── Valida que la cantidad a agregar + lo ya en carrito no supere el inventario ─── */
+  private validarInventarioParaCantidad(): boolean {
+    const variante = this.varianteActual();
+    const cant = this.cantidad();
+    const enCarrito = this.cantidadEnCarritoParaVarianteActual();
+    if (!variante || variante.inventario == null) return true;
+    const totalSolicitado = enCarrito + cant;
+    if (totalSolicitado > variante.inventario) {
+      this.notificacion.advertencia(
+        `Solo hay ${variante.inventario} unidad(es) disponibles de "${variante.nombre}". Ya tienes ${enCarrito} en el carrito. Puedes agregar como máximo ${variante.inventario - enCarrito} más.`,
+      );
       return false;
     }
+    return true;
+  }
+
+  /* ─── Valida inventario solo contra la cantidad seleccionada (modo comprar ahora) ─── */
+  private validarInventarioParaCantidadComprarAhora(): boolean {
+    const variante = this.varianteActual();
+    const cant = this.cantidad();
+    if (!variante || variante.inventario == null) return true;
+    if (cant > variante.inventario) {
+      this.notificacion.advertencia(
+        `Solo hay ${variante.inventario} unidad(es) disponibles de "${variante.nombre}".`,
+      );
+      return false;
+    }
+    return true;
+  }
+
+  /* ─── Valida solo campos obligatorios del producto (servidor, campos dinámicos); no exige login ─── */
+  private validarCamposRequeridos(): boolean {
+    const p = this.producto();
+    if (!p) return false;
 
     const camposRequeridos = (p.camposDinamicos ?? []).filter((c) => c.requerido);
     const valores = this.valoresCamposDinamicos();
@@ -281,12 +370,23 @@ export class ProductoDetallePagina implements OnInit {
     }
   }
 
-  /* ─── Agrega al carrito y navega al checkout ─── */
+  /* ─── Agrega al carrito y navega al checkout; exige estar logueado y campos dinámicos si los hay ─── */
   comprarAhora(): void {
     const p = this.producto();
     const variante = this.varianteActual();
     if (!p || !variante) return;
-    if (!this.validarPuedeComprarAhora()) return;
+    if (this.productoTodoAgotado()) {
+      this.notificacion.advertencia('Este producto no tiene stock disponible.');
+      return;
+    }
+    if (!this.sesion.estaLogueado()) {
+      this.notificacion.advertencia('Debes iniciar sesión o registrarte para comprar ahora.');
+      return;
+    }
+    if (!this.validarInventarioParaCantidadComprarAhora()) return;
+    if (!this.validarCamposRequeridos()) return;
+
+    this.carritoServicio.limpiarCarrito();
 
     const img = this.obtenerImagenJuego(p);
     const camposDinamicos: Record<string, string> = { ...this.valoresCamposDinamicos() };

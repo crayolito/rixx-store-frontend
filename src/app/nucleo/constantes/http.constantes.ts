@@ -14,4 +14,4 @@ export const CODIGOS_RECUPERABLES: number[] = [502, 503, 504];
 export const MENSAJE_ERROR_FETCH = 'No se pudo cargar la información. Intenta más tarde.';
 
 // URL base de la API (backend)
-export const API_BASE_URL = 'http://localhost:3000';
+export const API_BASE_URL = 'http://sixx-store-backend-0wkwh5-25dd15-72-60-156-101.traefik.me';
