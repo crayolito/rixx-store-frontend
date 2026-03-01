@@ -183,7 +183,7 @@ export class MetodosPagoApiServicio {
       ...(cuerpo.secretKey != null && cuerpo.secretKey !== '' && { secretKey: cuerpo.secretKey }),
       ...(cuerpo.qrTipo === 'estatico' || cuerpo.qrTipo === 'dinamico' ? { qrTipo: cuerpo.qrTipo } : {}),
       ...(cuerpo.qrTipo === 'estatico' && cuerpo.qrImagen?.trim() && { qrImagen: cuerpo.qrImagen.trim() }),
-      ...(cuerpo.tipoCambio != null && { tipo_cambio: cuerpo.tipoCambio }),
+      ...(cuerpo.tipoCambio != null && { tipoCambio: cuerpo.tipoCambio }),
     };
     return this.httpBase.enviarPost<RespuestaCrearMetodoPago>('/metodos-pago', body, this.headersConAuth()).pipe(
       map((r) => {
