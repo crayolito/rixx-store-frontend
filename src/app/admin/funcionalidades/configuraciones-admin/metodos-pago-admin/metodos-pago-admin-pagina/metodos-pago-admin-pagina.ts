@@ -5,7 +5,10 @@ import { BloqueEstadoTablaComponente } from '../../../../../compartido/component
 import { Modal } from '../../../../../compartido/componentes/modal/modal';
 import { NotificacionServicio } from '../../../../../compartido/servicios/notificacion';
 import { CloudinaryApiServicio } from '../../../../../nucleo/servicios/cloudinary-api.servicio';
-import type { CuerpoCrearMetodoPago, MetodoPagoUINormalizado } from '../../../../../nucleo/servicios/metodos-pago-api.servicio';
+import type {
+  CuerpoCrearMetodoPago,
+  MetodoPagoUINormalizado,
+} from '../../../../../nucleo/servicios/metodos-pago-api.servicio';
 import { MetodosPagoApiServicio } from '../../../../../nucleo/servicios/metodos-pago-api.servicio';
 
 /** Modelo local para edición o creación. */
@@ -59,7 +62,9 @@ export class MetodosPagoAdminPaginaComponente implements OnInit {
       error: () => {
         this.errorAlCargar.set(true);
         this.cargando.set(false);
-        this.notificacion.error('No se pudieron cargar los métodos de pago. Revisa tu conexión e intenta de nuevo.');
+        this.notificacion.error(
+          'No se pudieron cargar los métodos de pago. Revisa tu conexión e intenta de nuevo.',
+        );
       },
     });
   }
@@ -126,7 +131,9 @@ export class MetodosPagoAdminPaginaComponente implements OnInit {
       return;
     }
     if (metodo.qrTipo === 'estatico' && !metodo.qrImagen?.trim()) {
-      this.notificacion.advertencia('Cuando el tipo de QR es estático debes subir la imagen del QR.');
+      this.notificacion.advertencia(
+        'Cuando el tipo de QR es estático debes subir la imagen del QR.',
+      );
       return;
     }
 
@@ -138,9 +145,13 @@ export class MetodosPagoAdminPaginaComponente implements OnInit {
         logo: metodo.logo?.trim() || undefined,
         apiKey: metodo.apiKey?.trim() || undefined,
         secretKey: metodo.secretKey?.trim() || undefined,
-        qrTipo: metodo.qrTipo === 'estatico' || metodo.qrTipo === 'dinamico' ? metodo.qrTipo : undefined,
-        qrImagen: metodo.qrTipo === 'estatico' && metodo.qrImagen?.trim() ? metodo.qrImagen.trim() : undefined,
-        tipoCambio: metodo.tasaCambio ?? metodo.tipo_cambio ?? null,
+        qrTipo:
+          metodo.qrTipo === 'estatico' || metodo.qrTipo === 'dinamico' ? metodo.qrTipo : undefined,
+        qrImagen:
+          metodo.qrTipo === 'estatico' && metodo.qrImagen?.trim()
+            ? metodo.qrImagen.trim()
+            : undefined,
+        tipoCambio: metodo.tasaCambio ?? metodo.tasaCambio ?? null,
       };
       this.metodosPagoApi.crear(cuerpo).subscribe({
         next: (creado) => {
@@ -152,7 +163,9 @@ export class MetodosPagoAdminPaginaComponente implements OnInit {
         },
         error: (err) => {
           this.guardando.set(false);
-          this.notificacion.error(err?.error?.mensaje ?? 'No se pudo crear el método de pago. Intenta de nuevo.');
+          this.notificacion.error(
+            err?.error?.mensaje ?? 'No se pudo crear el método de pago. Intenta de nuevo.',
+          );
         },
       });
       return;
@@ -172,7 +185,12 @@ export class MetodosPagoAdminPaginaComponente implements OnInit {
   actualizarCampo(campo: keyof MetodoPagoEdicion, valor: unknown): void {
     const actual = this.metodoEnEdicion();
     if (!actual) return;
-    const valorFinal = campo === 'tasaCambio' ? (typeof valor === 'number' ? valor : parseFloat(String(valor)) || 0) : valor;
+    const valorFinal =
+      campo === 'tasaCambio'
+        ? typeof valor === 'number'
+          ? valor
+          : parseFloat(String(valor)) || 0
+        : valor;
     const siguiente = { ...actual, [campo]: valorFinal };
     if (campo === 'qrTipo' && valor !== 'estatico') {
       siguiente.qrImagen = '';

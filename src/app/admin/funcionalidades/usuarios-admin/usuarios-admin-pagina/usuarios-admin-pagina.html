@@ -68,21 +68,6 @@
       </div>
     </div>
 
-    <!-- Filtro Último acceso (selector de fecha) -->
-    <div class="global-filtros__item">
-      <p class="global-filtros__titulo">Último acceso</p>
-      <div class="global-filtros__busqueda global-filtros__campo-fecha">
-        <input type="date" class="global-filtros__input"
-          [value]="fechaUltimoAcceso()" (change)="actualizarFiltroFechaUltimoAcceso($event)">
-        @if (fechaUltimoAcceso()) {
-        <button type="button" class="global-filtros__limpiar-fecha" (click)="limpiarFiltroFechaUltimoAcceso()"
-          aria-label="Quitar filtro de fecha">
-          <img src="/iconos/ico-limpiar.svg" alt="Limpiar" class="icono-boton icono-color-base">
-        </button>
-        }
-      </div>
-    </div>
-
     <!-- Botón limpiar filtros -->
     <div class="global-filtros__item">
       <button class="boton-secundario global-filtros__boton-icono" (click)="limpiarFiltros()" type="button"
@@ -113,7 +98,6 @@
           <th>Rol</th>
           <th>Teléfono</th>
           <th>Saldo</th>
-          <th>Último acceso</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -145,10 +129,6 @@
           <!-- Celda Saldo -->
           <td class="global-tabla__celda global-tabla__celda-info">
             <p>{{ usuario.saldo != null ? (usuario.saldo | number:'1.2-2') : '—' }}</p>
-          </td>
-          <!-- Celda último acceso -->
-          <td class="global-tabla__celda global-tabla__celda-info">
-            <p>{{ formatearFechaISO(usuario.ultimoAcceso) }}</p>
           </td>
           <!-- Celda acciones -->
           <td class="global-tabla__celda global-tabla__celda-acciones">

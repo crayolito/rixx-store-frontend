@@ -100,11 +100,9 @@ export class Billetera implements OnInit {
     }
     this.recargando.set(true);
     this.billeteraApi
-      .crearTransaccion({
-        idUsuario,
-        tipo: 'recarga',
+      .recargarBilletera({
         monto,
-        descripcion: 'Recarga billetera',
+        descripcion: 'Recarga desde app',
       })
       .subscribe({
         next: (resp) => {

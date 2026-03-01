@@ -53,7 +53,6 @@ export class UsuariosAdminPagina implements OnInit  {
   textoBusqueda = signal<string>('');
   estadoSeleccionado = signal<string>('Todos');
   rolSeleccionado = signal<string>('Todos los roles');
-  fechaUltimoAcceso = signal<string>('');
 
   opcionesEstado = ['Todos', 'Activo', 'Inactivo'];
   roles = signal<Rol[]>([]);
@@ -85,8 +84,7 @@ export class UsuariosAdminPagina implements OnInit  {
     const busqueda = this.textoBusqueda().trim();
     const estado = this.estadoSeleccionado();
     const rol = this.rolSeleccionado();
-    const fecha = this.fechaUltimoAcceso();
-    return busqueda !== '' || estado !== 'Todos' || rol !== 'Todos los roles' || fecha !== '';
+    return busqueda !== '' || estado !== 'Todos' || rol !== 'Todos los roles';
   });
 
   totalUsuarios = computed(() => {
@@ -272,20 +270,8 @@ export class UsuariosAdminPagina implements OnInit  {
     this.textoBusqueda.set('');
     this.estadoSeleccionado.set('Todos');
     this.rolSeleccionado.set('Todos los roles');
-    this.fechaUltimoAcceso.set('');
     this.paginaActual.set(1);
     this.cargarUsuarios();
-  }
-
-  actualizarFiltroFechaUltimoAcceso(event: Event) {
-    const valor = (event.target as HTMLInputElement).value;
-    this.fechaUltimoAcceso.set(valor);
-    this.paginaActual.set(1);
-  }
-
-  limpiarFiltroFechaUltimoAcceso() {
-    this.fechaUltimoAcceso.set('');
-    this.paginaActual.set(1);
   }
 
   // FASE 24: Abrir modal para crear nuevo usuario
@@ -400,7 +386,6 @@ export class UsuariosAdminPagina implements OnInit  {
     const busqueda = this.textoBusqueda().trim().toLowerCase();
     const estado = this.estadoSeleccionado();
     const rol = this.rolSeleccionado();
-    const fechaFiltro = this.fechaUltimoAcceso();
 
     return usuarios.filter((u) => {
       if (busqueda) {
@@ -410,23 +395,8 @@ export class UsuariosAdminPagina implements OnInit  {
       }
       if (estado !== 'Todos' && u.estado !== estado) return false;
       if (rol !== 'Todos los roles' && u.rol !== rol) return false;
-      if (fechaFiltro && u.ultimoAcceso) {
-        const fechaUsuario = this.extraerFechaISO(u.ultimoAcceso);
-        if (fechaUsuario !== fechaFiltro) return false;
-      }
-      if (fechaFiltro && !u.ultimoAcceso) return false;
       return true;
     });
-  }
-
-  private extraerFechaISO(fechaISO: string): string {
-    if (!fechaISO) return '';
-    const d = new Date(fechaISO);
-    if (isNaN(d.getTime())) return '';
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const dia = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${dia}`;
   }
 
   private extraerMensajeError(error: unknown): string {

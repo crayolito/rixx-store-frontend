@@ -88,6 +88,15 @@ export class BilleteraApiServicio {
     );
   }
 
+  /** Recarga de billetera por el cliente. POST /billetera/recarga. Mismo flujo que compra (token cliente). */
+  recargarBilletera(cuerpo: { monto: number; descripcion?: string }): Observable<RespuestaCrearTransaccion> {
+    return this.httpBase.enviarPost<RespuestaCrearTransaccion>(
+      '/billetera/recarga',
+      cuerpo,
+      this.headersConAuth()
+    );
+  }
+
   /** Compra con billetera (usuario). POST /billetera/compra */
   compraConBilletera(cuerpo: { monto: number; descripcion?: string; idPedido?: number | null }): Observable<RespuestaCrearTransaccion> {
     return this.httpBase.enviarPost<RespuestaCrearTransaccion>(

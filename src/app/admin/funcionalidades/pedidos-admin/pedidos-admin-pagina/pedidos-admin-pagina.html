@@ -6,27 +6,31 @@
       <h3>Pedidos</h3>
     </div>
     <div class="opciones-contenedor">
-      <button class="boton-secundario" (click)="alternarFiltros()">
+      <button class="boton-secundario" (click)="alternarFiltros()" type="button">
         <p>{{ filtrosVisibles() ? 'Ocultar Filtros' : 'Mostrar Filtros' }}</p>
       </button>
     </div>
   </section>
 
-  <!-- Filtro por estado (badges) -->
-  <section class="pedidos-admin-badges">
-    @for (item of estadosFiltro; track item.valor) {
-    <button type="button" class="global-badge pedidos-admin-badge"
-      [class.pedidos-admin-badge--activo]="estadoActivoFiltro() === item.valor"
-      (click)="filtrarPorEstado(item.valor)">
-      {{ item.nombre }} ({{ contadorPorEstado(item.valor) }})
-    </button>
-    }
+  <!-- ===== SECCIÓN: FILTROS DE ESTADO CON BADGES (como en Códigos) ===== -->
+  @if (filtrosVisibles()) {
+  <section class="filtros-estado-badges">
+    <div class="filtros-estado-badges__lista">
+      @for (item of estadosFiltro(); track item.valor) {
+      <button class="filtros-estado-badges__item filtros-estado-badges__item--{{ item.color }}"
+        [class.filtros-estado-badges__item--activo]="estadoActivoFiltro() === item.valor"
+        (click)="filtrarPorEstado(item.valor)" type="button">
+        <span class="filtros-estado-badges__nombre">{{ item.nombre }}</span>
+        <span class="filtros-estado-badges__contador">{{ contadorPorEstado(item.valor) }}</span>
+      </button>
+      }
+    </div>
   </section>
+  }
 
   <!-- ===== SECCIÓN: FILTROS AVANZADOS ===== -->
   @if (filtrosVisibles()) {
   <section class="global-filtros" (click)="$event.stopPropagation()">
-    <!-- Buscador - Por ID, usuario o producto -->
     <div class="global-filtros__item">
       <p class="global-filtros__titulo">Buscador</p>
       <div class="global-filtros__busqueda">
@@ -35,8 +39,6 @@
           [value]="textoBusqueda()" (input)="textoBusqueda.set($any($event.target).value)">
       </div>
     </div>
-
-    <!-- Fecha de compra -->
     <div class="global-filtros__item">
       <p class="global-filtros__titulo">Fecha de compra</p>
       <div class="global-filtros__busqueda" (click)="$event.stopPropagation()">
@@ -44,8 +46,6 @@
           (change)="fechaCompra.set($any($event.target).value)" (click)="$event.stopPropagation()">
       </div>
     </div>
-
-    <!-- Botón Limpiar -->
     <div class="global-filtros__item">
       <button class="boton-secundario global-filtros__boton-icono" (click)="limpiarFiltros()" type="button">
         <img src="/iconos/ico-limpiar.svg" alt="Icono limpiar" class="icono-boton icono-color-base">
@@ -81,7 +81,7 @@
           <td class="global-tabla__celda">${{ pedido.total }}</td>
           <td class="global-tabla__celda">{{ pedido.fecha | date:'short' }}</td>
           <td class="global-tabla__celda">
-            <span class="global-badge global-badge--{{pedido.estado}}">
+            <span [class]="claseBadgeEstado(pedido.estado)">
               {{ pedido.estado }}
             </span>
           </td>
@@ -161,7 +161,7 @@
           </div>
           <div>
             <p class="detalle-pedido__etiqueta">Estado</p>
-            <span class="global-badge global-badge--{{ pedidoSeleccionado()!.estado }}">
+            <span [class]="claseBadgeEstado(pedidoSeleccionado()!.estado)">
               {{ pedidoSeleccionado()!.estado }}
             </span>
           </div>
@@ -191,7 +191,7 @@
               @if (detalle.estado_entrega) {
               <span class="detalle-pedido__producto-meta-item">
                 <strong>Entrega:</strong>
-                <span class="global-badge global-badge--{{ detalle.estado_entrega }}">{{ detalle.estado_entrega }}</span>
+                <span [class]="claseBadgeEstado(detalle.estado_entrega)">{{ detalle.estado_entrega }}</span>
               </span>
               }
             </div>

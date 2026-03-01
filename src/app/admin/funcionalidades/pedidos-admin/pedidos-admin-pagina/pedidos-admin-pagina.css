@@ -38,21 +38,153 @@
   flex-wrap: wrap;
 }
 
-.pedidos-admin-badges {
+/* ═══════════════════════════════════════════════════════
+   FILTROS DE ESTADO CON BADGES (igual que en Códigos)
+   ═══════════════════════════════════════════════════════ */
+.filtros-estado-badges {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--espaciado-sm);
+  padding: var(--espaciado-md);
+  background-color: var(--color-fondo-cuaternario);
+  border: var(--borde-grosor) solid var(--color-borde-suave);
+  border-radius: var(--borde-radio);
+}
+
+.filtros-estado-badges__lista {
+  display: flex;
+  flex-direction: row;
   gap: var(--espaciado-xs);
-  padding: 0 var(--espaciado-md);
+  flex-wrap: wrap;
 }
 
-.pedidos-admin-badge {
+.filtros-estado-badges__item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espaciado-xs);
+  padding: var(--espaciado-xs) var(--espaciado-sm);
+  border-radius: var(--borde-radio-pequeno);
+  border: var(--borde-grosor) solid transparent;
+  background-color: var(--color-fondo-noveno);
   cursor: pointer;
-  border: 2px solid transparent;
+  transition: all var(--transicion-rapida);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
 }
 
-.pedidos-admin-badge--activo {
-  border-color: var(--color-primario);
+.filtros-estado-badges__nombre {
+  color: var(--color-fondo-base);
+}
+
+.filtros-estado-badges__contador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 var(--espaciado-xxs);
+  border-radius: 50%;
+  background-color: var(--color-fondo-sexto);
+  color: var(--color-fondo-base);
+  font-size: var(--texto-mini);
   font-weight: var(--peso-semibold);
+}
+
+.filtros-estado-badges__item--verde:hover,
+.filtros-estado-badges__item--verde.filtros-estado-badges__item--activo {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.filtros-estado-badges__item--verde.filtros-estado-badges__item--activo .filtros-estado-badges__nombre {
+  color: #155724;
+  font-weight: var(--peso-semibold);
+}
+
+.filtros-estado-badges__item--verde.filtros-estado-badges__item--activo .filtros-estado-badges__contador {
+  background-color: #155724;
+  color: #ffffff;
+}
+
+.filtros-estado-badges__item--azul:hover,
+.filtros-estado-badges__item--azul.filtros-estado-badges__item--activo {
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+}
+
+.filtros-estado-badges__item--azul.filtros-estado-badges__item--activo .filtros-estado-badges__nombre {
+  color: #0c5460;
+  font-weight: var(--peso-semibold);
+}
+
+.filtros-estado-badges__item--azul.filtros-estado-badges__item--activo .filtros-estado-badges__contador {
+  background-color: #0c5460;
+  color: #ffffff;
+}
+
+.filtros-estado-badges__item--rojo:hover,
+.filtros-estado-badges__item--rojo.filtros-estado-badges__item--activo {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.filtros-estado-badges__item--rojo.filtros-estado-badges__item--activo .filtros-estado-badges__nombre {
+  color: #721c24;
+  font-weight: var(--peso-semibold);
+}
+
+.filtros-estado-badges__item--rojo.filtros-estado-badges__item--activo .filtros-estado-badges__contador {
+  background-color: #721c24;
+  color: #ffffff;
+}
+
+.filtros-estado-badges__item--gris:hover,
+.filtros-estado-badges__item--gris.filtros-estado-badges__item--activo {
+  background-color: #e2e3e5;
+  border-color: #d6d8db;
+}
+
+.filtros-estado-badges__item--gris.filtros-estado-badges__item--activo .filtros-estado-badges__nombre {
+  color: #383d41;
+  font-weight: var(--peso-semibold);
+}
+
+.filtros-estado-badges__item--gris.filtros-estado-badges__item--activo .filtros-estado-badges__contador {
+  background-color: #383d41;
+  color: #ffffff;
+}
+
+.filtros-estado-badges__item--amarillo:hover,
+.filtros-estado-badges__item--amarillo.filtros-estado-badges__item--activo {
+  background-color: #fff3cd;
+  border-color: #ffeaa7;
+}
+
+.filtros-estado-badges__item--amarillo.filtros-estado-badges__item--activo .filtros-estado-badges__nombre {
+  color: #856404;
+  font-weight: var(--peso-semibold);
+}
+
+.filtros-estado-badges__item--amarillo.filtros-estado-badges__item--activo .filtros-estado-badges__contador {
+  background-color: #856404;
+  color: #ffffff;
+}
+
+.filtros-estado-badges__item--morado:hover,
+.filtros-estado-badges__item--morado.filtros-estado-badges__item--activo {
+  background-color: #e7d5f5;
+  border-color: #d4b3e8;
+}
+
+.filtros-estado-badges__item--morado.filtros-estado-badges__item--activo .filtros-estado-badges__nombre {
+  color: #6f42c1;
+  font-weight: var(--peso-semibold);
+}
+
+.filtros-estado-badges__item--morado.filtros-estado-badges__item--activo .filtros-estado-badges__contador {
+  background-color: #6f42c1;
+  color: #ffffff;
 }
 
 /* ═══════════════════════════════════════════════════════

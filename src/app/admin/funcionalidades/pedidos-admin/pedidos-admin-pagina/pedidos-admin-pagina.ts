@@ -25,15 +25,31 @@ export class PedidosAdminPagina implements OnInit {
   detalleProcesandoId = signal<number | null>(null);
   filtrosVisibles = signal(true);
 
-  // Filtros superiores (badges)
-  estadosFiltro = [
-    { nombre: 'Total', valor: 'total', color: 'morado' },
-    { nombre: 'Pendiente', valor: 'pendiente', color: 'amarillo' },
-    { nombre: 'Pagado', valor: 'pagado', color: 'azul' },
-    { nombre: 'Procesando', valor: 'procesando', color: 'azul' },
-    { nombre: 'Completado', valor: 'completado', color: 'verde' },
-    { nombre: 'Cancelado', valor: 'cancelado', color: 'rojo' },
-  ];
+  // Filtros por estado: Total + estados que existan en los pedidos. Color para badges como en Códigos.
+  private static readonly COLOR_POR_ESTADO: Record<string, string> = {
+    total: 'morado',
+    pendiente: 'amarillo',
+    pagado: 'azul',
+    procesando: 'azul',
+    completado: 'verde',
+    cancelado: 'rojo',
+    rechazado: 'rojo',
+    reembolsado: 'gris',
+  };
+
+  estadosFiltro = computed(() => {
+    const lista = this.pedidos();
+    const estadosUnicos = [...new Set(lista.map((p) => p.estado))].sort();
+    const items = [
+      { nombre: 'Total', valor: 'total', color: 'morado' },
+      ...estadosUnicos.map((e) => ({
+        nombre: e,
+        valor: e,
+        color: PedidosAdminPagina.COLOR_POR_ESTADO[e.toLowerCase()] ?? 'gris',
+      })),
+    ];
+    return items;
+  });
   estadoActivoFiltro = signal<string | null>(null);
 
   textoBusqueda = signal<string>('');
@@ -85,6 +101,15 @@ export class PedidosAdminPagina implements OnInit {
   contadorPorEstado(estado: string): number {
     if (estado === 'total') return this.pedidos().length;
     return this.pedidos().filter((p) => p.estado === estado).length;
+  }
+
+  /** Clase CSS para badge de estado (minúsculas; si no existe en global, usa neutro para que se vea). */
+  claseBadgeEstado(estado: string): string {
+    const base = 'global-badge';
+    const sufijo = estado?.toLowerCase() ?? 'neutro';
+    const conocidos = ['pendiente', 'pagado', 'procesando', 'completado', 'cancelado', 'rechazado', 'reembolsado', 'activo', 'inactivo'];
+    const sufijoSeguro = conocidos.includes(sufijo) ? sufijo : 'neutro';
+    return `${base} ${base}--${sufijoSeguro}`;
   }
 
   // Cargar pedidos desde el backend
