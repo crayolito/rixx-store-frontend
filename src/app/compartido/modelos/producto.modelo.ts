@@ -41,7 +41,6 @@ export interface PrecioApi {
   precioBase: string;
   margenCliente: string;
   margenRevendedor: string;
-  margenMayorista: string;
   inventario: number | null;
   orden: number;
   estado: string;

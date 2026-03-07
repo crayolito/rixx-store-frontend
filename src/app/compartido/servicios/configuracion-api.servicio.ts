@@ -2,6 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import { map, Observable } from "rxjs";
 import { HttpBaseServicio } from "../../nucleo/servicios/http-base.servicio";
 import type {
+  ConfAnuncioTemporal,
   ConfCarrusel,
   ConfEncabezado,
   ConfGeneral,
@@ -142,6 +143,13 @@ export class ConfiguracionApiServicio {
   actualizarPieDePagina(pie: ConfPieDePagina): Observable<unknown> {
     return this.httpBase.actualizarParcial(RUTA_CONFIGURACION, {
       contenido: { pieDePagina: pie }
+    });
+  }
+
+  /** PATCH configuración: envía anuncios temporales al servidor. */
+  actualizarAnuncioTemporal(anuncioTemporal: ConfAnuncioTemporal): Observable<unknown> {
+    return this.httpBase.actualizarParcial(RUTA_CONFIGURACION, {
+      contenido: { anuncioTemporal }
     });
   }
 }

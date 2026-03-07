@@ -16,18 +16,15 @@
 
 .contenedor-notificaciones {
   position: fixed;
-  top: 80px;
-  /* Abajo del header */
+  top: 90px;
   right: var(--espaciado-md);
-  z-index: 1080;
-  /* Por encima del modal */
+  z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
   gap: var(--espaciado-sm);
   max-width: 400px;
   width: calc(100% - var(--espaciado-md) * 2);
   pointer-events: none;
-  /* No bloquear clicks en el fondo */
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -35,17 +32,19 @@
      ═══════════════════════════════════════════════════════ */
 
 .notificacion {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--espaciado-sm);
   padding: var(--espaciado-md) var(--espaciado-lg);
+  padding-bottom: calc(var(--espaciado-md) + 6px);
   background-color: var(--color-fondo-secundario);
-  border-left: 4px solid;
   border-radius: var(--borde-radio-grande);
   box-shadow: var(--sombra-fuerte);
   pointer-events: auto;
   animation: deslizarEntrada 0.3s ease-out;
   transition: all 0.2s ease;
+  overflow: hidden;
 }
 
 .notificacion:hover {
@@ -94,37 +93,21 @@
      ═══════════════════════════════════════════════════════ */
 
 /* ─── Éxito ─── */
-.notificacion--exito {
-  border-left-color: var(--color-primario);
-}
-
 .notificacion--exito .notificacion__icono {
   color: var(--color-primario);
 }
 
 /* ─── Error ─── */
-.notificacion--error {
-  border-left-color: #ef4444;
-}
-
 .notificacion--error .notificacion__icono {
   color: #ef4444;
 }
 
 /* ─── Advertencia ─── */
-.notificacion--advertencia {
-  border-left-color: #f59e0b;
-}
-
 .notificacion--advertencia .notificacion__icono {
   color: #f59e0b;
 }
 
 /* ─── Info ─── */
-.notificacion--info {
-  border-left-color: var(--color-acento-cyan);
-}
-
 .notificacion--info .notificacion__icono {
   color: var(--color-acento-cyan);
 }
@@ -143,6 +126,55 @@
     opacity: 1;
     transform: translateX(0);
   }
+}
+
+/* ─── Barra de progreso del temporizador ─── */
+.notificacion__progreso {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background-color: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.notificacion__progreso-barra {
+  height: 100%;
+  width: 100%;
+  transform-origin: left;
+  animation: progresoReducir linear forwards;
+}
+
+/* Pausa la animación cuando el mouse está encima */
+.notificacion:hover .notificacion__progreso-barra {
+  animation-play-state: paused;
+}
+
+@keyframes progresoReducir {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* Colores de la barra según el tipo */
+.notificacion__progreso-barra--exito {
+  background-color: var(--color-primario);
+}
+
+.notificacion__progreso-barra--error {
+  background-color: #ef4444;
+}
+
+.notificacion__progreso-barra--advertencia {
+  background-color: #f59e0b;
+}
+
+.notificacion__progreso-barra--info {
+  background-color: var(--color-acento-cyan);
 }
 
 /* ═══════════════════════════════════════════════════════

@@ -10,11 +10,20 @@ import { NotificacionServicio } from '../../servicios/notificacion';
   styleUrl: './notificacion-toast.css',
 })
 export class NotificacionToast {
-  // FASE 1: Inyectar el servicio de notificaciones
   notificacionServicio = inject(NotificacionServicio);
 
-  // FASE 2: Método para cerrar una notificación
+  // Cierra una notificación
   cerrarNotificacion(id: string) {
     this.notificacionServicio.cerrar(id);
+  }
+
+  // Pausa el temporizador cuando el mouse entra
+  pausarTemporizador() {
+    this.notificacionServicio.pausar();
+  }
+
+  // Reanuda el temporizador cuando el mouse sale
+  reanudarTemporizador() {
+    this.notificacionServicio.reanudar();
   }
 }

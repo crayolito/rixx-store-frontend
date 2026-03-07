@@ -26,7 +26,6 @@ export interface PrecioCrearCuerpo {
   precioBase: number;
   margenCliente: number;
   margenRevendedor: number;
-  margenMayorista: number;
   inventario: number;
   orden: number;
   estado: string;
@@ -40,7 +39,6 @@ export interface PrecioActualizarCuerpo {
   precioBase?: number;
   margenCliente?: number;
   margenRevendedor?: number;
-  margenMayorista?: number;
   inventario?: number;
   orden?: number;
   estado?: string;
@@ -145,7 +143,6 @@ export class ProductosApiServicio {
       nombre: string;
       margenCliente: number;
       margenRevendedor: number;
-      margenMayorista: number;
       estado: string;
       orden: number;
       idCategorias: number[];
@@ -157,7 +154,6 @@ export class ProductosApiServicio {
     if (datos.nombre !== undefined) cuerpo['nombre'] = datos.nombre;
     if (datos.margenCliente !== undefined) cuerpo['margenCliente'] = datos.margenCliente;
     if (datos.margenRevendedor !== undefined) cuerpo['margenRevendedor'] = datos.margenRevendedor;
-    if (datos.margenMayorista !== undefined) cuerpo['margenMayorista'] = datos.margenMayorista;
     if (datos.estado !== undefined) cuerpo['estado'] = datos.estado;
     if (datos.orden !== undefined) cuerpo['orden'] = datos.orden;
     if (datos.idCategorias !== undefined) cuerpo['idCategorias'] = datos.idCategorias;

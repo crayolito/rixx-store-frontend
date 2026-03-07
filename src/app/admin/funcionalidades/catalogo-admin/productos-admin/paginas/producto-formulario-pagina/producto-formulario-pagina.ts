@@ -37,7 +37,6 @@ interface Precio {
   precioBase: number;
   margenClienteFinal: number;
   margenRevendedor: number;
-  margenMayorista: number;
   porcentajeDescuento: number;
   soloClienteFinal: boolean;
   precioActivo: boolean;
@@ -138,7 +137,6 @@ export class ProductoFormularioPagina {
   porcentajeDescuento = signal<number>(0);
   margenClienteFinal = signal<number>(0);
   margenRevendedor = signal<number>(0);
-  margenMayorista = signal<number>(0);
   soloClienteFinal = signal<boolean>(false);
   precioActivo = signal<boolean>(true);
 
@@ -376,7 +374,6 @@ export class ProductoFormularioPagina {
       precioBase: Number(pr.precioBase),
       margenClienteFinal: Number(pr.margenCliente),
       margenRevendedor: Number(pr.margenRevendedor),
-      margenMayorista: Number(pr.margenMayorista),
       porcentajeDescuento: 0,
       soloClienteFinal: false,
       precioActivo: pr.estado === 'activo',
@@ -520,6 +517,8 @@ export class ProductoFormularioPagina {
               id_precio: p.id_precio,
               nombre: p.nombre,
               precioBase: p.precioBase,
+              margenCliente: p.margenClienteFinal,
+              margenRevendedor: p.margenRevendedor,
               inventario: p.inventario ?? 0,
               estado: p.precioActivo ? 'activo' : 'inactivo',
               orden,
@@ -530,7 +529,6 @@ export class ProductoFormularioPagina {
               precioBase: p.precioBase,
               margenCliente: p.margenClienteFinal,
               margenRevendedor: p.margenRevendedor,
-              margenMayorista: p.margenMayorista,
               inventario: p.inventario ?? 0,
               orden,
               estado: p.precioActivo ? 'activo' : 'inactivo',
@@ -587,7 +585,6 @@ export class ProductoFormularioPagina {
         precioBase: p.precioBase,
         margenCliente: p.margenClienteFinal,
         margenRevendedor: p.margenRevendedor,
-        margenMayorista: p.margenMayorista,
         inventario: p.inventario ?? 0,
         orden,
         estado: p.precioActivo ? 'activo' : 'inactivo',
@@ -720,7 +717,6 @@ export class ProductoFormularioPagina {
     this.porcentajeDescuento.set(0);
     this.margenClienteFinal.set(0);
     this.margenRevendedor.set(0);
-    this.margenMayorista.set(0);
     this.soloClienteFinal.set(false);
     this.precioActivo.set(true);
     this.modalPrecioAbierto.set(true);
@@ -734,7 +730,6 @@ export class ProductoFormularioPagina {
     this.porcentajeDescuento.set(0);
     this.margenClienteFinal.set(precio.margenClienteFinal);
     this.margenRevendedor.set(precio.margenRevendedor);
-    this.margenMayorista.set(0);
     this.soloClienteFinal.set(false);
     this.precioActivo.set(precio.precioActivo);
     this.modalPrecioAbierto.set(true);
@@ -765,7 +760,6 @@ export class ProductoFormularioPagina {
       precioBase: this.precioBase(),
       margenClienteFinal: this.margenClienteFinal(),
       margenRevendedor: this.margenRevendedor(),
-      margenMayorista: 0,
       porcentajeDescuento: 0,
       soloClienteFinal: false,
       precioActivo: this.precioActivo(),

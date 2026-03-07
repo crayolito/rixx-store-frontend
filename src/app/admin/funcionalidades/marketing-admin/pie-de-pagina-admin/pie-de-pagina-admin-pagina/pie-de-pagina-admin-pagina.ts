@@ -129,7 +129,7 @@ export class PieDePaginaAdminPagina implements OnInit {
   readonly etiquetasRedes = ETIQUETAS_REDES;
   readonly paginasTienda = PAGINAS_TIENDA_ENLACES;
   readonly titulosSeccionPorDefecto = TITULOS_SECCION_POR_DEFECTO;
-  readonly tiposOpcion: TipoOpcionPie[] = ['enlace', 'telefono', 'correo'];
+  readonly tiposOpcion: TipoOpcionPie[] = ['enlace', 'telefono', 'correo', 'pagina'];
 
   ngOnInit(): void {
     this.cargarListasParaEnlaces();
@@ -219,6 +219,7 @@ export class PieDePaginaAdminPagina implements OnInit {
       path: o.path ?? '',
       numero: o.numero ?? '',
       correo: o.correo ?? '',
+      contenidoHtml: o.contenidoHtml ?? '',
     };
   }
 
@@ -320,6 +321,7 @@ export class PieDePaginaAdminPagina implements OnInit {
         path: o.path ?? '',
         ...(o.numero !== undefined && { numero: o.numero }),
         ...(o.correo !== undefined && { correo: o.correo }),
+        ...(o.contenidoHtml !== undefined && { contenidoHtml: o.contenidoHtml }),
       }));
       return { id: s.id, titulo: s.titulo, descripcion: s.descripcion, opciones };
     });
@@ -339,6 +341,8 @@ export class PieDePaginaAdminPagina implements OnInit {
         return !!String(o.numero ?? '').trim();
       case 'correo':
         return !!String(o.correo ?? '').trim();
+      case 'pagina':
+        return !!String(o.contenidoHtml ?? '').trim();
       default:
         return true;
     }
@@ -358,7 +362,7 @@ export class PieDePaginaAdminPagina implements OnInit {
   }
 
   tiposOpcionParaSeccion(index: number): TipoOpcionPie[] {
-    if (this.soloEnlaces(index)) return ['enlace'];
+    if (this.soloEnlaces(index)) return ['enlace', 'pagina'];
     if (this.soloAyuda(index)) return ['telefono', 'correo'];
     return [];
   }
@@ -460,6 +464,7 @@ export class PieDePaginaAdminPagina implements OnInit {
               path: tipo === 'enlace' ? (o.path ?? '/') : '',
               numero: tipo === 'telefono' ? (o.numero ?? '') : '',
               correo: tipo === 'correo' ? (o.correo ?? '') : '',
+              contenidoHtml: tipo === 'pagina' ? (o.contenidoHtml ?? '') : '',
             }
             : o
         );
@@ -531,6 +536,7 @@ export class PieDePaginaAdminPagina implements OnInit {
       enlace: 'Enlace a página',
       telefono: 'Teléfono',
       correo: 'Correo',
+      pagina: 'Página HTML',
     };
     return map[tipo] ?? tipo;
   }

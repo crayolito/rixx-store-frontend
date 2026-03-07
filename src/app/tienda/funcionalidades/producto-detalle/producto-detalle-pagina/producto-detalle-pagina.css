@@ -647,6 +647,7 @@
   font-size: var(--texto-base);
 }
 
+
 /* ─── Bottom sheet móvil: selección de paquete ─── */
 .tienda-producto-detalle__bottom-sheet-overlay {
   position: fixed;

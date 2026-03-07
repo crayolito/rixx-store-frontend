@@ -1,7 +1,8 @@
 <!-- Contenedor de notificaciones (se posiciona arriba de la página) -->
 <div class="contenedor-notificaciones">
   @for (notif of notificacionServicio.notificaciones(); track notif.id) {
-  <div class="notificacion notificacion--{{ notif.tipo }}" role="alert">
+  <div class="notificacion notificacion--{{ notif.tipo }}" role="alert"
+    (mouseenter)="pausarTemporizador()" (mouseleave)="reanudarTemporizador()">
     <!-- Icono según el tipo -->
     <div class="notificacion__icono">
       @switch (notif.tipo) {
@@ -42,6 +43,14 @@
         <path d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
       </svg>
     </button>
+
+    <!-- Barra de progreso del temporizador -->
+    @if (notif.duracion && notif.duracion > 0) {
+    <div class="notificacion__progreso">
+      <div class="notificacion__progreso-barra notificacion__progreso-barra--{{ notif.tipo }}"
+        [style.animation-duration.ms]="notif.duracion"></div>
+    </div>
+    }
   </div>
   }
 </div>

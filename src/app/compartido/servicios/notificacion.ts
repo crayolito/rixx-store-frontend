@@ -1,23 +1,26 @@
 import { Injectable, signal } from '@angular/core';
 
-// FASE 1: Definir la estructura de una notificación
+// Estructura de una notificación
 export interface Notificacion {
   id: string;
   tipo: 'exito' | 'error' | 'info' | 'advertencia';
   mensaje: string;
-  duracion?: number; // milisegundos (0 = no se cierra automáticamente)
+  duracion?: number;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotificacionServicio {
-  // FASE 2: Signal para la notificación visible y cola de espera
   notificaciones = signal<Notificacion[]>([]);
-  private cola: Notificacion[] = []; // Cola de notificaciones en espera
-  private procesandoCola = false; // Control para procesar la cola
+  private cola: Notificacion[] = [];
+  private procesandoCola = false;
+  private tiempoRestante = 0;
+  private tiempoInicio = 0;
+  private temporizadorId: ReturnType<typeof setTimeout> | null = null;
+  private notificacionActualId: string | null = null;
 
-  // FASE 3: Método principal para agregar notificación a la cola
+  // Agrega una notificación a la cola
   mostrar(
     tipo: Notificacion['tipo'],
     mensaje: string,
@@ -31,55 +34,80 @@ export class NotificacionServicio {
       duracion,
     };
 
-    // Agregar a la cola
     this.cola.push(nuevaNotificacion);
 
-    // Procesar la cola si no se está procesando
     if (!this.procesandoCola) {
       this.procesarCola();
     }
   }
 
-  // FASE 4: Procesar la cola (mostrar una por una)
+  // Procesa la cola de notificaciones
   private procesarCola() {
-    // Si no hay nada en la cola, terminar
     if (this.cola.length === 0) {
       this.procesandoCola = false;
       return;
     }
 
-    // Marcar como procesando
     this.procesandoCola = true;
-
-    // Obtener la primera notificación de la cola
     const notificacion = this.cola.shift()!;
-
-    // Mostrar la notificación (solo 1 a la vez)
+    this.notificacionActualId = notificacion.id;
     this.notificaciones.set([notificacion]);
 
-    // Auto-cerrar después de la duración
     if (notificacion.duracion && notificacion.duracion > 0) {
-      setTimeout(() => {
-        this.cerrar(notificacion.id);
-        // Procesar la siguiente notificación después de cerrar
-        setTimeout(() => this.procesarCola(), 300); // Esperar 300ms entre notificaciones
-      }, notificacion.duracion);
+      this.tiempoRestante = notificacion.duracion;
+      this.iniciarTemporizador(notificacion.id);
     }
   }
 
-  // FASE 5: Cerrar una notificación específica
+  // Inicia el temporizador para cerrar automáticamente
+  private iniciarTemporizador(id: string) {
+    this.tiempoInicio = Date.now();
+    this.temporizadorId = setTimeout(() => {
+      this.cerrar(id);
+      setTimeout(() => this.procesarCola(), 300);
+    }, this.tiempoRestante);
+  }
+
+  // Pausa el temporizador cuando el mouse está encima
+  pausar() {
+    if (this.temporizadorId) {
+      clearTimeout(this.temporizadorId);
+      this.temporizadorId = null;
+      const tiempoTranscurrido = Date.now() - this.tiempoInicio;
+      this.tiempoRestante = Math.max(0, this.tiempoRestante - tiempoTranscurrido);
+    }
+  }
+
+  // Reanuda el temporizador cuando el mouse sale
+  reanudar() {
+    if (this.notificacionActualId && this.tiempoRestante > 0) {
+      this.iniciarTemporizador(this.notificacionActualId);
+    }
+  }
+
+  // Cierra una notificación específica
   cerrar(id: string) {
+    if (this.temporizadorId) {
+      clearTimeout(this.temporizadorId);
+      this.temporizadorId = null;
+    }
+    this.notificacionActualId = null;
     this.notificaciones.update((lista) => lista.filter((n) => n.id !== id));
   }
 
-  // FASE 6: Cerrar todas las notificaciones y limpiar la cola
+  // Cierra todas las notificaciones y limpia la cola
   cerrarTodas() {
+    if (this.temporizadorId) {
+      clearTimeout(this.temporizadorId);
+      this.temporizadorId = null;
+    }
     this.notificaciones.set([]);
     this.cola = [];
     this.procesandoCola = false;
+    this.notificacionActualId = null;
   }
 
-  // FASE 7: Métodos de conveniencia para cada tipo
+  // Métodos de conveniencia para cada tipo
   exito(mensaje: string, duracion?: number) {
     this.mostrar('exito', mensaje, duracion);
   }

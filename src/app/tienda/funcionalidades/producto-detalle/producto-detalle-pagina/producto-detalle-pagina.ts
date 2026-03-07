@@ -66,10 +66,14 @@ export class ProductoDetallePagina implements OnInit {
   /** Solo "Comprar ahora" exige estar logueado; "Agregar al carrito" no. */
   readonly puedeComprarAhora = computed(() => this.estaLogueado());
 
+  /** Rol actual del usuario para calcular precios */
+  readonly rolUsuario = computed(() => (this.sesion.usuarioActual()?.rol ?? '').toLowerCase());
+
   /* ─── Computed: variantes desde precios del producto. Inventario null = stock ilimitado. ─── */
   readonly variantes = computed((): VarianteProducto[] => {
     const p = this.producto();
     if (!p?.precios?.length) return [];
+    const rol = this.rolUsuario(); // Reactivo: se recalcula cuando cambia el rol
     const mapeadas = p.precios
       .filter((pr) => pr.estado === 'activo')
       .map((pr) => {
@@ -78,7 +82,7 @@ export class ProductoDetallePagina implements OnInit {
         return {
           id: String(pr.id_precio),
           nombre: pr.nombre,
-          precio: this.precioDesdePrecioApi(pr),
+          precio: this.calcularPrecioSegunRol(pr, rol),
           inventario: pr.inventario,
           disponible,
         };
@@ -209,9 +213,17 @@ export class ProductoDetallePagina implements OnInit {
     return img || '/imagenes/imagen-nodisponible.jpg';
   }
 
-  /* ─── Calcula precio cliente: precioBase + margenCliente ─── */
-  private precioDesdePrecioApi(pr: PrecioApi): number {
+  /* ─── Calcula el precio según el rol: base + margen correspondiente ─── */
+  private calcularPrecioSegunRol(pr: PrecioApi, rol: string): number {
     const base = parseFloat(pr.precioBase ?? '0');
+
+    // Si es revendedor, usa margenRevendedor
+    if (rol.includes('revendedor')) {
+      const margen = parseFloat(pr.margenRevendedor ?? '0');
+      return base + margen;
+    }
+
+    // Para cliente o sin login, usa margenCliente
     const margen = parseFloat(pr.margenCliente ?? '0');
     return base + margen;
   }
@@ -380,7 +392,7 @@ export class ProductoDetallePagina implements OnInit {
       return;
     }
     if (!this.sesion.estaLogueado()) {
-      this.notificacion.advertencia('Debes iniciar sesión o registrarte para comprar ahora.');
+      this.notificacion.advertencia('Debes iniciar sesión para comprar ahora.');
       return;
     }
     if (!this.validarInventarioParaCantidadComprarAhora()) return;

@@ -1,4 +1,9 @@
 <div class="inicio-pagina">
+  <!-- Anuncio temporal: solo se muestra si hay anuncios vigentes -->
+  @if (anunciosTemporales().length) {
+  <app-seccion-anuncio-temporal [anuncios]="anunciosTemporales()"></app-seccion-anuncio-temporal>
+  }
+
   @if (carrusel()!.slides.length) {
   <app-seccion-carrusel [slides]="carrusel()!.slides"></app-seccion-carrusel>
   }

@@ -41,6 +41,13 @@ export const routes: Routes = [
           ),
         canActivate: [crearGuardPorPermiso('ver_perfil', 'perfil')],
       },
+      {
+        path: 'pagina/:etiqueta',
+        loadComponent: () =>
+          import('./tienda/funcionalidades/pagina-contenido/pagina-contenido-pagina/pagina-contenido-pagina').then(
+            (m) => m.PaginaContenidoPagina,
+          ),
+      },
     ],
   },
   // ===== CHECKOUT (SIN HEADER/FOOTER) - Acceso sin login (compra como invitado) =====
@@ -183,6 +190,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/funcionalidades/marketing-admin/pie-de-pagina-admin/pie-de-pagina-admin-pagina/pie-de-pagina-admin-pagina').then(
             (m) => m.PieDePaginaAdminPagina,
+          ),
+      },
+      {
+        path: 'marketing/anuncios-temporales',
+        loadComponent: () =>
+          import('./admin/funcionalidades/marketing-admin/anuncios-temporales-admin/anuncios-temporales-admin-pagina/anuncios-temporales-admin-pagina').then(
+            (m) => m.AnunciosTemporalesAdminPagina,
           ),
       },
       // ===== MÉTRICAS =====

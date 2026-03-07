@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ModalSidebarServicio } from '../../servicios/modal-sidebar.servicio';
 
@@ -23,7 +23,7 @@ interface OpcionMenu {
   templateUrl: './barra-lateral-admin.html',
   styleUrl: './barra-lateral-admin.css',
 })
-export class BarraLateralAdmin {
+export class BarraLateralAdmin implements OnInit {
   private modalServicio = inject(ModalSidebarServicio);
   private router = inject(Router);
 
@@ -72,13 +72,14 @@ export class BarraLateralAdmin {
       texto: 'Marketing',
       icono: '/iconos/ico-marketing.svg',
       activo: false,
-      opciones: ['Encabezado', 'Promocion', 'Carrusel', 'Categorias', 'Pie de pagina'],
+      opciones: ['Encabezado', 'Promocion', 'Carrusel', 'Categorias', 'Pie de pagina', 'Anuncios'],
       rutasSubOpciones: {
         'Encabezado': '/admin/marketing/encabezado',
         'Promocion': '/admin/marketing/promocion',
         'Carrusel': '/admin/marketing/carrusel',
         'Categorias': '/admin/marketing/categorias',
         'Pie de pagina': '/admin/marketing/pie-de-pagina',
+        'Anuncios': '/admin/marketing/anuncios-temporales',
       },
       estaDesplegado: false,
     },
@@ -101,6 +102,46 @@ export class BarraLateralAdmin {
       estaDesplegado: false,
     }
   ];
+
+  ngOnInit(): void {
+    this.sincronizarConRutaActual();
+  }
+
+  // Sincroniza el menú con la URL actual al cargar/refrescar la página
+  private sincronizarConRutaActual(): void {
+    const rutaActual = this.router.url;
+
+    // Desactivar todas las opciones primero
+    this.opcionesMenu.forEach((opcion) => {
+      opcion.activo = false;
+      opcion.estaDesplegado = false;
+      opcion.subOpcionSeleccionada = undefined;
+    });
+
+    // Buscar coincidencia con la ruta actual
+    for (const opcion of this.opcionesMenu) {
+      // Si la opción tiene ruta directa
+      if (opcion.ruta && rutaActual === opcion.ruta) {
+        opcion.activo = true;
+        return;
+      }
+
+      // Si la opción tiene subopciones
+      if (opcion.rutasSubOpciones) {
+        for (const [nombreSubopcion, rutaSubopcion] of Object.entries(opcion.rutasSubOpciones)) {
+          if (rutaActual === rutaSubopcion || rutaActual.startsWith(rutaSubopcion + '/')) {
+            opcion.estaDesplegado = true;
+            opcion.subOpcionSeleccionada = nombreSubopcion;
+            return;
+          }
+        }
+      }
+    }
+
+    // Si no hay coincidencia, activar inicio por defecto
+    const inicio = this.opcionesMenu.find((o) => o.id === 'inicio');
+    if (inicio) inicio.activo = true;
+  }
 
   // FASE 3: Cerrar el modal cuando se hace click en el overlay
   cerrarModal() {

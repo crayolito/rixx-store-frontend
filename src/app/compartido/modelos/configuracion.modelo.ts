@@ -8,6 +8,25 @@ export interface ConfGeneral {
   categoriasMarketing?: { categorias: CategoriaMarketing[] };
   destacados?: ConfiguracionDestacados;
   pieDePagina?: ConfPieDePagina;
+  anuncioTemporal?: ConfAnuncioTemporal;
+}
+
+// Interfaz de la configuración de Anuncios Temporales
+export type TipoDestinoAnuncio = 'ninguno' | 'producto' | 'categoria';
+
+export interface AnuncioTemporal {
+  id: string;
+  activo: boolean;
+  imagenMovil: string;
+  imagenDesktop: string;
+  fechaInicio: string;
+  fechaFin: string;
+  tipoDestino: TipoDestinoAnuncio;
+  destinoHandle?: string;
+}
+
+export interface ConfAnuncioTemporal {
+  anuncios: AnuncioTemporal[];
 }
 
 // Alias para compatibilidad con componentes
@@ -43,7 +62,7 @@ export interface CategoriaConfiguracion {
   titulo: string;
 }
 
-export type TipoOpcionPie = 'enlace' | 'telefono' | 'correo';
+export type TipoOpcionPie = 'enlace' | 'telefono' | 'correo' | 'pagina';
 
 export interface OpcionSeccionPie {
   id: string;
@@ -52,6 +71,7 @@ export interface OpcionSeccionPie {
   path: string;
   numero?: string;
   correo?: string;
+  contenidoHtml?: string;
 }
 
 export interface SeccionPie {
@@ -184,4 +204,5 @@ export interface OpcionPieDePagina {
   path: string;
   numero?: string;
   correo?: string;
+  contenidoHtml?: string;
 }

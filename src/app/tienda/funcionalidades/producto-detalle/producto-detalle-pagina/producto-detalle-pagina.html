@@ -231,7 +231,7 @@
           <button type="button" class="boton-primario tienda-producto-detalle__boton"
             [disabled]="productoTodoAgotado() || cantidadMaxima() === 0 || cantidad() < 1" (click)="agregarAlCarrito()">Agregar al carrito</button>
           <button type="button" class="boton-primario tienda-producto-detalle__boton"
-            [disabled]="!puedeComprarAhora() || productoTodoAgotado() || cantidadMaxima() === 0 || cantidad() < 1" (click)="comprarAhora()">Comprar ahora</button>
+            [disabled]="productoTodoAgotado() || cantidadMaxima() === 0 || cantidad() < 1" (click)="comprarAhora()">Comprar ahora</button>
         </div>
       </div>
     </div>

@@ -1,0 +1,367 @@
+/* ─── ESTILOS BASE (MÓVIL) ─── */
+
+.contenedor-pagina {
+  width: 100%;
+  padding: var(--espaciado-md) 0;
+  color: var(--color-fondo-base);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-lg);
+  margin: 0 auto;
+  max-width: var(--ancho-contenedor-pequeno);
+}
+
+.anuncios-admin-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-md);
+}
+
+.anuncios-admin-tarjeta {
+  background-color: var(--color-fondo-cuaternario);
+  border-radius: var(--borde-radio);
+  padding: var(--espaciado-lg);
+  border: 1px solid var(--color-borde-suave);
+}
+
+.anuncios-admin-cabecera-principal {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espaciado-sm);
+  margin-bottom: var(--espaciado-xs);
+}
+
+.anuncios-admin-botones-cabecera {
+  display: flex;
+  flex-direction: row;
+  gap: var(--espaciado-sm);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.anuncios-admin-titulo-contenedor {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  flex-wrap: wrap;
+}
+
+.anuncios-admin-titulo {
+  font-size: var(--texto-h2);
+  font-weight: var(--peso-semibold);
+  margin: 0;
+  color: var(--color-fondo-base);
+}
+
+.anuncios-admin-cambios-sin-guardar {
+  color: var(--color-primario);
+  font-weight: var(--peso-semibold);
+  font-size: var(--texto-base);
+}
+
+.anuncios-admin-mensaje-contenedor {
+  padding: var(--espaciado-sm) var(--espaciado-md);
+  background-color: rgba(139, 168, 47, 0.1);
+  border-radius: var(--borde-radio-pequeno);
+  border-left: 4px solid var(--color-primario);
+}
+
+.anuncios-admin-mensaje-contenedor--error {
+  background-color: rgba(192, 57, 43, 0.08);
+  border-left-color: var(--color-error, #c0392b);
+}
+
+.anuncios-admin-mensaje {
+  font-size: var(--texto-base);
+  color: var(--color-primario);
+  display: block;
+}
+
+.anuncios-admin-mensaje-contenedor--error .anuncios-admin-mensaje {
+  color: var(--color-error, #c0392b);
+}
+
+.anuncios-admin-ayuda {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+  margin: 0 0 var(--espaciado-sm) 0;
+  line-height: 1.4;
+}
+
+.anuncios-admin-vacio {
+  text-align: center;
+  padding: var(--espaciado-xl);
+  color: var(--color-fondo-septimo);
+  background-color: var(--color-fondo-noveno);
+  border-radius: var(--borde-radio);
+  border: 1px dashed var(--color-borde-suave);
+}
+
+.anuncios-admin-item {
+  background-color: var(--color-fondo-noveno);
+  border-radius: var(--borde-radio);
+  padding: var(--espaciado-md);
+  border: 1px solid var(--color-borde-suave);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-md);
+}
+
+.anuncios-admin-item--inactivo {
+  opacity: 0.6;
+  border-color: var(--color-borde-suave);
+}
+
+.anuncios-admin-item-cabecera {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espaciado-sm);
+}
+
+.anuncios-admin-item-info {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-md);
+  flex-wrap: wrap;
+}
+
+.anuncios-admin-item-numero {
+  font-size: var(--texto-base);
+  font-weight: var(--peso-medio);
+  color: var(--color-fondo-base);
+}
+
+.anuncios-admin-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-xs);
+  cursor: pointer;
+}
+
+.anuncios-admin-toggle input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-primario);
+}
+
+.anuncios-admin-toggle-texto {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+}
+
+.anuncios-admin-boton-quitar {
+  font-size: var(--texto-pequeno);
+}
+
+.anuncios-admin-fechas-fila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-md);
+}
+
+.anuncios-admin-campo-fecha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+}
+
+.anuncios-admin-campo-fecha input[type="datetime-local"] {
+  padding: var(--espaciado-sm) var(--espaciado-md);
+  border-radius: var(--borde-radio-pequeno);
+  border: 1px solid var(--color-borde-suave);
+  background-color: var(--color-fondo-cuaternario);
+  color: var(--color-fondo-base);
+  font-size: var(--texto-base);
+}
+
+.anuncios-admin-imagenes-fila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-md);
+}
+
+.anuncios-admin-campo-imagen .formulario-imagenes__contenedor-imagenes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+}
+
+.anuncios-admin-campo-imagen .global-formulario-imagenes__contenedor:hover {
+  border-color: var(--color-primario);
+}
+
+
+.anuncios-admin-destino-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-md);
+  padding-top: var(--espaciado-xs);
+}
+
+.anuncios-admin-etiqueta-destino {
+  display: block;
+  margin-bottom: var(--espaciado-xs);
+}
+
+.anuncios-admin-opciones-destino {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaciado-md);
+}
+
+.anuncios-admin-radio-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaciado-sm);
+  padding: var(--espaciado-sm) var(--espaciado-md);
+  cursor: pointer;
+  font-size: var(--texto-base);
+  line-height: 1.4;
+  color: var(--color-fondo-base);
+  background-color: var(--color-fondo-cuaternario);
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--borde-radio);
+  min-height: 2.5rem;
+}
+
+.anuncios-admin-radio-item:hover {
+  border-color: var(--color-primario);
+  background-color: var(--color-fondo-quinario);
+}
+
+.anuncios-admin-radio-item--activa {
+  background-color: var(--color-primario-suave, rgba(139, 168, 47, 0.12));
+  border-color: var(--color-primario);
+}
+
+.anuncios-admin-radio-item input[type="radio"] {
+  margin: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--color-primario);
+  cursor: pointer;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.anuncios-admin-radio-texto {
+  user-select: none;
+  line-height: 1.4;
+}
+
+.anuncios-admin-destino-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-md);
+  margin-top: var(--espaciado-sm);
+  padding: var(--espaciado-md);
+  background-color: var(--color-fondo-cuaternario);
+  border-radius: var(--borde-radio);
+  border: 1px solid var(--color-borde-suave);
+}
+
+.anuncios-admin-seleccionado {
+  font-size: var(--texto-base);
+  color: var(--color-fondo-septimo);
+  margin: 0;
+  padding-bottom: var(--espaciado-xs);
+}
+
+.anuncios-admin-buscador-contenedor {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  padding: var(--espaciado-sm) var(--espaciado-md);
+  background-color: var(--color-fondo-noveno);
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--borde-radio-pequeno);
+}
+
+.anuncios-admin-buscador-icono {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.anuncios-admin-buscador-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: var(--espaciado-xs) 0;
+  color: var(--color-fondo-base);
+}
+
+.anuncios-admin-lista-opciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-sm);
+  max-height: 14rem;
+  overflow-y: auto;
+  padding: var(--espaciado-md);
+  background-color: var(--color-fondo-noveno);
+  border-radius: var(--borde-radio-pequeno);
+  border: 1px solid var(--color-borde-suave);
+}
+
+.anuncios-admin-opcion {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--espaciado-md) var(--espaciado-lg);
+  font-size: var(--texto-base);
+  color: var(--color-fondo-base);
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--borde-radio-pequeno);
+  cursor: pointer;
+}
+
+.anuncios-admin-opcion:hover {
+  background-color: var(--color-fondo-quinario);
+}
+
+.anuncios-admin-opcion--activa {
+  background-color: var(--color-primario-suave, rgba(139, 168, 47, 0.15));
+  border-color: var(--color-primario);
+}
+
+.anuncios-admin-sin-resultados {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+}
+
+.anuncios-admin-agregar-contenedor {
+  margin-top: var(--espaciado-sm);
+}
+
+/* ─── TABLET (768px en adelante) ─── */
+@media (min-width: 768px) {
+  .anuncios-admin-fechas-fila {
+    flex-direction: row;
+    gap: var(--espaciado-lg);
+  }
+
+  .anuncios-admin-campo-fecha {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .anuncios-admin-imagenes-fila {
+    flex-direction: row;
+    gap: var(--espaciado-lg);
+  }
+
+  .anuncios-admin-campo-imagen {
+    flex: 1;
+    min-width: 0;
+  }
+}

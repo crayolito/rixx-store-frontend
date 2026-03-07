@@ -1,0 +1,17 @@
+<div class="pagina-contenido">
+  @if (cargando()) {
+    <div class="pagina-contenido__cargando">
+      <p>Cargando...</p>
+    </div>
+  } @else if (noEncontrada()) {
+    <div class="pagina-contenido__no-encontrada">
+      <h1>Página no encontrada</h1>
+      <p>La página que buscas no existe o ha sido eliminada.</p>
+      <button type="button" class="boton-primario" (click)="volver()">Volver al inicio</button>
+    </div>
+  } @else {
+    <article class="pagina-contenido__articulo">
+      <div class="pagina-contenido__html" [innerHTML]="contenidoHtml()"></div>
+    </article>
+  }
+</div>

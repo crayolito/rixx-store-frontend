@@ -1,0 +1,35 @@
+@if (anunciosVigentes().length > 0) {
+<section class="anuncio-temporal">
+  <div class="anuncio-temporal__contenedor">
+    @for (anuncio of anunciosVigentes(); track anuncio.id; let i = $index) {
+    <div class="anuncio-temporal__slide" [class.anuncio-temporal__slide--activo]="i === indiceActivo()">
+      @if (anuncio.tipoDestino !== 'ninguno' && anuncio.destinoHandle) {
+      <a class="anuncio-temporal__enlace anuncio-temporal__enlace--clickeable"
+        (click)="navegarADestino(anuncio)">
+        <img [src]="esMovil ? anuncio.imagenMovil : anuncio.imagenDesktop" [alt]="'Anuncio ' + anuncio.id"
+          class="anuncio-temporal__imagen">
+      </a>
+      } @else {
+      <div class="anuncio-temporal__enlace">
+        <img [src]="esMovil ? anuncio.imagenMovil : anuncio.imagenDesktop" [alt]="'Anuncio ' + anuncio.id"
+          class="anuncio-temporal__imagen">
+      </div>
+      }
+    </div>
+    }
+
+    <!-- Indicadores (solo si hay más de 1 anuncio) -->
+    @if (anunciosVigentes().length > 1) {
+    <div class="anuncio-temporal__indicadores">
+      @for (anuncio of anunciosVigentes(); track anuncio.id; let i = $index) {
+      <button class="anuncio-temporal__indicador" [class.anuncio-temporal__indicador--activo]="i === indiceActivo()"
+        (click)="irAAnuncio(i)" [attr.aria-label]="'Ir al anuncio ' + (i + 1)">
+      </button>
+      }
+    </div>
+    }
+  </div>
+
+  <!-- Botón cerrar (opcional para el futuro) -->
+</section>
+}

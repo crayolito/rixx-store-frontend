@@ -1,6 +1,7 @@
 import { Component, effect, inject, signal } from '@angular/core';
-import { CategoriaDestacada, ConfCarrusel, ConfPromocion } from '../../../../compartido/modelos/configuracion.modelo';
+import { AnuncioTemporal, CategoriaDestacada, ConfCarrusel, ConfPromocion } from '../../../../compartido/modelos/configuracion.modelo';
 import { ConfiguracionServicio } from '../../../../compartido/servicios/configuracion.servicio';
+import { SeccionAnuncioTemporal } from '../../secciones-dinamicas/componentes/seccion-anuncio-temporal/seccion-anuncio-temporal';
 import { SeccionCarrusel } from '../../secciones-dinamicas/componentes/seccion-carrusel/seccion-carrusel';
 import { SeccionCategorias } from '../../secciones-dinamicas/componentes/seccion-categorias/seccion-categorias';
 import { SeccionPromocion } from '../../secciones-dinamicas/componentes/seccion-promocion/seccion-promocion';
@@ -8,7 +9,7 @@ import { SeccionPromocion } from '../../secciones-dinamicas/componentes/seccion-
 @Component({
   selector: 'app-inicio-pagina',
   standalone: true,
-  imports: [SeccionCarrusel, SeccionPromocion, SeccionCategorias],
+  imports: [SeccionCarrusel, SeccionPromocion, SeccionCategorias, SeccionAnuncioTemporal],
   templateUrl: './inicio-pagina.html',
   styleUrl: './inicio-pagina.css',
 })
@@ -18,6 +19,7 @@ export class InicioPagina {
   readonly carrusel = signal<ConfCarrusel>({ slides: [] });
   readonly promocion = signal<ConfPromocion>({ titulo: '', items: [] });
   readonly categorias = signal<CategoriaDestacada[]>([]);
+  readonly anunciosTemporales = signal<AnuncioTemporal[]>([]);
 
   constructor() {
     effect(() => {
@@ -26,6 +28,11 @@ export class InicioPagina {
 
       if (config.carrusel) this.carrusel.set(config.carrusel);
       if (config.promocion) this.promocion.set(config.promocion);
+
+      // Anuncios temporales
+      if (config.anuncioTemporal?.anuncios) {
+        this.anunciosTemporales.set(config.anuncioTemporal.anuncios);
+      }
 
       // Categorías: prioridad categorias → categoria.categorias → categoriasMarketing.categorias (donde guarda el admin)
       const lista =
@@ -36,5 +43,4 @@ export class InicioPagina {
       this.categorias.set(lista);
     });
   }
-
 }

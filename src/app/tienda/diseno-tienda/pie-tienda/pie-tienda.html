@@ -27,6 +27,8 @@
             <span class="tienda-footer__contacto-label">{{ opcion.etiqueta }}:</span>
             <a [href]="urlEnlace(opcion)" class="tienda-footer__contacto-link">{{ textoContacto(opcion) }}</a>
           </p>
+          } @else if (opcion.tipo === 'pagina') {
+          <a [routerLink]="'/pagina/' + opcion.etiqueta" class="tienda-footer__enlace">{{ opcion.etiqueta }}</a>
           } @else {
           @if (esEnlaceInterno(opcion.path)) {
           <a [routerLink]="opcion.path" class="tienda-footer__enlace">{{ opcion.etiqueta }}</a>
