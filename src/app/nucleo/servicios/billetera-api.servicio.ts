@@ -105,4 +105,20 @@ export class BilleteraApiServicio {
       this.headersConAuth()
     );
   }
+
+  /** Obtiene el saldo actual del usuario autenticado. GET /billetera/saldo */
+  obtenerSaldo(): Observable<{ exito: boolean; saldo: number }> {
+    return this.httpBase
+      .obtenerConOpciones<{ exito: boolean; datos?: { saldo: number }; saldo?: number }>(
+        '/billetera/saldo',
+        this.headersConAuth()
+      )
+      .pipe(
+        map((r) => {
+          if (!r?.exito) throw new Error('Error al obtener saldo');
+          const saldo = r.datos?.saldo ?? r.saldo ?? 0;
+          return { exito: true, saldo };
+        })
+      );
+  }
 }

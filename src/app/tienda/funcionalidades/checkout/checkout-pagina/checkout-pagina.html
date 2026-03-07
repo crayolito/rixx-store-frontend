@@ -13,13 +13,20 @@
         <img src="/iconos/ico-flecha-izquierda-tabla.svg" alt="Volver" class="checkout-pagina__icono-volver">
         <span>Volver</span>
       </button>
-      <h1 class="checkout-pagina__titulo">Finalizar Compra</h1>
+      <h1 class="checkout-pagina__titulo">
+        @if (esRecarga()) {
+          Recargar Billetera
+        } @else {
+          Finalizar Compra
+        }
+      </h1>
     </div>
 
     <div class="checkout-pagina__grid">
       <!-- ─── COLUMNA IZQUIERDA: Formulario ─── -->
       <div class="checkout-pagina__izquierda">
-        <!-- Datos del cliente -->
+        <!-- Datos del cliente (solo para compras, no recargas) -->
+        @if (!esRecarga()) {
         <div class="checkout-pagina__seccion">
           <div class="checkout-pagina__seccion-header">
             <h2 class="checkout-pagina__seccion-titulo">Datos del Cliente</h2>
@@ -95,11 +102,38 @@
           </div>
           }
         </div>
+        }
 
         <!-- Métodos de pago -->
         <div class="checkout-pagina__seccion">
           <h2 class="checkout-pagina__seccion-titulo">Método de Pago</h2>
           <div class="checkout-pagina__metodos-pago">
+            <!-- Opción: Pagar con Billetera (solo para compras, no recargas) -->
+            @if (!esRecarga() && saldoBilletera() > 0) {
+            <label class="checkout-pagina__metodo-pago checkout-pagina__metodo-pago--billetera"
+              [class.checkout-pagina__metodo-pago--seleccionado]="pagarConBilletera()"
+              [class.checkout-pagina__metodo-pago--insuficiente]="!tieneSaldoSuficiente()">
+              <div class="checkout-pagina__metodo-contenido">
+                <div class="checkout-pagina__metodo-radio"></div>
+                <input type="radio" name="metodo-pago" class="checkout-pagina__radio-input"
+                  [value]="'billetera'"
+                  [checked]="pagarConBilletera()"
+                  [disabled]="!tieneSaldoSuficiente()"
+                  (change)="seleccionarPagoBilletera()">
+                <img src="/iconos/ico-billetera.svg" alt="Billetera" class="checkout-pagina__metodo-logo">
+                <div class="checkout-pagina__metodo-info">
+                  <p class="checkout-pagina__metodo-nombre">Pagar con Billetera</p>
+                  <p class="checkout-pagina__metodo-descripcion">
+                    Saldo disponible: ${{ saldoBilletera() | number:'1.2-2' }} USD
+                    @if (!tieneSaldoSuficiente()) {
+                    <span class="checkout-pagina__saldo-insuficiente"> (Saldo insuficiente)</span>
+                    }
+                  </p>
+                </div>
+              </div>
+            </label>
+            }
+
             @for (metodo of metodosPago(); track metodo.id_metodo_pago) {
             @if (metodo.activo !== false) {
             <label class="checkout-pagina__metodo-pago"
@@ -123,9 +157,30 @@
         </div>
       </div>
 
-      <!-- ─── COLUMNA DERECHA: Resumen del pedido ─── -->
+      <!-- ─── COLUMNA DERECHA: Resumen del pedido o recarga ─── -->
       <div class="checkout-pagina__derecha">
         <div class="checkout-pagina__resumen">
+          @if (esRecarga()) {
+          <!-- Resumen de recarga -->
+          <h2 class="checkout-pagina__resumen-titulo">Resumen de Recarga</h2>
+          <div class="checkout-pagina__recarga-info">
+            <div class="checkout-pagina__recarga-icono">
+              <img src="/iconos/ico-billetera.svg" alt="Billetera">
+            </div>
+            <p class="checkout-pagina__recarga-texto">Recarga de billetera</p>
+            <p class="checkout-pagina__recarga-monto">${{ montoRecarga() | number:'1.2-2' }} USD</p>
+          </div>
+
+          <!-- Total -->
+          <div class="checkout-pagina__totales">
+            <div class="checkout-pagina__total-item checkout-pagina__total-item--final">
+              <span>Total a pagar:</span>
+              <span class="checkout-pagina__total-precio">${{ total() | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          } @else {
+          <!-- Resumen de compra normal -->
           <h2 class="checkout-pagina__resumen-titulo">Resumen del Pedido</h2>
 
           <!-- Lista de productos -->
@@ -164,13 +219,16 @@
               <span class="checkout-pagina__total-precio">${{ total() | number:'1.2-2' }}</span>
             </div>
           </div>
+          }
 
-          <!-- Botón confirmar pedido: deshabilitado solo mientras se procesa -->
+          <!-- Botón confirmar -->
           <button type="button" class="boton-primario checkout-pagina__boton-procesar"
             [disabled]="estaProcesando()"
             (click)="procesarPago()">
             @if (estaProcesando()) {
-            <span>Procesando pedido...</span>
+            <span>Procesando...</span>
+            } @else if (esRecarga()) {
+            <span>Pagar Recarga (${{ total() | number:'1.2-2' }})</span>
             } @else {
             <span>Confirmar pedido</span>
             }

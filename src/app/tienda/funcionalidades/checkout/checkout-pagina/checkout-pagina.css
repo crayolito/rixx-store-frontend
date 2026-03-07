@@ -188,6 +188,157 @@
   font-size: var(--texto-pequeno);
 }
 
+/* ─── Icono en título de sección ─── */
+.checkout-pagina__seccion-icono {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin-right: var(--espaciado-xxs);
+}
+
+/* ─── Sección Billetera ─── */
+.checkout-pagina__billetera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-sm);
+  margin-top: var(--espaciado-sm);
+}
+
+.checkout-pagina__billetera-saldo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--espaciado-sm);
+  background: linear-gradient(135deg, rgba(164, 196, 57, 0.12) 0%, rgba(164, 196, 57, 0.04) 100%);
+  border: 1px solid rgba(164, 196, 57, 0.3);
+  border-radius: var(--borde-radio);
+}
+
+.checkout-pagina__billetera-etiqueta {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+  font-weight: var(--peso-medium);
+}
+
+.checkout-pagina__billetera-monto {
+  font-size: var(--texto-base);
+  color: var(--color-primario);
+  font-weight: var(--peso-bold);
+}
+
+.checkout-pagina__billetera-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-sm);
+  cursor: pointer;
+  padding: var(--espaciado-xs) 0;
+}
+
+.checkout-pagina__billetera-checkbox {
+  display: none;
+}
+
+.checkout-pagina__billetera-slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: var(--color-fondo-septimo);
+  border-radius: 12px;
+  transition: background-color var(--transicion-normal);
+  flex-shrink: 0;
+}
+
+.checkout-pagina__billetera-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background-color: var(--color-fondo-cuaternario);
+  border-radius: 50%;
+  transition: transform var(--transicion-normal);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.checkout-pagina__billetera-checkbox:checked + .checkout-pagina__billetera-slider {
+  background-color: var(--color-primario);
+}
+
+.checkout-pagina__billetera-checkbox:checked + .checkout-pagina__billetera-slider::after {
+  transform: translateX(20px);
+}
+
+.checkout-pagina__billetera-label {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-base);
+  font-weight: var(--peso-medium);
+}
+
+.checkout-pagina__billetera-info {
+  padding: var(--espaciado-sm);
+  background-color: var(--color-fondo-quinario);
+  border-radius: var(--borde-radio);
+  border-left: 3px solid var(--color-primario);
+}
+
+.checkout-pagina__billetera-desglose {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-xs);
+}
+
+.checkout-pagina__billetera-linea {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+}
+
+.checkout-pagina__billetera-linea--destacado {
+  font-weight: var(--peso-semibold);
+  color: var(--color-fondo-base);
+  padding-top: var(--espaciado-xs);
+  border-top: 1px dashed var(--color-borde-suave);
+}
+
+.checkout-pagina__billetera-verde {
+  color: var(--color-exito);
+  font-weight: var(--peso-semibold);
+}
+
+.checkout-pagina__billetera-restante {
+  color: var(--color-primario);
+  font-weight: var(--peso-bold);
+}
+
+.checkout-pagina__billetera-nota {
+  font-size: var(--texto-mini);
+  color: var(--color-fondo-septimo);
+  margin: var(--espaciado-xs) 0 0 0;
+  font-style: italic;
+}
+
+.checkout-pagina__billetera-vacia {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+  margin: 0;
+  padding: var(--espaciado-sm);
+  background-color: var(--color-fondo-quinario);
+  border-radius: var(--borde-radio);
+  text-align: center;
+}
+
+.checkout-pagina__billetera-link {
+  color: var(--color-primario);
+  text-decoration: none;
+  font-weight: var(--peso-semibold);
+}
+
+.checkout-pagina__billetera-link:hover {
+  text-decoration: underline;
+}
+
 /* ─── Métodos de pago ─── */
 .checkout-pagina__metodos-pago {
   display: flex;
@@ -299,6 +450,31 @@
   line-height: 1.35;
 }
 
+/* ─── Método de pago billetera ─── */
+.checkout-pagina__metodo-pago--billetera .checkout-pagina__metodo-contenido {
+  background: linear-gradient(135deg, rgba(164, 196, 57, 0.08) 0%, rgba(164, 196, 57, 0.02) 100%);
+}
+
+.checkout-pagina__metodo-pago--insuficiente {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.checkout-pagina__metodo-pago--insuficiente .checkout-pagina__metodo-contenido {
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.checkout-pagina__metodo-pago--insuficiente:hover .checkout-pagina__metodo-contenido {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.checkout-pagina__saldo-insuficiente {
+  color: var(--color-error);
+  font-weight: var(--peso-semibold);
+}
+
 /* ─── Columna derecha ─── */
 .checkout-pagina__derecha {
   width: 100%;
@@ -318,6 +494,49 @@
   font-weight: var(--peso-semibold);
   color: var(--color-fondo-base);
   margin-bottom: var(--espaciado-md);
+}
+
+/* ─── Recarga de billetera ─── */
+.checkout-pagina__recarga-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaciado-md);
+  padding: var(--espaciado-xl) var(--espaciado-md);
+  background: linear-gradient(135deg, rgba(164, 196, 57, 0.08) 0%, rgba(164, 196, 57, 0.02) 100%);
+  border: 1px solid var(--color-primario);
+  border-radius: var(--borde-radio-grande);
+  margin-bottom: var(--espaciado-md);
+}
+
+.checkout-pagina__recarga-icono {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primario);
+  border-radius: 50%;
+  padding: var(--espaciado-sm);
+}
+
+.checkout-pagina__recarga-icono img {
+  width: 32px;
+  height: 32px;
+  filter: brightness(0) invert(1);
+}
+
+.checkout-pagina__recarga-texto {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+  margin: 0;
+}
+
+.checkout-pagina__recarga-monto {
+  font-size: var(--texto-h2);
+  font-weight: var(--peso-bold);
+  color: var(--color-primario);
+  margin: 0;
 }
 
 /* ─── Productos ─── */
@@ -408,6 +627,15 @@
   color: var(--color-fondo-septimo);
 }
 
+.checkout-pagina__total-item--billetera {
+  color: var(--color-exito);
+}
+
+.checkout-pagina__total-billetera {
+  color: var(--color-exito);
+  font-weight: var(--peso-semibold);
+}
+
 .checkout-pagina__total-item--final {
   font-size: var(--texto-base);
   font-weight: var(--peso-bold);
@@ -418,6 +646,12 @@
 
 .checkout-pagina__total-precio {
   color: var(--color-primario);
+}
+
+.checkout-pagina__total-nota {
+  font-size: var(--texto-mini);
+  font-weight: var(--peso-normal);
+  color: var(--color-exito);
 }
 
 /* ─── Botón procesar ─── */

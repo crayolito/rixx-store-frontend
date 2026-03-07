@@ -5,7 +5,7 @@
       <img src="/iconos/ico-billetera.svg" alt="" aria-hidden="true">
     </div>
     <p class="perfil-billetera-saldo__etiqueta">Saldo disponible</p>
-    <p class="perfil-billetera-saldo__monto">${{ saldoActual() }}</p>
+    <p class="perfil-billetera-saldo__monto">${{ saldoActual() | number:'1.2-2' }}</p>
     <p class="perfil-billetera-saldo__moneda">USD</p>
   </div>
   <div class="perfil-billetera-saldo__decoracion"></div>
@@ -39,34 +39,12 @@
   </div>
 </div>
 
-<!-- Métodos de pago -->
-<div class="perfil-billetera-metodos">
-  <label class="perfil-billetera-metodos__etiqueta">Método de pago</label>
-  <div class="perfil-billetera-metodos__lista">
-    @for (metodo of metodosPago(); track metodo.id_metodo_pago) {
-    <label class="perfil-billetera-metodo-card">
-      <div class="perfil-billetera-metodo-card__contenido">
-        <input type="radio" class="perfil-billetera-metodo-card__radio" name="metodo-pago"
-          [value]="metodo.id_metodo_pago"
-          [checked]="metodoPagoSeleccionado() === metodo.id_metodo_pago"
-          (change)="seleccionarMetodoPago(metodo.id_metodo_pago)">
-        <img [src]="metodo.logo" [alt]="metodo.nombre" class="perfil-billetera-metodo-card__logo">
-        <div class="perfil-billetera-metodo-card__info">
-          <p class="perfil-billetera-metodo-card__nombre">{{ metodo.nombre }}</p>
-          <p class="perfil-billetera-metodo-card__descripcion">{{ metodo.descripcion }}</p>
-        </div>
-      </div>
-    </label>
-    } @empty {
-    <p class="perfil-billetera-historial__vacio">No hay métodos de pago disponibles</p>
-    }
-  </div>
+<!-- Botón recargar centrado -->
+<div class="perfil-billetera-recargar-contenedor">
+  <button class="perfil-billetera-recargar" (click)="recargarBilletera()" [disabled]="!puedeRecargar()" type="button">
+    Recargar Billetera
+  </button>
 </div>
-
-<!-- Botón recargar -->
-<button class="perfil-billetera-recargar" (click)="recargarBilletera()" [disabled]="!puedeRecargar()" type="button">
-  Recargar
-</button>
 
 <!-- Historial de transacciones -->
 <div class="perfil-billetera-historial">

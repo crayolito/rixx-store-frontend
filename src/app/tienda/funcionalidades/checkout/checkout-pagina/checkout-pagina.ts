@@ -1,12 +1,13 @@
 import { CommonModule, Location } from '@angular/common';
 import { ChangeDetectorRef, Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NotificacionToast } from '../../../../compartido/componentes/notificacion-toast/notificacion-toast';
 import { CrearPedidoCuerpo } from '../../../../compartido/modelos/pedido.modelo';
 import type { ItemCarrito } from '../../../../compartido/servicios/carrito.servicio';
 import { CarritoServicio } from '../../../../compartido/servicios/carrito.servicio';
 import { NotificacionServicio } from '../../../../compartido/servicios/notificacion';
+import { BilleteraApiServicio } from '../../../../nucleo/servicios/billetera-api.servicio';
 import { MetodosPagoApiServicio, type MetodoPagoUINormalizado } from '../../../../nucleo/servicios/metodos-pago-api.servicio';
 import { PedidosApiServicio } from '../../../../nucleo/servicios/pedidos-api.servicio';
 import { Sesion } from '../../../../nucleo/servicios/sesion';
@@ -28,16 +29,29 @@ export class CheckoutPagina implements OnInit, OnDestroy {
   // FASE 2: Servicios
   private carritoServicio = inject(CarritoServicio);
   private metodosPagoApi = inject(MetodosPagoApiServicio);
+  private billeteraApi = inject(BilleteraApiServicio);
   private pedidosApi = inject(PedidosApiServicio);
   private notificacion = inject(NotificacionServicio);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private location = inject(Location);
   private cdr = inject(ChangeDetectorRef);
   private sesion = inject(Sesion);
 
+  // Modo recarga de billetera (viene desde la página de billetera)
+  esRecarga = signal(false);
+  montoRecarga = signal(0);
+
   items = this.carritoServicio.items;
   subtotal = this.carritoServicio.subtotal;
-  total = this.carritoServicio.total;
+
+  /** Total a pagar: si es recarga usa montoRecarga, sino usa el total del carrito. */
+  total = computed(() => {
+    if (this.esRecarga()) {
+      return this.montoRecarga();
+    }
+    return this.carritoServicio.total();
+  });
 
   readonly metodosPago = signal<MetodoPagoUINormalizado[]>([]);
 
@@ -83,15 +97,26 @@ export class CheckoutPagina implements OnInit, OnDestroy {
     return id == null ? null : this.metodosPago().find((m) => m.id_metodo_pago === id) ?? null;
   });
 
+  /** Saldo actual del usuario en billetera. */
+  saldoBilletera = computed(() => this.sesion.usuarioActual()?.saldo ?? 0);
+
+  /** Indica si el usuario tiene saldo suficiente para pagar. */
+  tieneSaldoSuficiente = computed(() => this.saldoBilletera() >= this.total());
+
+  /** Indica si se seleccionó pagar con billetera. */
+  pagarConBilletera = signal(false);
+
+  /** Monto en USDT (total a pagar). */
   montoEnUSDT = computed(() => this.total());
 
+  /** Monto en Bs según tipo de cambio del método seleccionado. */
   montoEnBs = computed(() => {
     const metodo = this.metodoPagoActual();
     const tasa = metodo?.tipo_cambio ?? 10.7;
     return this.total() * tasa;
   });
 
-  // FASE 9: Validación del formulario (método de pago opcional hasta que existan en BD)
+  // FASE 9: Validación del formulario
   formularioValido = computed(() => {
     const datos = this.datosCliente();
     return datos.nombre.trim() !== '' && datos.email.trim() !== '';
@@ -148,6 +173,14 @@ export class CheckoutPagina implements OnInit, OnDestroy {
 
   seleccionarMetodoPago(idMetodo: number): void {
     this.metodoPagoSeleccionado.set(idMetodo);
+    this.pagarConBilletera.set(false);
+    this.cdr.detectChanges();
+  }
+
+  /** Selecciona pagar con saldo de billetera. */
+  seleccionarPagoBilletera(): void {
+    this.pagarConBilletera.set(true);
+    this.metodoPagoSeleccionado.set(null);
     this.cdr.detectChanges();
   }
 
@@ -158,8 +191,8 @@ export class CheckoutPagina implements OnInit, OnDestroy {
       return;
     }
 
-    // Validaciones: solo notificación toast (método de pago opcional hasta que existan en BD)
-    if (!this.formularioValido()) {
+    // Validaciones: solo notificación toast (no aplica para recarga)
+    if (!this.esRecarga() && !this.formularioValido()) {
       this.notificacion.advertencia('Completa todos los campos obligatorios.');
       return;
     }
@@ -169,10 +202,26 @@ export class CheckoutPagina implements OnInit, OnDestroy {
     this.cdr.detectChanges();
 
     try {
+      // Si eligió pagar con billetera
+      if (this.pagarConBilletera()) {
+        if (this.esRecarga()) {
+          this.notificacion.advertencia('No puedes recargar billetera con saldo de billetera.');
+          this.estaProcesando.set(false);
+          return;
+        }
+        this.procesarPagoConBilletera();
+        return;
+      }
+
       const metodo = this.metodoPagoActual();
 
-      // Si no hay método seleccionado, crea el pedido normal
+      // Si no hay método seleccionado
       if (!metodo) {
+        if (this.esRecarga()) {
+          this.notificacion.advertencia('Selecciona un método de pago.');
+          this.estaProcesando.set(false);
+          return;
+        }
         this.crearPedidoDirecto();
         return;
       }
@@ -183,16 +232,134 @@ export class CheckoutPagina implements OnInit, OnDestroy {
       } else if (this.esMetodoVeripagos(metodo)) {
         this.iniciarPagoVeripagos();
       } else {
-        // Otros métodos siguen registrando el pedido directo
+        if (this.esRecarga()) {
+          this.notificacion.error('Método de pago no soportado para recargas.');
+          this.estaProcesando.set(false);
+          return;
+        }
         this.crearPedidoDirecto();
       }
     } catch (error) {
-      // Manejo de errores síncronos
       console.error('Error al procesar pago:', error);
       this.estaProcesando.set(false);
       this.cdr.detectChanges();
       this.notificacion.error('Ocurrió un error inesperado. Por favor, intenta de nuevo.');
     }
+  }
+
+  /** Procesa el pago descontando del saldo de billetera. */
+  private procesarPagoConBilletera(): void {
+    if (!this.tieneSaldoSuficiente()) {
+      this.notificacion.advertencia('Saldo insuficiente en tu billetera.');
+      this.estaProcesando.set(false);
+      return;
+    }
+
+    const fecha = new Date();
+    const numeroPedido = `PED-${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(fecha.getDate()).padStart(2, '0')}-${String(Date.now()).slice(-6)}`;
+    const primerItem = this.items()[0];
+    const descripcion = primerItem 
+      ? `Compra: ${primerItem.titulo}${this.items().length > 1 ? ` y ${this.items().length - 1} más` : ''}`
+      : `Orden ${numeroPedido}`;
+
+    // Primero descontamos del saldo
+    this.billeteraApi.compraConBilletera({
+      monto: this.total(),
+      descripcion,
+      idPedido: null,
+    }).subscribe({
+      next: (resp) => {
+        if (resp.datos?.saldo_nuevo != null) {
+          this.sesion.actualizarSaldo(resp.datos.saldo_nuevo);
+        }
+        // Ahora creamos el pedido
+        this.crearPedidoTrasPagoBilletera(numeroPedido);
+      },
+      error: (err) => {
+        console.error('Error al procesar pago con billetera:', err);
+        this.estaProcesando.set(false);
+        this.cdr.detectChanges();
+        const mensajeError = err?.error?.mensaje || err?.message || 'Error desconocido';
+        this.notificacion.error(`No se pudo procesar el pago: ${mensajeError}`);
+      },
+    });
+  }
+
+  /** Crea el pedido después de descontar de billetera. */
+  private crearPedidoTrasPagoBilletera(numeroPedido: string): void {
+    try {
+      const detalles = this.items().map((item: ItemCarrito) => {
+        const idPrecio = item.varianteId ? parseInt(item.varianteId, 10) : 0;
+        return {
+          idPrecio: idPrecio || 1,
+          idCodigo: null,
+          cantidad: item.cantidad,
+          precioUnitario: item.precio,
+          subtotal: item.precioTotal,
+          valoresCampos: item.camposDinamicos ?? (item.servidor ? { servidor: item.servidor } : {}),
+        };
+      });
+
+      const idUsuario = this.sesion.usuarioActual()?.id || 1;
+
+      const cuerpo: CrearPedidoCuerpo = {
+        idUsuario: idUsuario,
+        numeroPedido: numeroPedido,
+        subtotal: this.subtotal(),
+        descuento: 0,
+        total: this.total(),
+        idMetodoPago: null,
+        notaInterna: `Pago con billetera - Cliente: ${this.datosCliente().nombre} - ${this.datosCliente().email}`,
+        detalles: detalles,
+      };
+
+      this.pedidosApi.crearPedido(cuerpo).subscribe({
+        next: () => {
+          this.carritoServicio.limpiarCarrito();
+          this.estaProcesando.set(false);
+          this.cdr.detectChanges();
+          this.notificacion.exito('¡Pago exitoso! Tu pedido ha sido registrado.');
+          this.router.navigate(['/']);
+        },
+        error: (error) => {
+          console.error('Error al crear pedido tras pago con billetera:', error);
+          this.estaProcesando.set(false);
+          this.cdr.detectChanges();
+          const mensajeError = error?.error?.mensaje || error?.message || 'Error desconocido';
+          this.notificacion.error(
+            `El pago se realizó pero hubo un problema al registrar el pedido: ${mensajeError}. Contacta a soporte.`,
+          );
+        },
+      });
+    } catch (error) {
+      console.error('Error al crear pedido tras pago con billetera:', error);
+      this.estaProcesando.set(false);
+      this.cdr.detectChanges();
+      this.notificacion.error('El pago se realizó pero ocurrió un error al crear el pedido. Contacta a soporte.');
+    }
+  }
+
+  /** Finaliza la recarga de billetera después de confirmar el pago. */
+  finalizarRecarga(): void {
+    const monto = this.montoRecarga();
+    const metodo = this.metodoPagoActual();
+    const descripcion = metodo?.nombre 
+      ? `Recarga con ${metodo.nombre}` 
+      : 'Recarga de billetera';
+
+    this.billeteraApi.recargarBilletera({ monto, descripcion }).subscribe({
+      next: (resp) => {
+        if (resp.datos?.saldo_nuevo != null) {
+          this.sesion.actualizarSaldo(resp.datos.saldo_nuevo);
+        }
+        this.notificacion.exito(`¡Recarga exitosa! Se agregaron $${monto.toFixed(2)} USD a tu billetera.`);
+        this.router.navigate(['/perfil'], { queryParams: { seccion: 'billetera' } });
+      },
+      error: (err) => {
+        console.error('Error al registrar recarga:', err);
+        this.notificacion.error('El pago se recibió pero hubo un error al actualizar el saldo. Contacta soporte.');
+      },
+    });
   }
 
   // Identifica si el método seleccionado corresponde a Binance Pay
@@ -566,6 +733,12 @@ export class CheckoutPagina implements OnInit, OnDestroy {
   }
 
   private finalizarPedidoTrasPagoExterno(): void {
+    // Si es una recarga, finalizar recarga en lugar de crear pedido
+    if (this.esRecarga()) {
+      this.finalizarRecarga();
+      return;
+    }
+
     try {
       const fecha = new Date();
       const numeroPedido = `PED-${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(fecha.getDate()).padStart(2, '0')}-${String(Date.now()).slice(-6)}`;
@@ -719,10 +892,23 @@ export class CheckoutPagina implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    if (this.items().length === 0) {
+    // Verificar si es una recarga de billetera (viene con query params)
+    this.route.queryParams.subscribe((params) => {
+      if (params['tipo'] === 'recarga' && params['monto']) {
+        this.esRecarga.set(true);
+        this.montoRecarga.set(parseFloat(params['monto']) || 0);
+        if (params['metodoPago']) {
+          this.metodoPagoSeleccionado.set(parseInt(params['metodoPago'], 10));
+        }
+      }
+    });
+
+    // Si no es recarga y no hay items en el carrito, redirigir
+    if (!this.esRecarga() && this.items().length === 0) {
       this.router.navigate(['/']);
       return;
     }
+
     this.cargarDatosCliente();
     this.metodosPagoApi.listar(true).subscribe({
       next: (lista) => this.metodosPago.set(lista),

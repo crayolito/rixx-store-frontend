@@ -301,12 +301,20 @@
   margin: 0;
 }
 
+/* ─── Contenedor del botón recargar ─── */
+.perfil-billetera-recargar-contenedor {
+  display: flex;
+  justify-content: center;
+  padding: var(--espaciado-lg) 0;
+  margin-bottom: var(--espaciado-lg);
+}
+
 .perfil-billetera-recargar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--espaciado-md) var(--espaciado-2xl);
-  min-width: 180px;
+  padding: var(--espaciado-md) var(--espaciado-3xl);
+  min-width: 220px;
   font-size: 1.0625rem;
   font-weight: var(--peso-semibold);
   color: var(--color-fondo-base);
@@ -314,12 +322,13 @@
   border: 2px solid var(--color-primario);
   border-radius: var(--borde-radio-grande);
   cursor: pointer;
-  transition: opacity var(--transicion-rapida), transform var(--transicion-rapida);
+  transition: opacity var(--transicion-rapida), transform var(--transicion-rapida), box-shadow var(--transicion-rapida);
 }
 
 .perfil-billetera-recargar:hover:not(:disabled) {
   opacity: 0.95;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(164, 196, 57, 0.3);
 }
 
 .perfil-billetera-recargar:disabled {
