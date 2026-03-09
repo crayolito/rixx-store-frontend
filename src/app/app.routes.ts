@@ -50,14 +50,14 @@ export const routes: Routes = [
       },
     ],
   },
-  // ===== CHECKOUT (SIN HEADER/FOOTER) - Acceso sin login (compra como invitado) =====
+  // ===== CHECKOUT (SIN HEADER/FOOTER) - Requiere sesión de cliente =====
   {
     path: 'checkout',
     loadComponent: () =>
       import('./tienda/funcionalidades/checkout/checkout-pagina/checkout-pagina').then(
         (m) => m.CheckoutPagina,
       ),
-    canActivate: [bloquearAdminGuard],
+    canActivate: [bloquearAdminGuard, crearGuardPorPermiso('ver_checkout', 'checkout')],
   },
   // ===== ADMIN =====
   {

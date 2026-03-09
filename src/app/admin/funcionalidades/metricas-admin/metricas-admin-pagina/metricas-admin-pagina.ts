@@ -153,7 +153,7 @@ export class MetricasAdminPagina {
   graficoLineaYAxis = {
     labels: {
       style: { colors: '#8b92a7', fontSize: '11px' },
-      formatter: (val: number) => '$' + val.toFixed(0)
+      formatter: (val: number) => '$' + val.toFixed(2)
     }
   };
 

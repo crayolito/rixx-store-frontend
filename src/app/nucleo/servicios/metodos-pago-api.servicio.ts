@@ -61,6 +61,7 @@ export interface RespuestaPrepararBinance {
     moneda: string;
     qrImagen: string;
     tipo_cambio?: number;
+    monto_convertido?: number;
   };
   mensaje?: string;
 }
@@ -82,7 +83,7 @@ export interface RespuestaVerificarBinance {
 export interface RespuestaGenerarQrVeripagos {
   exito: boolean;
   datos?: {
-    movimiento_id: number;
+    movimiento_id: number | string;
     qr: string;
     monto?: number;
     monto_convertido?: number;
@@ -196,15 +197,15 @@ export class MetodosPagoApiServicio {
   /** Prepara un pago con Binance Pay para un monto y nota dados. */
   prepararPagoBinance(cuerpo: {
     idMetodoPago: number;
-    monto: number;
+    idPrecio: number;
+    cantidad: number;
     moneda?: string;
-    nota?: string;
   }): Observable<RespuestaPrepararBinance['datos']> {
     const body: Record<string, unknown> = {
       idMetodoPago: cuerpo.idMetodoPago,
-      monto: cuerpo.monto,
+      idPrecio: cuerpo.idPrecio,
+      cantidad: cuerpo.cantidad,
       ...(cuerpo.moneda && { moneda: cuerpo.moneda }),
-      ...(cuerpo.nota && { nota: cuerpo.nota }),
     };
     return this.httpBase
       .enviarPost<RespuestaPrepararBinance>('/metodos-pago/binance/preparar', body, this.headersConAuth())
@@ -228,8 +229,6 @@ export class MetodosPagoApiServicio {
     const body: Record<string, unknown> = {
       idMetodoPago: cuerpo.idMetodoPago,
       nota: cuerpo.nota,
-      ...(cuerpo.montoEsperado != null && { montoEsperado: cuerpo.montoEsperado }),
-      ...(cuerpo.moneda && { moneda: cuerpo.moneda }),
     };
     return this.httpBase.enviarPost<RespuestaVerificarBinance>(
       '/metodos-pago/binance/verificar',
@@ -241,16 +240,16 @@ export class MetodosPagoApiServicio {
   /** Genera un QR de pago VeriPagos para un monto y detalle dados. */
   generarQrVeripagos(cuerpo: {
     idMetodoPago: number;
-    monto: number;
-    detalle: string;
+    idPrecio: number;
+    cantidad: number;
     data?: Record<string, unknown>;
     vigencia?: string;
     usoUnico?: boolean;
   }): Observable<RespuestaGenerarQrVeripagos['datos']> {
     const body: Record<string, unknown> = {
       idMetodoPago: cuerpo.idMetodoPago,
-      monto: cuerpo.monto,
-      detalle: cuerpo.detalle,
+      idPrecio: cuerpo.idPrecio,
+      cantidad: cuerpo.cantidad,
       ...(cuerpo.data && { data: cuerpo.data }),
       ...(cuerpo.vigencia && { vigencia: cuerpo.vigencia }),
       ...(cuerpo.usoUnico !== undefined && { usoUnico: cuerpo.usoUnico }),

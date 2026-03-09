@@ -82,7 +82,7 @@
               <span class="tienda-producto-detalle__variante-nombre">{{ variante.nombre }}</span>
               <div class="tienda-producto-detalle__variante-contenido">
                 @if (variante.disponible) {
-                <span class="tienda-producto-detalle__variante-precio">${{ variante.precio | number:'1.2-8' }}</span>
+                <span class="tienda-producto-detalle__variante-precio">${{ variante.precio | number:'1.2-2' }}</span>
                 } @else {
                 <span class="tienda-producto-detalle__variante-agotado">Agotado</span>
                 }
@@ -214,7 +214,7 @@
             </div>
             <div class="tienda-producto-detalle__resumen-item tienda-producto-detalle__resumen-item--total">
               <span class="tienda-producto-detalle__resumen-label">Total:</span>
-              <span class="tienda-producto-detalle__resumen-precio">${{ precioTotal() | number:'1.2-8' }}</span>
+              <span class="tienda-producto-detalle__resumen-precio">${{ precioTotal() | number:'1.2-2' }}</span>
             </div>
             } @else if (productoTodoAgotado()) {
             <p class="tienda-producto-detalle__resumen-sin-stock">No hay variantes disponibles para seleccionar.</p>
@@ -250,7 +250,7 @@
         <img src="/iconos/ico-cerrar.svg" alt="" class="icono-boton icono-color-secundario" />
       </button>
     </div>
-    <div class="tienda-producto-detalle__bottom-sheet-lista">
+        <div class="tienda-producto-detalle__bottom-sheet-lista">
       @for (variante of variantes(); track variante.id) {
       <button type="button" class="tienda-producto-detalle__variante tienda-producto-detalle__variante--sheet"
         [class.tienda-producto-detalle__variante--agotada]="!variante.disponible" [disabled]="!variante.disponible"
@@ -261,7 +261,7 @@
         <span class="tienda-producto-detalle__variante-nombre">{{ variante.nombre }}</span>
         <div class="tienda-producto-detalle__variante-contenido">
           @if (variante.disponible) {
-          <span class="tienda-producto-detalle__variante-precio">${{ variante.precio | number:'1.2-8' }}</span>
+          <span class="tienda-producto-detalle__variante-precio">${{ variante.precio | number:'1.2-2' }}</span>
           } @else {
           <span class="tienda-producto-detalle__variante-agotado">Agotado</span>
           }

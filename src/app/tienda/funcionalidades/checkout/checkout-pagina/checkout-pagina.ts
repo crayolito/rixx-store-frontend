@@ -455,16 +455,18 @@ export class CheckoutPagina implements OnInit, OnDestroy {
     }
 
     const fecha = new Date();
-    const codigoNota = `ORD-${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(fecha.getDate()).padStart(2, '0')}-${String(Date.now()).slice(-4)}`;
+    const primerItem = this.items()[0];
+    const idPrecio = primerItem?.varianteId ? parseInt(primerItem.varianteId, 10) : 0;
+    const cantidad = primerItem?.cantidad ?? 1;
 
     this.notificacion.info('Estamos generando tu pago con Binance, esto puede tardar unos segundos...');
 
     this.metodosPagoApi
       .prepararPagoBinance({
         idMetodoPago: metodo.id_metodo_pago,
-        monto: this.montoEnUSDT(),
+        idPrecio: idPrecio || 1,
+        cantidad,
         moneda: 'USDT',
-        nota: codigoNota,
       })
       .subscribe({
         next: (datosRespuesta) => {
@@ -515,14 +517,16 @@ export class CheckoutPagina implements OnInit, OnDestroy {
     const numeroPedido = `PED-${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(fecha.getDate()).padStart(2, '0')}-${String(Date.now()).slice(-6)}`;
     const primerItem = this.items()[0];
     const detalle = primerItem ? `Orden ${numeroPedido} - ${primerItem.titulo}` : `Orden ${numeroPedido}`;
+    const idPrecio = primerItem?.varianteId ? parseInt(primerItem.varianteId, 10) : 0;
+    const cantidad = primerItem?.cantidad ?? 1;
 
     this.notificacion.info('Estamos generando tu QR de pago, esto puede tardar unos segundos...');
 
     this.metodosPagoApi
       .generarQrVeripagos({
         idMetodoPago: metodo.id_metodo_pago,
-        monto: this.total(),
-        detalle: detalle,
+        idPrecio: idPrecio || 1,
+        cantidad,
         data: {
           numeroPedido,
           totalUsd: this.total(),
@@ -633,8 +637,6 @@ export class CheckoutPagina implements OnInit, OnDestroy {
         .verificarPagoBinance({
           idMetodoPago: metodo.id_metodo_pago,
           nota: datos.nota,
-          montoEsperado: datos.monto,
-          moneda: datos.moneda ?? 'USDT',
         })
         .subscribe({
           next: (r) => {
@@ -660,8 +662,6 @@ export class CheckoutPagina implements OnInit, OnDestroy {
       .verificarPagoBinance({
         idMetodoPago: metodo.id_metodo_pago,
         nota: datos.nota,
-        montoEsperado: datos.monto,
-        moneda: datos.moneda ?? 'USDT',
       })
       .subscribe({
         next: (r) => {
@@ -696,7 +696,8 @@ export class CheckoutPagina implements OnInit, OnDestroy {
         })
         .subscribe({
           next: (r) => {
-            if (r.exito && r.pagado && r.datos?.estado === 'Completado') {
+            const estado = (r.datos?.estado ?? '').toString().toLowerCase();
+            if (r.exito && r.pagado && estado === 'completado') {
               this.estadoPago.set('pagado');
               this.detenerVerificacionPago();
               this.finalizarPedidoTrasPagoExterno();
@@ -723,7 +724,8 @@ export class CheckoutPagina implements OnInit, OnDestroy {
       })
       .subscribe({
         next: (r) => {
-          if (r.exito && r.pagado && r.datos?.estado === 'Completado') {
+          const estado = (r.datos?.estado ?? '').toString().toLowerCase();
+          if (r.exito && r.pagado && estado === 'completado') {
             this.estadoPago.set('pagado');
             this.detenerVerificacionPago();
             this.finalizarPedidoTrasPagoExterno();

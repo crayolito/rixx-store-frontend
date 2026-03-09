@@ -124,7 +124,7 @@
                 <div class="checkout-pagina__metodo-info">
                   <p class="checkout-pagina__metodo-nombre">Pagar con Billetera</p>
                   <p class="checkout-pagina__metodo-descripcion">
-                    Saldo disponible: ${{ saldoBilletera() | number:'1.2-8' }} USD
+                    Saldo disponible: ${{ saldoBilletera() | number:'1.2-2' }} USD
                     @if (!tieneSaldoSuficiente()) {
                     <span class="checkout-pagina__saldo-insuficiente"> (Saldo insuficiente)</span>
                     }
@@ -168,14 +168,14 @@
               <img src="/iconos/ico-billetera.svg" alt="Billetera">
             </div>
             <p class="checkout-pagina__recarga-texto">Recarga de billetera</p>
-            <p class="checkout-pagina__recarga-monto">${{ montoRecarga() | number:'1.2-8' }} USD</p>
+            <p class="checkout-pagina__recarga-monto">${{ montoRecarga() | number:'1.2-2' }} USD</p>
           </div>
 
           <!-- Total -->
           <div class="checkout-pagina__totales">
             <div class="checkout-pagina__total-item checkout-pagina__total-item--final">
               <span>Total a pagar:</span>
-              <span class="checkout-pagina__total-precio">${{ total() | number:'1.2-8' }}</span>
+              <span class="checkout-pagina__total-precio">${{ total() | number:'1.2-2' }}</span>
             </div>
           </div>
 
@@ -193,8 +193,8 @@
                 @if (item.varianteNombre) {
                 <p class="checkout-pagina__producto-variante">{{ item.varianteNombre }}</p>
                 }
-                <p class="checkout-pagina__producto-precio">${{ obtenerPrecioActual(item) | number:'1.2-8' }} c/u · {{ item.cantidad
-                  }} = ${{ obtenerPrecioTotalActual(item) | number:'1.2-8' }}</p>
+                <p class="checkout-pagina__producto-precio">${{ obtenerPrecioActual(item) | number:'1.2-2' }} c/u · {{ item.cantidad
+                  }} = ${{ obtenerPrecioTotalActual(item) | number:'1.2-2' }}</p>
                 @if (tieneDatosAdicionales(item)) {
                 <div class="checkout-pagina__producto-datos">
                   <span class="checkout-pagina__producto-datos-titulo">Datos:</span>
@@ -212,11 +212,11 @@
           <div class="checkout-pagina__totales">
             <div class="checkout-pagina__total-item">
               <span>Subtotal:</span>
-              <span>${{ subtotal() | number:'1.2-8' }}</span>
+              <span>${{ subtotal() | number:'1.2-2' }}</span>
             </div>
             <div class="checkout-pagina__total-item checkout-pagina__total-item--final">
               <span>Total:</span>
-              <span class="checkout-pagina__total-precio">${{ total() | number:'1.2-8' }}</span>
+              <span class="checkout-pagina__total-precio">${{ total() | number:'1.2-2' }}</span>
             </div>
           </div>
           }
@@ -228,7 +228,7 @@
             @if (estaProcesando()) {
             <span>Procesando...</span>
             } @else if (esRecarga()) {
-            <span>Pagar Recarga (${{ total() | number:'1.2-8' }})</span>
+            <span>Pagar Recarga (${{ total() | number:'1.2-2' }})</span>
             } @else {
             <span>Confirmar pedido</span>
             }
@@ -257,7 +257,7 @@
           <div class="checkout-pagina__qr-dato-item">
             <span class="checkout-pagina__qr-dato-label">Monto a pagar:</span>
             <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--monto">{{ datosPago()?.monto |
-              number:'1.2-8' }} USDT</span>
+              number:'1.2-2' }} USDT</span>
           </div>
           <div class="checkout-pagina__qr-dato-item checkout-pagina__qr-dato-item--destacado">
             <span class="checkout-pagina__qr-dato-label">Código de nota (6 dígitos):</span>
@@ -289,7 +289,7 @@
           <div class="checkout-pagina__qr-dato-item">
             <span class="checkout-pagina__qr-dato-label">Tipo de cambio de referencia:</span>
             <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--codigo">
-              1 {{ datosPago()?.moneda || 'USDT' }} = {{ datosPago()?.tipoCambioAplicado | number:'1.2-8' }} Bs
+              1 {{ datosPago()?.moneda || 'USDT' }} = {{ datosPago()?.tipoCambioAplicado | number:'1.2-2' }} Bs
             </span>
           </div>
           }
@@ -301,7 +301,7 @@
         <ol class="checkout-pagina__qr-lista">
           <li>Abre la aplicación de Binance</li>
           <li>Escanea el código QR mostrado arriba</li>
-          <li>Ingresa el monto exacto: <strong>{{ datosPago()?.monto | number:'1.2-8' }} USDT</strong></li>
+          <li>Ingresa el monto exacto: <strong>{{ datosPago()?.monto | number:'1.2-2' }} USDT</strong></li>
           <li>En el campo "Nota" de Binance Pay, ingresa estos números: <strong>{{ datosPago()?.nota }}</strong>. Esto
             es obligatorio para identificar tu pago.</li>
           <li>Después de completar el pago, presiona "Ya pagué" para verificar tu transacción.</li>
@@ -331,19 +331,19 @@
           <div class="checkout-pagina__qr-dato-item checkout-pagina__qr-dato-item--destacado">
             <span class="checkout-pagina__qr-dato-label">Monto a pagar:</span>
             <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--monto">{{ datosPago()?.monto |
-              number:'1.2-8' }} Bs</span>
+              number:'1.2-2' }} Bs</span>
           </div>
           <div class="checkout-pagina__qr-dato-item">
             <span class="checkout-pagina__qr-dato-label">Monto original del pedido:</span>
             <span class="checkout-pagina__qr-dato-valor">
-              ${{ datosPago()?.montoOriginal | number:'1.2-8' }} {{ datosPago()?.monedaOriginal || 'USD' }}
+              ${{ datosPago()?.montoOriginal | number:'1.2-2' }} {{ datosPago()?.monedaOriginal || 'USD' }}
             </span>
           </div>
           <div class="checkout-pagina__qr-dato-item">
             <span class="checkout-pagina__qr-dato-label">Tipo de cambio aplicado:</span>
             <span class="checkout-pagina__qr-dato-valor checkout-pagina__qr-dato-valor--codigo">
               1 {{ datosPago()?.monedaOriginal || 'USD' }} =
-              {{ datosPago()?.tipoCambioAplicado | number:'1.2-8' }} Bs
+              {{ datosPago()?.tipoCambioAplicado | number:'1.2-2' }} Bs
             </span>
           </div>
           <div class="checkout-pagina__qr-dato-item">
