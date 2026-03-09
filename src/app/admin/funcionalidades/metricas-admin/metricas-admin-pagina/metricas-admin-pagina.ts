@@ -1,7 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { NotificacionServicio } from '../../../../compartido/servicios/notificacion';
+import {
+  ActividadPorHoraItem,
+  DatosMetricasDashboard,
+  MetodoPagoMetrica,
+  VentaPorPais,
+} from '../../../../nucleo/servicios/metricas-dashboard-api.servicio';
+import { MetricasDashboardApiServicio } from '../../../../nucleo/servicios/metricas-dashboard-api.servicio';
+import { DashboardMetricasTiempoRealServicio } from '../../../../nucleo/servicios/dashboard-metricas-tiempo-real.servicio';
 
 @Component({
   selector: 'app-metricas-admin-pagina',
@@ -10,8 +19,13 @@ import { NgApexchartsModule } from 'ng-apexcharts';
   templateUrl: './metricas-admin-pagina.html',
   styleUrl: './metricas-admin-pagina.css'
 })
-export class MetricasAdminPagina {
-  // PERIODO SELECCIONADO
+export class MetricasAdminPagina implements OnInit {
+  // Servicios para obtener métricas por HTTP y WebSocket y mostrar notificaciones
+  private metricasApi = inject(MetricasDashboardApiServicio);
+  private metricasTiempoReal = inject(DashboardMetricasTiempoRealServicio);
+  private notificacion = inject(NotificacionServicio);
+
+  // PERIODO SELECCIONADO (como texto para el selector)
   mesSeleccionado = signal('enero');
   anioSeleccionado = signal('2026');
 
@@ -19,104 +33,62 @@ export class MetricasAdminPagina {
   anioActual = computed(() => this.anioSeleccionado());
 
   // USUARIOS ACTIVOS
-  usuariosActivos = signal(8);
+  usuariosActivos = signal(0);
 
-  // DATOS FINANCIEROS REALISTAS
+  // DATOS FINANCIEROS DEL RESUMEN PRINCIPAL
   datosFinancieros = signal({
-    totalIngresos: 45280,
-    totalGastos: 32150,
-    ganancia: 13130,
-    margen: '29.0%'
+    totalIngresos: 0,
+    totalGastos: 0,
+    ganancia: 0,
+    margen: '0%'
   });
 
-  totalOrdenes = signal(127);
+  totalOrdenes = signal(0);
 
   // GANANCIA POR HORA (24 horas)
-  datosGananciaPorHora = signal([
-    { hora: '00:00', ganancia: 0 },
-    { hora: '01:00', ganancia: 0 },
-    { hora: '02:00', ganancia: 0 },
-    { hora: '03:00', ganancia: 0 },
-    { hora: '04:00', ganancia: 0 },
-    { hora: '05:00', ganancia: 0 },
-    { hora: '06:00', ganancia: 120 },
-    { hora: '07:00', ganancia: 340 },
-    { hora: '08:00', ganancia: 580 },
-    { hora: '09:00', ganancia: 890 },
-    { hora: '10:00', ganancia: 1250 },
-    { hora: '11:00', ganancia: 1450 },
-    { hora: '12:00', ganancia: 1680 },
-    { hora: '13:00', ganancia: 1320 },
-    { hora: '14:00', ganancia: 1580 },
-    { hora: '15:00', ganancia: 1890 },
-    { hora: '16:00', ganancia: 2150 },
-    { hora: '17:00', ganancia: 1980 },
-    { hora: '18:00', ganancia: 1750 },
-    { hora: '19:00', ganancia: 1420 },
-    { hora: '20:00', ganancia: 980 },
-    { hora: '21:00', ganancia: 650 },
-    { hora: '22:00', ganancia: 380 },
-    { hora: '23:00', ganancia: 180 }
-  ]);
+  datosGananciaPorHora = signal<ActividadPorHoraItem[]>([]);
 
-  // DATOS GEOGRÁFICOS (Países LATAM reales)
-  datosGeograficos = signal([
-    { nombre: 'Ecuador', ganancia: 18450, ordenes: 52, color: '#3B82F6' },
-    { nombre: 'Perú', ganancia: 12380, ordenes: 38, color: '#10B981' },
-    { nombre: 'Bolivia', ganancia: 8920, ordenes: 24, color: '#F59E0B' },
-    { nombre: 'Chile', ganancia: 5380, ordenes: 13, color: '#EF4444' }
-  ]);
+  // DATOS GEOGRÁFICOS (ventas por país)
+  datosGeograficos = signal<VentaPorPais[]>([]);
 
   // MÉTODOS DE PAGO
-  metodosPago = signal([
-    { nombre: 'Binance Pay', transacciones: 45, monto: 18750 },
-    { nombre: 'Veripagos', transacciones: 38, monto: 15890 },
-    { nombre: 'Tarjeta de Crédito', transacciones: 32, monto: 8420 },
-    { nombre: 'PayPal', transacciones: 12, monto: 2220 }
-  ]);
+  metodosPago = signal<MetodoPagoMetrica[]>([]);
 
   totalProcesado = computed(() => {
-    return this.metodosPago().reduce((sum, m) => sum + m.monto, 0);
+    return this.metodosPago().reduce((suma, metodo) => suma + metodo.monto, 0);
   });
 
-  // TOP 5 SERVICIOS (E-commerce realista)
-  topServicios = signal([
+  // TOP 5 SERVICIOS / PRODUCTOS MÁS RENTABLES
+  topServicios = signal<
     {
-      posicion: 1,
-      nombre: 'Gift Card Amazon USA $50',
-      ingresos: 12500,
-      costos: 10850,
-      ganancia: 1650
-    },
-    {
-      posicion: 2,
-      nombre: 'Netflix Premium 1 Mes',
-      ingresos: 8940,
-      costos: 7620,
-      ganancia: 1320
-    },
-    {
-      posicion: 3,
-      nombre: 'Spotify Premium 3 Meses',
-      ingresos: 6780,
-      costos: 5850,
-      ganancia: 930
-    },
-    {
-      posicion: 4,
-      nombre: 'Steam Wallet $100',
-      ingresos: 5420,
-      costos: 4680,
-      ganancia: 740
-    },
-    {
-      posicion: 5,
-      nombre: 'PlayStation Plus 12 Meses',
-      ingresos: 4290,
-      costos: 3820,
-      ganancia: 470
-    }
-  ]);
+      posicion: number;
+      nombre: string;
+      ingresos: number;
+      costos: number;
+      ganancia: number;
+    }[]
+  >([]);
+
+  // Mapa de meses en texto a número (1–12)
+  private readonly mapaMeses: Record<string, number> = {
+    enero: 1,
+    febrero: 2,
+    marzo: 3,
+    abril: 4,
+    mayo: 5,
+    junio: 6,
+    julio: 7,
+    agosto: 8,
+    septiembre: 9,
+    octubre: 10,
+    noviembre: 11,
+    diciembre: 12,
+  };
+
+  ngOnInit(): void {
+    this.cargarMetricasHttp();
+    this.inicializarTiempoReal();
+  }
 
   // ═══════════════════════════════════════════════════════
   // CONFIGURACIÓN APEXCHARTS - GRÁFICO LÍNEA
@@ -197,9 +169,84 @@ export class MetricasAdminPagina {
     show: false
   };
 
-  // MÉTODO PARA ACTUALIZAR DATOS
+  // Obtiene el filtro actual (mes/año) en el formato que espera el backend
+  private obtenerFiltroPeriodo(): { mes?: number; anio?: number } {
+    const mesTexto = this.mesSeleccionado();
+    const anioTexto = this.anioSeleccionado();
+
+    const mes = this.mapaMeses[mesTexto] ?? undefined;
+    const anio = Number.parseInt(anioTexto, 10);
+
+    return {
+      ...(mes && { mes }),
+      ...(Number.isFinite(anio) && anio > 0 && { anio }),
+    };
+  }
+
+  // Aplica todos los datos recibidos del backend al estado de la página
+  private aplicarMetricas(datos: DatosMetricasDashboard): void {
+    const resumen = datos.resumenFinanciero;
+    const actividad = datos.actividadTienda;
+
+    this.usuariosActivos.set(actividad.usuariosActivos ?? 0);
+
+    this.datosFinancieros.set({
+      totalIngresos: resumen.totalIngresos ?? 0,
+      totalGastos: resumen.totalGastos ?? 0,
+      ganancia: resumen.ganancia ?? 0,
+      margen: resumen.margen ?? '0%',
+    });
+
+    const totalOrdenes =
+      actividad.totalOrdenes ??
+      resumen.totalOrdenes ??
+      0;
+    this.totalOrdenes.set(totalOrdenes);
+
+    this.datosGananciaPorHora.set(datos.actividadPorHora ?? []);
+
+    const coloresFallback = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#6366F1', '#EC4899'];
+    const ventasConColor = (datos.ventasPorPais ?? []).map((item, indice) => ({
+      ...item,
+      color: item.color ?? coloresFallback[indice % coloresFallback.length],
+    }));
+    this.datosGeograficos.set(ventasConColor);
+
+    this.metodosPago.set(datos.metodosPago ?? []);
+
+    this.topServicios.set(datos.topProductos ?? []);
+  }
+
+  // Inicializa la conexión de WebSocket y escucha las métricas en tiempo real
+  private inicializarTiempoReal(): void {
+    this.metricasTiempoReal.escucharMetricas((respuesta) => {
+      if (!respuesta?.exito || !respuesta.datos) {
+        if (respuesta?.mensaje) {
+          this.notificacion.error(respuesta.mensaje);
+        }
+        return;
+      }
+      this.aplicarMetricas(respuesta.datos);
+    });
+
+    this.metricasTiempoReal.solicitarMetricas(this.obtenerFiltroPeriodo());
+  }
+
+  // MÉTODO PARA ACTUALIZAR DATOS (HTTP + WebSocket)
   actualizarDatos() {
-    console.log(`Actualizando datos para ${this.mesActual()} ${this.anioActual()}`);
-    // Aquí irían las llamadas a la API
+    const filtro = this.obtenerFiltroPeriodo();
+    this.cargarMetricasHttp();
+    this.metricasTiempoReal.solicitarMetricas(filtro);
+  }
+
+  // Carga las métricas vía HTTP para el periodo seleccionado
+  private cargarMetricasHttp(): void {
+    const filtro = this.obtenerFiltroPeriodo();
+    this.metricasApi.obtenerMetricas(filtro).subscribe({
+      next: (datos: DatosMetricasDashboard) => this.aplicarMetricas(datos),
+      error: () => {
+        this.notificacion.error('No se pudieron cargar las métricas del dashboard. Intenta más tarde.');
+      },
+    });
   }
 }
