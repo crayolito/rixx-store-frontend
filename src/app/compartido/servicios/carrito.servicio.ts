@@ -1,4 +1,5 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { inject, Injectable, computed, signal } from '@angular/core';
+import { Sesion } from '../../nucleo/servicios/sesion';
 
 const CLAVE_CARRITO = 'carrito_tienda';
 const VIGENCIA_CARRITO_MS = 2 * 60 * 60 * 1000; // 2 horas
@@ -16,12 +17,17 @@ export interface ItemCarrito {
   handleProducto?: string;
   camposDinamicos?: Record<string, string>;
   servidor?: string;
+  precioBase?: number;
+  margenCliente?: number;
+  margenRevendedor?: number;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class CarritoServicio {
+  private sesion = inject(Sesion);
+
   // Estado del carrito usando signals (vacío por defecto o restaurado desde localStorage)
   items = signal<ItemCarrito[]>([]);
 
@@ -29,14 +35,51 @@ export class CarritoServicio {
     this.cargarDesdeStorage();
   }
 
+  // Rol actual del usuario
+  private rolUsuario = computed(() => (this.sesion.usuarioActual()?.rol ?? '').toLowerCase());
+
+  // Indica si el usuario es revendedor
+  private esRevendedor = computed(() => this.rolUsuario().includes('revendedor'));
+
   // Computed: Cantidad total de items (suma de cantidades)
   cantidadItems = computed(() => this.items().reduce((suma, item) => suma + item.cantidad, 0));
 
-  // Computed: Subtotal
-  subtotal = computed(() => this.items().reduce((suma, item) => suma + item.precioTotal, 0));
+  // Computed: Subtotal recalculado según el rol del usuario
+  subtotal = computed(() => {
+    const esRevendedor = this.esRevendedor();
+    return this.items().reduce((suma, item) => {
+      const precioSegunRol = this.calcularPrecioSegunRol(item, esRevendedor);
+      return suma + precioSegunRol * item.cantidad;
+    }, 0);
+  });
 
   // Computed: Total
   total = computed(() => this.subtotal());
+
+  // Calcula el precio de un item según el rol del usuario
+  private calcularPrecioSegunRol(item: ItemCarrito, esRevendedor: boolean): number {
+    // Si no tiene datos de precio base, usar el precio guardado
+    if (item.precioBase == null) {
+      return item.precio;
+    }
+
+    const base = item.precioBase;
+    const margen = esRevendedor 
+      ? (item.margenRevendedor ?? 0) 
+      : (item.margenCliente ?? 0);
+    
+    return base * (1 + margen / 100);
+  }
+
+  // Obtiene el precio actual de un item según el rol
+  obtenerPrecioActual(item: ItemCarrito): number {
+    return this.calcularPrecioSegunRol(item, this.esRevendedor());
+  }
+
+  // Obtiene el precio total de un item según el rol
+  obtenerPrecioTotalActual(item: ItemCarrito): number {
+    return this.calcularPrecioSegunRol(item, this.esRevendedor()) * item.cantidad;
+  }
 
   // Agregar item al carrito
   agregarItem(item: Omit<ItemCarrito, 'id' | 'precioTotal'>): void {

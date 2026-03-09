@@ -122,6 +122,19 @@ export class CheckoutPagina implements OnInit, OnDestroy {
     return datos.nombre.trim() !== '' && datos.email.trim() !== '';
   });
 
+  // Indica si hay un método de pago válido seleccionado (billetera o método externo)
+  tieneMetodoPagoValido = computed(() => {
+    return this.pagarConBilletera() || this.metodoPagoActual() != null;
+  });
+
+  // Indica si se puede procesar el pago
+  puedeConfirmarPedido = computed(() => {
+    if (!this.tieneMetodoPagoValido()) return false;
+    if (this.esRecarga()) return true;
+    // Para compras normales: validar formulario y que haya items
+    return this.formularioValido() && this.items().length > 0;
+  });
+
   // FASE 10: Funciones de acción
   // Carga los datos del cliente: prioridad sesión > localStorage > vacíos
   cargarDatosCliente(): void {
@@ -215,14 +228,10 @@ export class CheckoutPagina implements OnInit, OnDestroy {
 
       const metodo = this.metodoPagoActual();
 
-      // Si no hay método seleccionado
+      // Si no hay método seleccionado, mostrar error
       if (!metodo) {
-        if (this.esRecarga()) {
-          this.notificacion.advertencia('Selecciona un método de pago.');
-          this.estaProcesando.set(false);
-          return;
-        }
-        this.crearPedidoDirecto();
+        this.notificacion.advertencia('Selecciona un método de pago.');
+        this.estaProcesando.set(false);
         return;
       }
 
@@ -232,12 +241,9 @@ export class CheckoutPagina implements OnInit, OnDestroy {
       } else if (this.esMetodoVeripagos(metodo)) {
         this.iniciarPagoVeripagos();
       } else {
-        if (this.esRecarga()) {
-          this.notificacion.error('Método de pago no soportado para recargas.');
-          this.estaProcesando.set(false);
-          return;
-        }
-        this.crearPedidoDirecto();
+        // Método de pago no soportado
+        this.notificacion.error('Método de pago no soportado.');
+        this.estaProcesando.set(false);
       }
     } catch (error) {
       console.error('Error al procesar pago:', error);
@@ -891,6 +897,14 @@ export class CheckoutPagina implements OnInit, OnDestroy {
     return datos;
   }
 
+  obtenerPrecioActual(item: ItemCarrito): number {
+    return this.carritoServicio.obtenerPrecioActual(item);
+  }
+
+  obtenerPrecioTotalActual(item: ItemCarrito): number {
+    return this.carritoServicio.obtenerPrecioTotalActual(item);
+  }
+
   ngOnInit(): void {
     // Verificar si es una recarga de billetera (viene con query params)
     this.route.queryParams.subscribe((params) => {
@@ -901,13 +915,14 @@ export class CheckoutPagina implements OnInit, OnDestroy {
           this.metodoPagoSeleccionado.set(parseInt(params['metodoPago'], 10));
         }
       }
-    });
 
-    // Si no es recarga y no hay items en el carrito, redirigir
-    if (!this.esRecarga() && this.items().length === 0) {
-      this.router.navigate(['/']);
-      return;
-    }
+      // Si no es recarga y no hay items en el carrito, redirigir al inicio
+      if (!this.esRecarga() && this.items().length === 0) {
+        this.notificacion.advertencia('Tu carrito está vacío.');
+        this.router.navigate(['/']);
+        return;
+      }
+    });
 
     this.cargarDatosCliente();
     this.metodosPagoApi.listar(true).subscribe({

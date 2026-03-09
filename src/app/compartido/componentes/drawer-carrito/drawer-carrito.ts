@@ -93,6 +93,14 @@ export class DrawerCarrito implements OnInit, OnDestroy {
     return datos;
   }
 
+  obtenerPrecioActual(item: ItemCarrito): number {
+    return this.carritoServicio.obtenerPrecioActual(item);
+  }
+
+  obtenerPrecioTotalActual(item: ItemCarrito): number {
+    return this.carritoServicio.obtenerPrecioTotalActual(item);
+  }
+
   ngOnDestroy() {
     // Limpiar estilos al destruir el componente
     document.body.style.overflow = '';

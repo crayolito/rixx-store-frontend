@@ -25,6 +25,9 @@ interface VarianteProducto {
   precio: number;
   inventario: number | null;
   disponible: boolean;
+  precioBase: number;
+  margenCliente: number;
+  margenRevendedor: number;
 }
 
 @Component({
@@ -79,12 +82,18 @@ export class ProductoDetallePagina implements OnInit {
       .map((pr) => {
         const inv = pr.inventario;
         const disponible = inv == null ? true : inv > 0;
+        const precioBase = parseFloat(pr.precioBase ?? '0');
+        const margenCliente = parseFloat(pr.margenCliente ?? '0');
+        const margenRevendedor = parseFloat(pr.margenRevendedor ?? '0');
         return {
           id: String(pr.id_precio),
           nombre: pr.nombre,
           precio: this.calcularPrecioSegunRol(pr, rol),
           inventario: pr.inventario,
           disponible,
+          precioBase,
+          margenCliente,
+          margenRevendedor,
         };
       });
     // Con stock primero, agotadas al final
@@ -302,6 +311,9 @@ export class ProductoDetallePagina implements OnInit {
       handleProducto: p.handle,
       camposDinamicos: Object.keys(camposDinamicos).length ? camposDinamicos : undefined,
       servidor: p.servidorDinamico === true ? this.servidor() : undefined,
+      precioBase: variante.precioBase,
+      margenCliente: variante.margenCliente,
+      margenRevendedor: variante.margenRevendedor,
     });
     this.notificacion.exito('Producto agregado al carrito');
   }
@@ -416,6 +428,9 @@ export class ProductoDetallePagina implements OnInit {
       handleProducto: p.handle,
       camposDinamicos: Object.keys(camposDinamicos).length ? camposDinamicos : undefined,
       servidor: p.servidorDinamico === true ? this.servidor() : undefined,
+      precioBase: variante.precioBase,
+      margenCliente: variante.margenCliente,
+      margenRevendedor: variante.margenRevendedor,
     });
     this.router.navigate(['/checkout']);
   }

@@ -42,8 +42,8 @@
           @if (item.varianteNombre) {
           <p class="drawer-carrito__item-variante">{{ item.varianteNombre }}</p>
           }
-          <p class="drawer-carrito__item-precio">${{ item.precio | number:'1.2-2' }} c/u · {{ item.cantidad }} =
-            ${{ item.precioTotal | number:'1.2-2' }}</p>
+          <p class="drawer-carrito__item-precio">${{ obtenerPrecioActual(item) | number:'1.2-8' }} c/u · {{ item.cantidad }} =
+            ${{ obtenerPrecioTotalActual(item) | number:'1.2-8' }}</p>
           @if (tieneDatosAdicionales(item)) {
           <div class="drawer-carrito__item-datos">
             @for (dato of obtenerDatosAdicionales(item); track dato.etiqueta) {
@@ -67,7 +67,7 @@
 
         <!-- Precio total y eliminar -->
         <div class="drawer-carrito__item-acciones">
-          <div class="drawer-carrito__item-total">${{ item.precioTotal | number:'1.2-2' }}</div>
+          <div class="drawer-carrito__item-total">${{ obtenerPrecioTotalActual(item) | number:'1.2-8' }}</div>
           <button class="drawer-carrito__boton-eliminar" (click)="eliminarItem(item.id)" aria-label="Eliminar producto">
             <img src="/iconos/ico-borrar.svg" alt="Eliminar">
           </button>
@@ -84,7 +84,7 @@
     <!-- Solo subtotal -->
     <div class="drawer-carrito__subtotal">
       <span>Subtotal:</span>
-      <span class="drawer-carrito__subtotal-precio">${{ subtotal() }}</span>
+      <span class="drawer-carrito__subtotal-precio">${{ subtotal() | number:'1.2-8' }}</span>
     </div>
 
     <!-- 2 botones: Ocultar y Pagar -->

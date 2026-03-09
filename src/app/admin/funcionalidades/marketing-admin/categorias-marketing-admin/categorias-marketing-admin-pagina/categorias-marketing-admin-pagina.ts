@@ -21,6 +21,8 @@ export interface PrecioVarianteMarketing {
   nombre: string;
   precioBase: number;
   precioOferta: number | null;
+  margenCliente: number;
+  margenRevendedor: number;
 }
 
 function tituloAHandle(titulo: string): string {
@@ -39,6 +41,8 @@ function precioApiAVariante(pr: PrecioApi): PrecioVarianteMarketing {
     nombre: pr.nombre,
     precioBase: Number(pr.precioBase),
     precioOferta: null,
+    margenCliente: Number(pr.margenCliente ?? 0),
+    margenRevendedor: Number(pr.margenRevendedor ?? 0),
   };
 }
 
@@ -60,6 +64,8 @@ function precioAItem(
     precioId: precio.id,
     nombrePrecio: precio.nombre,
     precioBase: precio.precioBase,
+    margenCliente: precio.margenCliente,
+    margenRevendedor: precio.margenRevendedor,
     precioOferta: precio.precioOferta,
     usarPrecioOferta: precio.precioOferta != null && usarOferta,
   };
