@@ -267,12 +267,12 @@
                 <span class="precio-agregado__detalle-valor">${{ precio.precioBase | number:'1.2-2' }}</span>
               </div>
               <div class="precio-agregado__detalle-item">
-                <span class="precio-agregado__detalle-etiqueta">Margen Cliente</span>
-                <span class="precio-agregado__detalle-valor">{{ precio.margenClienteFinal }}% → ${{ (precio.precioBase * precio.margenClienteFinal/100) | number:'1.2-2' }}</span>
+                <span class="precio-agregado__detalle-etiqueta">Precio Cliente ({{ precio.margenClienteFinal }}%)</span>
+                <span class="precio-agregado__detalle-valor">${{ (precio.precioBase * (1 + precio.margenClienteFinal/100)) | number:'1.2-8' }}</span>
               </div>
               <div class="precio-agregado__detalle-item">
-                <span class="precio-agregado__detalle-etiqueta">Margen Revendedor</span>
-                <span class="precio-agregado__detalle-valor">{{ precio.margenRevendedor }}% → ${{ (precio.precioBase * precio.margenRevendedor/100) | number:'1.2-2' }}</span>
+                <span class="precio-agregado__detalle-etiqueta">Precio Revendedor ({{ precio.margenRevendedor }}%)</span>
+                <span class="precio-agregado__detalle-valor">${{ (precio.precioBase * (1 + precio.margenRevendedor/100)) | number:'1.2-8' }}</span>
               </div>
             </div>
 
@@ -566,11 +566,11 @@
       <div class="modal-precio__fila modal-precio__fila--dos modal-precio__fila--calculos">
         <div class="modal-precio__calculo">
           <span class="modal-precio__calculo-etiqueta">Precio Cliente Final</span>
-          <span class="modal-precio__calculo-valor">{{ precioClienteFinalCalculado() | number:'1.2-2' }}</span>
+          <span class="modal-precio__calculo-valor">${{ precioClienteFinalCalculado() | number:'1.2-8' }}</span>
         </div>
         <div class="modal-precio__calculo">
           <span class="modal-precio__calculo-etiqueta">Precio Revendedor</span>
-          <span class="modal-precio__calculo-valor">{{ precioRevendedorCalculado() | number:'1.2-2' }}</span>
+          <span class="modal-precio__calculo-valor">${{ precioRevendedorCalculado() | number:'1.2-8' }}</span>
         </div>
       </div>
       <!-- Fila 5: Un solo checkbox Precio Activo -->

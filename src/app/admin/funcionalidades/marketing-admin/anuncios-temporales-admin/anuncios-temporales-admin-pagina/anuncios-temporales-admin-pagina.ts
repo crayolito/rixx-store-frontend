@@ -148,23 +148,17 @@ export class AnunciosTemporalesAdminPagina implements OnInit {
       return;
     }
 
-    console.log('[Anuncios] Iniciando guardado, lista:', lista);
     this.guardando.set(true);
     this.configuracionApi.actualizarAnuncioTemporal({ anuncios: lista }).subscribe({
-      next: (respuesta) => {
-        console.log('[Anuncios] Respuesta exitosa del servidor:', respuesta);
+      next: () => {
         this.guardando.set(false);
         this.guardarEstadoComoOriginal();
         this.notificacion.exito('Configuración guardada correctamente.');
       },
-      error: (err) => {
-        console.error('[Anuncios] Error del servidor:', err);
+      error: () => {
         this.guardando.set(false);
         this.notificacion.error('Error al guardar la configuración.');
       },
-      complete: () => {
-        console.log('[Anuncios] Observable completado');
-      }
     });
   }
 
@@ -252,16 +246,20 @@ export class AnunciosTemporalesAdminPagina implements OnInit {
   actualizarFechaInicio(indice: number, evento: Event): void {
     const input = evento.target as HTMLInputElement;
     const valor = input.value;
+    if (!valor) return;
+    const fechaISO = new Date(valor).toISOString();
     this.anuncios.update((lista) =>
-      lista.map((a, i) => (i === indice ? { ...a, fechaInicio: valor ? new Date(valor).toISOString() : '' } : a))
+      lista.map((a, i) => (i === indice ? { ...a, fechaInicio: fechaISO } : a))
     );
   }
 
   actualizarFechaFin(indice: number, evento: Event): void {
     const input = evento.target as HTMLInputElement;
     const valor = input.value;
+    if (!valor) return;
+    const fechaISO = new Date(valor).toISOString();
     this.anuncios.update((lista) =>
-      lista.map((a, i) => (i === indice ? { ...a, fechaFin: valor ? new Date(valor).toISOString() : '' } : a))
+      lista.map((a, i) => (i === indice ? { ...a, fechaFin: fechaISO } : a))
     );
   }
 

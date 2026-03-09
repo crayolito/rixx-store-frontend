@@ -1,25 +1,44 @@
 /* ═══════════════════════════════════════════════════════
-   POPUP BIENVENIDA - ESTILOS BASE (MÓVIL)
+   POPUP ANUNCIO - ESTILOS BASE (MÓVIL)
    ═══════════════════════════════════════════════════════ */
 
 .popup-contenedor {
   position: relative;
   padding: 0;
-  background: transparent;
-  border: none;
+  background: var(--color-fondo-cuaternario);
+  border-radius: var(--borde-radio-grande);
   max-width: 90vw;
-  max-height: 80vh;
+  max-height: 85vh;
   width: 100%;
+  overflow: hidden;
 }
 
 /* ─── Imagen principal ─── */
 .popup-imagen {
   width: 100%;
   height: auto;
-  max-height: 80vh;
+  max-height: 70vh;
   object-fit: contain;
   display: block;
-  border-radius: var(--borde-radio-grande);
+  border-radius: var(--borde-radio-grande) var(--borde-radio-grande) 0 0;
+}
+
+.popup-imagen-boton {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: opacity var(--transicion-rapida);
+}
+
+.popup-imagen-boton:hover {
+  opacity: 0.95;
+}
+
+.popup-imagen-boton:active {
+  opacity: 0.9;
 }
 
 /* ─── Overlay oscuro en los bordes (para que el botón se vea) ─── */
@@ -29,10 +48,10 @@
   top: 0;
   right: 0;
   width: 100%;
-  height: 120px;
+  height: 80px;
   background: linear-gradient(to bottom,
-      rgba(0, 0, 0, 0.6) 0%,
-      rgba(0, 0, 0, 0.3) 50%,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(0, 0, 0, 0.2) 50%,
       transparent 100%);
   border-radius: var(--borde-radio-grande) var(--borde-radio-grande) 0 0;
   pointer-events: none;
@@ -42,8 +61,8 @@
 /* ─── Botón cerrar (encima de la imagen) ─── */
 .popup-cerrar {
   position: absolute;
-  top: var(--espaciado-xxs);
-  right: var(--espaciado-xxs);
+  top: var(--espaciado-xs);
+  right: var(--espaciado-xs);
   width: 2.5rem;
   height: 2.5rem;
   display: flex;
@@ -51,7 +70,14 @@
   justify-content: center;
   cursor: pointer;
   z-index: 2;
+  background: rgba(0, 0, 0, 0.3);
+  border: none;
+  border-radius: 50%;
   transition: all var(--transicion-rapida);
+}
+
+.popup-cerrar:hover {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .popup-cerrar:active {
@@ -68,32 +94,102 @@
   filter: brightness(0) saturate(100%) invert(67%) sepia(89%) saturate(1200%) hue-rotate(45deg) brightness(1.1);
 }
 
+/* ─── Footer con checkbox ─── */
+.popup-footer {
+  padding: var(--espaciado-sm) var(--espaciado-md);
+  background: var(--color-fondo-cuaternario);
+  border-top: 1px solid var(--color-borde-suave);
+}
+
+/* ─── Checkbox personalizado ─── */
+.popup-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-xs);
+  cursor: pointer;
+  user-select: none;
+}
+
+.popup-checkbox__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.popup-checkbox__marca {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-borde);
+  border-radius: var(--borde-radio-pequeno);
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transicion-rapida);
+  flex-shrink: 0;
+}
+
+.popup-checkbox__marca::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background-color: var(--color-primario);
+  border-radius: 2px;
+  opacity: 0;
+  transform: scale(0);
+  transition: all var(--transicion-rapida);
+}
+
+.popup-checkbox__input:checked + .popup-checkbox__marca {
+  border-color: var(--color-primario);
+  background-color: rgba(164, 196, 57, 0.1);
+}
+
+.popup-checkbox__input:checked + .popup-checkbox__marca::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.popup-checkbox:hover .popup-checkbox__marca {
+  border-color: var(--color-primario);
+}
+
+.popup-checkbox__texto {
+  font-size: var(--texto-pequeno);
+  color: var(--color-fondo-septimo);
+}
+
 /* ═══════════════════════════════════════════════════════
-     RESPONSIVE - TABLET (768px en adelante)
-     ═══════════════════════════════════════════════════════ */
+   RESPONSIVE - TABLET (768px en adelante)
+   ═══════════════════════════════════════════════════════ */
 
 @media (min-width: 768px) {
   .popup-contenedor {
-    max-width: 600px;
-    max-height: 70vh;
+    max-width: 550px;
+    max-height: 80vh;
   }
 
   .popup-imagen {
-    max-height: 70vh;
+    max-height: 65vh;
+  }
+
+  .popup-footer {
+    padding: var(--espaciado-sm) var(--espaciado-lg);
   }
 }
 
 /* ═══════════════════════════════════════════════════════
-     RESPONSIVE - DESKTOP (1280px en adelante)
-     ═══════════════════════════════════════════════════════ */
+   RESPONSIVE - DESKTOP (1280px en adelante)
+   ═══════════════════════════════════════════════════════ */
 
 @media (min-width: 1280px) {
   .popup-contenedor {
-    max-width: 800px;
+    max-width: 650px;
     max-height: 85vh;
   }
 
   .popup-imagen {
-    max-height: 85vh;
+    max-height: 70vh;
   }
 }

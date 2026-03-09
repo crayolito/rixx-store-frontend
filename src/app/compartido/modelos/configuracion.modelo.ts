@@ -155,6 +155,8 @@ export interface ProductoCategoria {
   nombrePrecio: string;
   precioBase: number;
   precioOferta: number | null;
+  margenCliente?: number;
+  margenRevendedor?: number;
 }
 
 // Alias para categorias marketing (admin)
@@ -176,6 +178,8 @@ export interface ProductoDestacado {
   precioBase: number;
   precioOferta: number | null;
   usarPrecioOferta?: boolean;
+  margenCliente?: number;
+  margenRevendedor?: number;
 }
 
 // Interfaz de la configuracion del Pie de Pagina

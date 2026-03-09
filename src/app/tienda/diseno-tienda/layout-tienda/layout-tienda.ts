@@ -3,7 +3,6 @@ import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { DrawerCarrito } from '../../../compartido/componentes/drawer-carrito/drawer-carrito';
 import { ModalAutenticacion } from '../../../compartido/componentes/modal-autenticacion/modal-autenticacion';
 import { NotificacionToast } from '../../../compartido/componentes/notificacion-toast/notificacion-toast';
-import { PopupBienvenida } from '../../../compartido/componentes/popup-bienvenida/popup-bienvenida';
 import { NotificacionServicio } from '../../../compartido/servicios/notificacion';
 import { ConfiguracionApiServicio } from '../../../compartido/servicios/configuracion-api.servicio';
 import { ConfiguracionServicio } from '../../../compartido/servicios/configuracion.servicio';
@@ -13,7 +12,7 @@ import { PieTienda } from '../pie-tienda/pie-tienda';
 @Component({
   selector: 'app-layout-tienda',
   standalone: true,
-  imports: [RouterOutlet, CabeceraTienda, PieTienda, ModalAutenticacion, PopupBienvenida, DrawerCarrito, NotificacionToast],
+  imports: [RouterOutlet, CabeceraTienda, PieTienda, ModalAutenticacion, DrawerCarrito, NotificacionToast],
   templateUrl: './layout-tienda.html',
   styleUrl: './layout-tienda.css',
 })

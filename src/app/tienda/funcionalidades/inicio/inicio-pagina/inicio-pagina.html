@@ -1,4 +1,7 @@
 <div class="inicio-pagina">
+  <!-- Popup de anuncios (solo en HOME, aleatorio, con opción de no volver a mostrar) -->
+  <app-popup-bienvenida [anuncios]="anunciosTemporales()"></app-popup-bienvenida>
+
   <!-- Anuncio temporal: solo se muestra si hay anuncios vigentes -->
   @if (anunciosTemporales().length) {
   <app-seccion-anuncio-temporal [anuncios]="anunciosTemporales()"></app-seccion-anuncio-temporal>

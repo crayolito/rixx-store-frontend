@@ -213,19 +213,19 @@ export class ProductoDetallePagina implements OnInit {
     return img || '/imagenes/imagen-nodisponible.jpg';
   }
 
-  /* ─── Calcula el precio según el rol: base + margen correspondiente ─── */
+  /* ─── Calcula el precio según el rol: base * (1 + margen/100) ─── */
   private calcularPrecioSegunRol(pr: PrecioApi, rol: string): number {
     const base = parseFloat(pr.precioBase ?? '0');
 
     // Si es revendedor, usa margenRevendedor
     if (rol.includes('revendedor')) {
       const margen = parseFloat(pr.margenRevendedor ?? '0');
-      return base + margen;
+      return base * (1 + margen / 100);
     }
 
     // Para cliente o sin login, usa margenCliente
     const margen = parseFloat(pr.margenCliente ?? '0');
-    return base + margen;
+    return base * (1 + margen / 100);
   }
 
   /* ─── Devuelve manual o automatico según idVemper y tipoProceso ─── */

@@ -82,7 +82,7 @@
               <span class="tienda-producto-detalle__variante-nombre">{{ variante.nombre }}</span>
               <div class="tienda-producto-detalle__variante-contenido">
                 @if (variante.disponible) {
-                <span class="tienda-producto-detalle__variante-precio">${{ variante.precio | number:'1.2-2' }}</span>
+                <span class="tienda-producto-detalle__variante-precio">${{ variante.precio | number:'1.2-8' }}</span>
                 } @else {
                 <span class="tienda-producto-detalle__variante-agotado">Agotado</span>
                 }
@@ -214,7 +214,7 @@
             </div>
             <div class="tienda-producto-detalle__resumen-item tienda-producto-detalle__resumen-item--total">
               <span class="tienda-producto-detalle__resumen-label">Total:</span>
-              <span class="tienda-producto-detalle__resumen-precio">${{ precioTotal() | number:'1.2-2' }}</span>
+              <span class="tienda-producto-detalle__resumen-precio">${{ precioTotal() | number:'1.2-8' }}</span>
             </div>
             } @else if (productoTodoAgotado()) {
             <p class="tienda-producto-detalle__resumen-sin-stock">No hay variantes disponibles para seleccionar.</p>
@@ -261,7 +261,7 @@
         <span class="tienda-producto-detalle__variante-nombre">{{ variante.nombre }}</span>
         <div class="tienda-producto-detalle__variante-contenido">
           @if (variante.disponible) {
-          <span class="tienda-producto-detalle__variante-precio">${{ variante.precio | number:'1.2-2' }}</span>
+          <span class="tienda-producto-detalle__variante-precio">${{ variante.precio | number:'1.2-8' }}</span>
           } @else {
           <span class="tienda-producto-detalle__variante-agotado">Agotado</span>
           }

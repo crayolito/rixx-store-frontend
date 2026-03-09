@@ -1,8 +1,35 @@
+@if (anuncioSeleccionado(); as anuncio) {
 <app-modal [estaAbierto]="estaVisible()" (cerrar)="cerrarPopup()">
   <div class="popup-contenedor">
-    <button class="popup-cerrar" (click)="cerrarPopup()">
+    <!-- Botón cerrar -->
+    <button class="popup-cerrar" (click)="cerrarPopup()" type="button" aria-label="Cerrar anuncio">
       <img src="/iconos/ico-cerrar.svg" alt="Cerrar" class="icono-boton icono-boton-mediano">
     </button>
-    <img src="/imagenes/banner-popup.jpg" alt="Bienvenida" class="popup-imagen">
+
+    <!-- Imagen del anuncio -->
+    @if (anuncio.tipoDestino !== 'ninguno' && anuncio.destinoHandle) {
+    <button class="popup-imagen-boton" (click)="navegarADestino()" type="button">
+      <img [src]="esMovil ? anuncio.imagenMovil : anuncio.imagenDesktop" 
+           [alt]="'Anuncio promocional'" 
+           class="popup-imagen">
+    </button>
+    } @else {
+    <img [src]="esMovil ? anuncio.imagenMovil : anuncio.imagenDesktop" 
+         [alt]="'Anuncio promocional'" 
+         class="popup-imagen">
+    }
+
+    <!-- Checkbox no volver a mostrar -->
+    <div class="popup-footer">
+      <label class="popup-checkbox">
+        <input type="checkbox" 
+               [checked]="noVolverAMostrar()" 
+               (change)="toggleNoVolverAMostrar()"
+               class="popup-checkbox__input">
+        <span class="popup-checkbox__marca"></span>
+        <span class="popup-checkbox__texto">No volver a mostrar</span>
+      </label>
+    </div>
   </div>
 </app-modal>
+}

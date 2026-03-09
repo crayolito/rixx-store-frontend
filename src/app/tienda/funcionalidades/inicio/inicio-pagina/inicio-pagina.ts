@@ -1,4 +1,5 @@
 import { Component, effect, inject, signal } from '@angular/core';
+import { PopupBienvenida } from '../../../../compartido/componentes/popup-bienvenida/popup-bienvenida';
 import { AnuncioTemporal, CategoriaDestacada, ConfCarrusel, ConfPromocion } from '../../../../compartido/modelos/configuracion.modelo';
 import { ConfiguracionServicio } from '../../../../compartido/servicios/configuracion.servicio';
 import { SeccionAnuncioTemporal } from '../../secciones-dinamicas/componentes/seccion-anuncio-temporal/seccion-anuncio-temporal';
@@ -9,7 +10,7 @@ import { SeccionPromocion } from '../../secciones-dinamicas/componentes/seccion-
 @Component({
   selector: 'app-inicio-pagina',
   standalone: true,
-  imports: [SeccionCarrusel, SeccionPromocion, SeccionCategorias, SeccionAnuncioTemporal],
+  imports: [SeccionCarrusel, SeccionPromocion, SeccionCategorias, SeccionAnuncioTemporal, PopupBienvenida],
   templateUrl: './inicio-pagina.html',
   styleUrl: './inicio-pagina.css',
 })
@@ -31,7 +32,10 @@ export class InicioPagina {
 
       // Anuncios temporales
       if (config.anuncioTemporal?.anuncios) {
+        console.log('[Inicio] Anuncios recibidos:', config.anuncioTemporal.anuncios);
         this.anunciosTemporales.set(config.anuncioTemporal.anuncios);
+      } else {
+        console.log('[Inicio] No hay anuncios en config:', config);
       }
 
       // Categorías: prioridad categorias → categoria.categorias → categoriasMarketing.categorias (donde guarda el admin)

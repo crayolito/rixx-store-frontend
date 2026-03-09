@@ -1,6 +1,8 @@
-import { Component, computed, input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CategoriaDestacada, ProductoCategoria } from '../../../../../compartido/modelos/configuracion.modelo';
+import { PrecioServicio } from '../../../../../compartido/servicios/precio.servicio';
 
 /** Producto con etiqueta asignada de forma aleatoria para la vista (Nuevo/Oferta). */
 export type ProductoCategoriaConEtiqueta = ProductoCategoria & { etiquetaVista?: 'Nuevo' | 'Oferta' };
@@ -21,11 +23,13 @@ function hashHandle(handle: string): number {
 @Component({
   selector: 'app-seccion-categorias',
   standalone: true,
-  imports: [RouterLink],
+  imports: [CommonModule, RouterLink],
   templateUrl: './seccion-categorias.html',
   styleUrl: './seccion-categorias.css',
 })
 export class SeccionCategorias {
+  private precioServicio = inject(PrecioServicio);
+
   categoria = input.required<CategoriaDestacada>();
 
   /** Lista de productos con etiquetas Nuevo/Oferta asignadas de forma estable (2 nuevos, 1-2 ofertas). */
@@ -59,5 +63,14 @@ export class SeccionCategorias {
   calcularPorcentajeDescuento(precioBase: number, precioOferta: number | null): number | null {
     if (precioOferta == null || precioOferta <= 0) return null;
     return Math.round(((precioBase - precioOferta) / precioBase) * 100);
+  }
+
+  /** Calcula el precio final según el rol del usuario actual. */
+  calcularPrecioFinal(producto: ProductoCategoria): number {
+    return this.precioServicio.calcularPrecio({
+      precioBase: producto.precioBase,
+      margenCliente: producto.margenCliente,
+      margenRevendedor: producto.margenRevendedor,
+    });
   }
 }

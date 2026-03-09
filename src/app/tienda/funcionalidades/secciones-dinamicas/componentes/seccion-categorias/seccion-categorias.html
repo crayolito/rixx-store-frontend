@@ -20,18 +20,8 @@
         <h4 class="tienda-categorias-productos__titulo">{{ producto.titulo }}</h4>
         <p class="tienda-categorias-productos__descripcion">{{ producto.descripcion }}</p>
         <div class="tienda-categorias-productos__precios">
-          @if (producto.precioOferta && producto.precioOferta > 0) {
-          <span class="tienda-categorias-productos__precio-base">${{ producto.precioBase }}</span>
-          <span class="tienda-categorias-productos__precio-oferta">${{ producto.precioOferta }}</span>
-          } @else {
-          <span class="tienda-categorias-productos__precio-oferta">${{ producto.precioBase }}</span>
-          }
+          <span class="tienda-categorias-productos__precio-oferta">${{ calcularPrecioFinal(producto) | number:'1.2-8' }}</span>
         </div>
-        @if (calcularPorcentajeDescuento(producto.precioBase, producto.precioOferta); as pct) {
-        <span class="tienda-categorias-productos__descuento">
-          Oferta de hasta el {{ pct }}%
-        </span>
-        }
       </div>
     </a>
     }

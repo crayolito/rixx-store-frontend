@@ -49,13 +49,17 @@
       <div class="anuncios-admin-fechas-fila">
         <div class="anuncios-admin-campo-fecha">
           <label class="global-formulario-campo__etiqueta">Fecha inicio</label>
-          <input type="datetime-local" class="global-formulario-campo__input" [value]="obtenerFechaLocal(anuncio.fechaInicio)"
-            (change)="actualizarFechaInicio(i, $event)">
+          <input type="datetime-local" class="global-formulario-campo__input" 
+            [value]="obtenerFechaLocal(anuncio.fechaInicio)"
+            (input)="actualizarFechaInicio(i, $event)"
+            (blur)="actualizarFechaInicio(i, $event)">
         </div>
         <div class="anuncios-admin-campo-fecha">
           <label class="global-formulario-campo__etiqueta">Fecha fin</label>
-          <input type="datetime-local" class="global-formulario-campo__input" [value]="obtenerFechaLocal(anuncio.fechaFin)"
-            (change)="actualizarFechaFin(i, $event)">
+          <input type="datetime-local" class="global-formulario-campo__input" 
+            [value]="obtenerFechaLocal(anuncio.fechaFin)"
+            (input)="actualizarFechaFin(i, $event)"
+            (blur)="actualizarFechaFin(i, $event)">
         </div>
       </div>
 

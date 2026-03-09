@@ -7,6 +7,7 @@ import type {
   ProductoCategoriaMarketing
 } from '../../../../compartido/modelos/configuracion.modelo';
 import { ConfiguracionApiServicio } from '../../../../compartido/servicios/configuracion-api.servicio';
+import { PrecioServicio } from '../../../../compartido/servicios/precio.servicio';
 
 interface CategoriaVista {
   id: string;
@@ -24,6 +25,7 @@ interface CategoriaVista {
 export class CategoriaPagina implements OnInit {
   private route = inject(ActivatedRoute);
   private configuracionApi = inject(ConfiguracionApiServicio);
+  private precioServicio = inject(PrecioServicio);
 
   Math = Math;
   usaConfig = signal(false);
@@ -165,12 +167,17 @@ export class CategoriaPagina implements OnInit {
     this.paginaActual.set(1);
   }
 
+  /** Calcula el precio según el rol del usuario actual. */
   precioAMostrar(p: ProductoCategoriaMarketing): number {
-    return p.usarPrecioOferta && p.precioOferta != null ? p.precioOferta : p.precioBase;
+    return this.precioServicio.calcularPrecio({
+      precioBase: p.precioBase,
+      margenCliente: p.margenCliente,
+      margenRevendedor: p.margenRevendedor,
+    });
   }
 
-  mostrarOferta(p: ProductoCategoriaMarketing): boolean {
-    return Boolean(p.usarPrecioOferta && p.precioOferta != null);
+  mostrarOferta(_p: ProductoCategoriaMarketing): boolean {
+    return false;
   }
 
   irAPagina(pagina: number): void {
