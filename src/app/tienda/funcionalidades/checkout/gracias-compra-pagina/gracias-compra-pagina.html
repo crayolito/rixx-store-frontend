@@ -1,0 +1,47 @@
+<app-notificacion-toast></app-notificacion-toast>
+
+<div class="gracias-contenedor">
+  <div class="gracias-tarjeta">
+    <div class="gracias-encabezado">
+      <div class="gracias-icono">
+        <img src="/logo.png" alt="Logo de la tienda">
+      </div>
+      <h1 class="gracias-titulo">¡Gracias por tu compra!</h1>
+      <p class="gracias-subtitulo">
+        Tu pago fue confirmado correctamente. Te enviaremos a tu correo el resumen de lo que compraste
+        (productos, códigos o recargas) y cualquier actualización importante sobre tu pedido.
+      </p>
+    </div>
+
+    <div class="gracias-detalle" *ngIf="detalle() as d">
+      <div class="gracias-detalle-fila" *ngIf="d.numeroPedido">
+        <span class="gracias-detalle-etiqueta">Número de pedido</span>
+        <span class="gracias-detalle-valor">{{ d.numeroPedido }}</span>
+      </div>
+      <div class="gracias-detalle-fila" *ngIf="d.total != null">
+        <span class="gracias-detalle-etiqueta">Total pagado</span>
+        <span class="gracias-detalle-valor gracias-detalle-valor--monto">
+          ${{ d.total | number:'1.2-2' }} USD
+        </span>
+      </div>
+      <div class="gracias-detalle-fila" *ngIf="d.metodoPago">
+        <span class="gracias-detalle-etiqueta">Método de pago</span>
+        <span class="gracias-detalle-valor">{{ obtenerTextoMetodo() }}</span>
+      </div>
+    </div>
+
+    <div class="gracias-mensaje-extra">
+      <p>
+        Cuando tu pedido cambie de estado (procesando, completado o con algún inconveniente) te lo notificaremos
+        por correo electrónico. Si no ves el mensaje en tu bandeja principal, revisa también spam o promociones.
+      </p>
+    </div>
+
+    <div class="gracias-acciones">
+      <button type="button" class="boton-primario" (click)="irAlInicio()">
+        Volver al inicio
+      </button>
+    </div>
+  </div>
+</div>
+

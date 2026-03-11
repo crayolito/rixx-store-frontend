@@ -2,7 +2,6 @@ import { Component, effect, inject, signal } from '@angular/core';
 import { PopupBienvenida } from '../../../../compartido/componentes/popup-bienvenida/popup-bienvenida';
 import { AnuncioTemporal, CategoriaDestacada, ConfCarrusel, ConfPromocion } from '../../../../compartido/modelos/configuracion.modelo';
 import { ConfiguracionServicio } from '../../../../compartido/servicios/configuracion.servicio';
-import { SeccionAnuncioTemporal } from '../../secciones-dinamicas/componentes/seccion-anuncio-temporal/seccion-anuncio-temporal';
 import { SeccionCarrusel } from '../../secciones-dinamicas/componentes/seccion-carrusel/seccion-carrusel';
 import { SeccionCategorias } from '../../secciones-dinamicas/componentes/seccion-categorias/seccion-categorias';
 import { SeccionPromocion } from '../../secciones-dinamicas/componentes/seccion-promocion/seccion-promocion';
@@ -10,7 +9,7 @@ import { SeccionPromocion } from '../../secciones-dinamicas/componentes/seccion-
 @Component({
   selector: 'app-inicio-pagina',
   standalone: true,
-  imports: [SeccionCarrusel, SeccionPromocion, SeccionCategorias, SeccionAnuncioTemporal, PopupBienvenida],
+  imports: [SeccionCarrusel, SeccionPromocion, SeccionCategorias, PopupBienvenida],
   templateUrl: './inicio-pagina.html',
   styleUrl: './inicio-pagina.css',
 })

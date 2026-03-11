@@ -59,6 +59,14 @@ export const routes: Routes = [
       ),
     canActivate: [bloquearAdminGuard, crearGuardPorPermiso('ver_checkout', 'checkout')],
   },
+  {
+    path: 'checkout/gracias',
+    loadComponent: () =>
+      import('./tienda/funcionalidades/checkout/gracias-compra-pagina/gracias-compra-pagina').then(
+        (m) => m.GraciasCompraPagina,
+      ),
+    canActivate: [bloquearAdminGuard],
+  },
   // ===== ADMIN =====
   {
     path: 'admin',

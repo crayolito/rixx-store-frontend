@@ -324,8 +324,20 @@ export class CheckoutPagina implements OnInit, OnDestroy {
           this.carritoServicio.limpiarCarrito();
           this.estaProcesando.set(false);
           this.cdr.detectChanges();
-          this.notificacion.exito('¡Pago exitoso! Tu pedido ha sido registrado.');
-          this.router.navigate(['/']);
+          this.notificacion.exito('¡Gracias por tu compra! Hemos enviado los detalles a tu correo.');
+          this.router.navigate(['/checkout/gracias'], {
+            replaceUrl: true,
+            queryParams: {
+              numeroPedido,
+              total: this.total(),
+              metodoPago: 'billetera',
+            },
+            state: {
+              numeroPedido,
+              total: this.total(),
+              metodoPago: 'billetera',
+            },
+          });
         },
         error: (error) => {
           console.error('Error al crear pedido tras pago con billetera:', error);
@@ -425,7 +437,20 @@ export class CheckoutPagina implements OnInit, OnDestroy {
           this.carritoServicio.limpiarCarrito();
           this.estaProcesando.set(false);
           this.cdr.detectChanges();
-          this.notificacion.exito('Pedido registrado correctamente.');
+          this.notificacion.exito('¡Gracias! Tu pedido fue registrado correctamente.');
+          this.router.navigate(['/checkout/gracias'], {
+            replaceUrl: true,
+            queryParams: {
+              numeroPedido,
+              total: this.total(),
+              metodoPago: this.metodoPagoActual()?.tipo ?? 'otro',
+            },
+            state: {
+              numeroPedido,
+              total: this.total(),
+              metodoPago: this.metodoPagoActual()?.tipo ?? 'otro',
+            },
+          });
         },
         error: (error) => {
           console.error('Error al crear pedido:', error);
@@ -787,8 +812,20 @@ export class CheckoutPagina implements OnInit, OnDestroy {
           this.qrImagen.set(null);
           this.estadoPago.set('pagado');
           this.cdr.detectChanges();
-          this.notificacion.exito('Pago recibido y pedido registrado correctamente.');
-          this.router.navigate(['/']);
+          this.notificacion.exito('¡Pago recibido! Hemos registrado tu pedido.');
+          this.router.navigate(['/checkout/gracias'], {
+            replaceUrl: true,
+            queryParams: {
+              numeroPedido,
+              total: this.total(),
+              metodoPago: this.metodoPagoActual()?.tipo ?? 'qr-boliviano',
+            },
+            state: {
+              numeroPedido,
+              total: this.total(),
+              metodoPago: this.metodoPagoActual()?.tipo ?? 'qr-boliviano',
+            },
+          });
         },
         error: (error) => {
           console.error('Error al crear pedido después de pago externo:', error);

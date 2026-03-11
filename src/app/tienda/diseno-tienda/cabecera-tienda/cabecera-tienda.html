@@ -1,29 +1,14 @@
 <header class="tienda-header">
   <div class="header-fondo" [style.display]="barraVisible() ? 'block' : 'none'"></div>
   <div class="header-transparente" [class.con-blur]="blurActivo()">
-    <!-- Barra superior promocional -->
-    <div class="tienda-header__barra-superior" [style.display]="barraVisible() ? 'flex' : 'none'">
-      <h3 class="tienda-header__promocion">{{ promoTexto() }}</h3>
-      <div class="tienda-header__controles-superior">
-        <div class="tienda-header__selector-pais">
-          <img [src]="paisPorCodigo(paisActivo())?.bandera" alt="Bandera" class="bandera-icono">
-          <p>{{ paisPorCodigo(paisActivo())?.nombre }}</p>
-          <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="Flecha" class="flecha-selector">
-        </div>
-        <div class="tienda-header__selector-idioma">
-          @for (idioma of idiomas; track idioma.codigo) {
-          <div class="idioma-opcion" [class.idioma-activo]="idiomaActivo() === idioma.codigo"
-            (click)="seleccionarIdioma(idioma.codigo)">
-            {{ idioma.etiqueta }}
-          </div>
-          }
-        </div>
-      </div>
-    </div>
-
     <!-- Barra principal de navegación -->
-    <div class="tienda-header__barra-principal" [style.padding-top]="paddingTopBarra()">
+    <div class="tienda-header__barra-principal">
       <div class="tienda-header__izquierda">
+        <!-- Botón menú móvil -->
+        <button type="button" class="tienda-header__boton-menu" (click)="alternarMenuMovil()">
+          <img src="/iconos/ico-opciones.svg" alt="Menú" class="icono-boton-mediano icono-color-blanco">
+        </button>
+
         <a href="/" class="tienda-header__logo">
           <img [src]="logoUrl()" alt="RixxStore Logo" class="logo-imagen">
         </a>
@@ -124,8 +109,10 @@
           }
         </div>
         } @else {
-        <button class="tienda-btn-primario" (click)="emitirAbrirModal()">
-          Iniciar sesión
+        <button class="tienda-btn-primario tienda-header__boton-login" (click)="emitirAbrirModal()">
+          <img src="/iconos/ico-cliente.svg" alt="Iniciar sesión"
+            class="tienda-header__boton-login-icono icono-boton-mediano icono-color-blanco">
+          <span class="tienda-header__boton-login-texto">Iniciar sesión</span>
         </button>
         }
         <button class="tienda-header__boton-carrito" (click)="emitirAbrirCarrito()">
@@ -136,5 +123,38 @@
         </button>
       </div>
     </div>
+
+    <!-- Menú móvil de categorías (drawer lateral estilo carrito) -->
+    @if (menuMovilAbierto()) {
+    <div class="tienda-header__menu-movil-overlay" (click)="cerrarMenuMovil()"></div>
+    }
+    <nav class="tienda-header__menu-movil" [class.tienda-header__menu-movil--abierto]="menuMovilAbierto()">
+      <div class="tienda-header__menu-movil-header">
+        <p class="tienda-header__menu-movil-header-titulo">Categorías</p>
+        <button type="button" class="tienda-header__menu-movil-cerrar" (click)="cerrarMenuMovil()" aria-label="Cerrar menú">
+          <img src="/iconos/ico-cerrar.svg" alt="Cerrar" class="tienda-header__menu-movil-cerrar-icono">
+        </button>
+      </div>
+      <div class="tienda-header__menu-movil-contenido">
+        @for (seccion of seccionesNav(); track seccion.id) {
+          @if (seccion.esDinamico && seccion.categorias?.length) {
+          <div class="tienda-header__menu-movil-seccion">
+            <p class="tienda-header__menu-movil-titulo">{{ seccion.tituloBase }}</p>
+            <div class="tienda-header__menu-movil-lista">
+              @for (opcion of seccion.categorias; track opcion.handle) {
+              <button type="button" class="tienda-header__menu-movil-item" (click)="irACategoria(opcion.handle)">
+                {{ opcion.titulo }}
+              </button>
+              }
+            </div>
+          </div>
+          } @else if (seccion.redireccionCategoria) {
+          <button type="button" class="tienda-header__menu-movil-item" (click)="irACategoria(seccion.redireccionCategoria!.handle)">
+            {{ seccion.tituloBase }}
+          </button>
+          }
+        }
+      </div>
+    </nav>
   </div>
 </header>

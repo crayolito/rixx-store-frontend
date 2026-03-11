@@ -61,7 +61,6 @@ export class CabeceraTienda implements OnInit {
   dropdownCategoriaAbierto = signal<string | null>(null);
   barraVisible = signal(true);
   blurActivo = signal(false);
-  paddingTopBarra = signal('var(--espaciado-xxs)');
 
   readonly idiomas: Idioma[] = [
     { codigo: 'es', etiqueta: 'ES' },
@@ -103,6 +102,7 @@ export class CabeceraTienda implements OnInit {
   busquedaCargando = signal(false);
   readonly placeholderBusqueda = 'Buscar productos...';
   menuUsuarioAbierto = signal(false);
+  menuMovilAbierto = signal(false);
 
   ngOnInit() {
     this.manejarScroll();
@@ -141,17 +141,25 @@ export class CabeceraTienda implements OnInit {
       });
   }
 
+  /** Alterna el menú de navegación móvil (categorías). */
+  alternarMenuMovil() {
+    this.menuMovilAbierto.update((v) => !v);
+  }
+
+  /** Cierra el menú móvil. */
+  cerrarMenuMovil() {
+    this.menuMovilAbierto.set(false);
+  }
+
   @HostListener('window:scroll')
   manejarScroll() {
     const scrollY = window.scrollY || document.documentElement.scrollTop;
     if (scrollY > 50) {
       this.barraVisible.set(false);
       this.blurActivo.set(true);
-      this.paddingTopBarra.set('var(--espaciado-md)');
     } else {
       this.barraVisible.set(true);
       this.blurActivo.set(false);
-      this.paddingTopBarra.set('var(--espaciado-xxs)');
     }
   }
 
@@ -224,6 +232,7 @@ export class CabeceraTienda implements OnInit {
   irACategoria(handle: string) {
     this.router.navigate(['/categoria', handle]);
     this.cerrarDropdownCategoria();
+    this.cerrarMenuMovil();
   }
 
   cerrarSesion() {
@@ -243,6 +252,9 @@ export class CabeceraTienda implements OnInit {
     }
     if (!target.closest('.tienda-header__categoria-dropdown')) {
       this.cerrarDropdownCategoria();
+    }
+    if (!target.closest('.tienda-header__menu-movil') && !target.closest('.tienda-header__boton-menu')) {
+      this.cerrarMenuMovil();
     }
   }
 }

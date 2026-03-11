@@ -24,21 +24,7 @@
   animation: fadeIn 0.5s ease-in-out;
 }
 
-.anuncio-temporal__enlace {
-  display: block;
-  width: 100%;
-  height: 100%;
-  text-decoration: none;
-}
-
-.anuncio-temporal__enlace--clickeable {
-  cursor: pointer;
-}
-
-.anuncio-temporal__enlace--no-clickeable {
-  cursor: default;
-  pointer-events: none;
-}
+/* enlace eliminado: la imagen se muestra sola */
 
 @keyframes fadeIn {
   from {

@@ -1,0 +1,101 @@
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NotificacionToast } from '../../../../compartido/componentes/notificacion-toast/notificacion-toast';
+
+interface DetalleAgradecimiento {
+  numeroPedido: string | null;
+  total: number | null;
+  metodoPago: string | null;
+}
+
+@Component({
+  selector: 'app-gracias-compra-pagina',
+  standalone: true,
+  imports: [CommonModule, NotificacionToast],
+  templateUrl: './gracias-compra-pagina.html',
+  styleUrl: './gracias-compra-pagina.css',
+})
+export class GraciasCompraPagina implements OnInit {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  private numeroPedidoInterno = signal<string | null>(null);
+  private totalInterno = signal<number | null>(null);
+  private metodoPagoInterno = signal<string | null>(null);
+
+  detalle = computed<DetalleAgradecimiento>(() => ({
+    numeroPedido: this.numeroPedidoInterno(),
+    total: this.totalInterno(),
+    metodoPago: this.metodoPagoInterno(),
+  }));
+
+  ngOnInit(): void {
+    // PASO 1: Intentamos leer desde query params (más estable)
+    this.route.queryParams.subscribe((params) => {
+      const numeroPedidoParam = params['numeroPedido'] || null;
+      const totalParam = params['total'];
+      const metodoParam = params['metodoPago'] || params['metodo'] || null;
+
+      if (numeroPedidoParam) {
+        this.numeroPedidoInterno.set(String(numeroPedidoParam));
+      }
+
+      if (totalParam != null && totalParam !== '') {
+        const totalNumero = Number(totalParam);
+        if (!Number.isNaN(totalNumero)) {
+          this.totalInterno.set(totalNumero);
+        }
+      }
+
+      if (metodoParam) {
+        this.metodoPagoInterno.set(String(metodoParam));
+      }
+    });
+
+    // PASO 2: Como respaldo, usamos el state de navegación si existe
+    const navigation = this.router.getCurrentNavigation();
+    const stateNavegacion = navigation?.extras?.state as Partial<DetalleAgradecimiento> | undefined;
+    const stateHistorial = (typeof window !== 'undefined' ? (window.history.state as Partial<DetalleAgradecimiento>) : undefined) || {};
+
+    const posibleNumero = stateNavegacion?.numeroPedido ?? stateHistorial.numeroPedido;
+    const posibleTotal = stateNavegacion?.total ?? stateHistorial.total;
+    const posibleMetodo = stateNavegacion?.metodoPago ?? stateHistorial.metodoPago;
+
+    if (!this.numeroPedidoInterno() && posibleNumero) {
+      this.numeroPedidoInterno.set(String(posibleNumero));
+    }
+    if (this.totalInterno() == null && posibleTotal != null) {
+      const totalNumero = Number(posibleTotal);
+      if (!Number.isNaN(totalNumero)) {
+        this.totalInterno.set(totalNumero);
+      }
+    }
+    if (!this.metodoPagoInterno() && posibleMetodo) {
+      this.metodoPagoInterno.set(String(posibleMetodo));
+    }
+
+    // Evitamos que el usuario vuelva al checkout con el botón atrás del navegador
+    if (typeof window !== 'undefined' && window.history && window.addEventListener) {
+      const urlActual = window.location.href;
+      window.history.pushState(null, '', urlActual);
+      window.addEventListener('popstate', () => {
+        this.irAlInicio();
+      });
+    }
+  }
+
+  obtenerTextoMetodo(): string {
+    const metodo = this.metodoPagoInterno();
+    if (!metodo) return 'Método de pago seleccionado';
+    if (metodo === 'billetera') return 'Billetera virtual';
+    if (metodo === 'binance') return 'Binance Pay';
+    if (metodo === 'qr-boliviano') return 'QR Boliviano';
+    return metodo;
+  }
+
+  irAlInicio(): void {
+    this.router.navigate(['/']);
+  }
+}
+

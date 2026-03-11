@@ -90,12 +90,6 @@
             </button>
             }
           </div>
-          @if (!productoTodoAgotado()) {
-          <button type="button" class="tienda-producto-detalle__boton-seleccionar-paquete"
-            (click)="abrirBottomSheetVariantes()">
-            SELECCIONAR PAQUETE
-          </button>
-          }
 
           <!-- Acordeones: solo se muestran si tienen contenido -->
           <div class="tienda-producto-detalle__dropdowns">
@@ -185,6 +179,14 @@
             }
           </div>
         </div>
+        }
+
+        <!-- Botón para seleccionar paquete (flujo móvil: después de "Ingresa tus datos") -->
+        @if (!productoTodoAgotado()) {
+        <button type="button" class="tienda-producto-detalle__boton-seleccionar-paquete"
+          (click)="abrirBottomSheetVariantes()">
+          SELECCIONAR PAQUETE
+        </button>
         }
 
         <!-- Resumen del pedido -->

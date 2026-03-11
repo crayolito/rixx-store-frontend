@@ -1,5 +1,5 @@
 .inicio-pagina {
   display: flex;
   flex-direction: column;
-  gap: var(--espaciado-xl);
+  gap: var(--espaciado-md);
 }

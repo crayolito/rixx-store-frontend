@@ -1,0 +1,112 @@
+.gracias-contenedor {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.15), transparent),
+    radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.1), transparent),
+    var(--color-fondo, #050816);
+}
+
+.gracias-tarjeta {
+  width: 100%;
+  max-width: 560px;
+  background: rgba(7, 10, 24, 0.96);
+  border-radius: 1.5rem;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+  color: #ffffff;
+}
+
+.gracias-encabezado {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.gracias-icono {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  margin: 0 auto 1rem auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 30% 0%, rgba(74, 222, 128, 0.35), transparent),
+    rgba(22, 163, 74, 0.08);
+}
+
+.gracias-icono img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+
+.gracias-titulo {
+  font-size: clamp(1.6rem, 2.2vw, 2rem);
+  margin: 0 0 0.5rem 0;
+  font-weight: 700;
+}
+
+.gracias-subtitulo {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.gracias-detalle {
+  padding: 1.5rem 1.25rem;
+  border-radius: 1rem;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  margin-bottom: 1.5rem;
+}
+
+.gracias-detalle-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.4rem 0;
+}
+
+.gracias-detalle-etiqueta {
+  font-size: 0.9rem;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.gracias-detalle-valor {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.gracias-detalle-valor--monto {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-primario, #22c55e);
+}
+
+.gracias-mensaje-extra {
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+  color: rgba(203, 213, 225, 0.9);
+  line-height: 1.5;
+}
+
+.gracias-acciones {
+  display: flex;
+  justify-content: center;
+}
+
+.gracias-acciones .boton-primario {
+  min-width: 180px;
+}
+
+@media (min-width: 768px) {
+  .gracias-tarjeta {
+    padding: 3rem 2.5rem;
+  }
+}
+

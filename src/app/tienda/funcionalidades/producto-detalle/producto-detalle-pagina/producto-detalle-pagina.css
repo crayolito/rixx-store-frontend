@@ -143,6 +143,7 @@
 /* ─── Columna izquierda: Variantes ─── */
 .tienda-producto-detalle__izquierda {
   width: 100%;
+  order: 2;
 }
 
 .tienda-producto-detalle__variantes {
@@ -411,6 +412,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--espaciado-lg);
+  order: 1;
 }
 
 .tienda-producto-detalle__seccion {
@@ -786,10 +788,12 @@
 
   .tienda-producto-detalle__izquierda {
     flex: 2.2;
+    order: 1;
   }
 
   .tienda-producto-detalle__derecha {
     flex: 1;
+    order: 2;
   }
 }
 

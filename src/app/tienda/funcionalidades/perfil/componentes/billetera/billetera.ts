@@ -34,7 +34,10 @@ export class Billetera implements OnInit {
 
   ngOnInit(): void {
     const u = this.sesion.usuarioActual();
-    if (u?.saldo != null) this.saldoActual.set(u.saldo);
+    if (u?.saldo != null) {
+      this.saldoActual.set(u.saldo);
+    }
+    // Cargamos el historial de transacciones
     this.cargarHistorial();
   }
 
