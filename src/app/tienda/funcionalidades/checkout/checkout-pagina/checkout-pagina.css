@@ -660,7 +660,6 @@
   padding: var(--espaciado-sm) var(--espaciado-md);
   font-size: var(--texto-pequeno);
 }
-
 /* ─── Vista QR (móvil: ancho completo, contenido legible) ─── */
 .checkout-pagina__qr {
   width: 100%;

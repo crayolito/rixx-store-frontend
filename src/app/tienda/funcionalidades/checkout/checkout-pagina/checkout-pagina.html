@@ -223,7 +223,7 @@
 
           <!-- Botón confirmar -->
           <button type="button" class="boton-primario checkout-pagina__boton-procesar"
-            [disabled]="estaProcesando() || !puedeConfirmarPedido()"
+            [disabled]="estaProcesando()"
             (click)="procesarPago()">
             @if (estaProcesando()) {
             <span>Procesando...</span>

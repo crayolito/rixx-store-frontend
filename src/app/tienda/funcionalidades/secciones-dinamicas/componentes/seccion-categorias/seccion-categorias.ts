@@ -65,12 +65,18 @@ export class SeccionCategorias {
     return Math.round(((precioBase - precioOferta) / precioBase) * 100);
   }
 
-  /** Calcula el precio final según el rol del usuario actual. */
+  /**
+   * Precio a mostrar = precio base con margen aplicado (base * (1 + margen/100)).
+   * No es base + margen, sino base ya con el margen incluido.
+   */
   calcularPrecioFinal(producto: ProductoCategoria): number {
-    return this.precioServicio.calcularPrecio({
-      precioBase: producto.precioBase,
-      margenCliente: producto.margenCliente,
-      margenRevendedor: producto.margenRevendedor,
-    });
+    const base = producto.precioBase ?? 0;
+    const esRevendedor = this.precioServicio.esRevendedor();
+    const margenPct = esRevendedor
+      ? (producto.margenRevendedor ?? 0)
+      : (producto.margenCliente ?? 0);
+    // Margen en porcentaje (ej. 20 = 20%). Si viene como decimal (0.2), lo tratamos igual.
+    const factor = margenPct > 0 && margenPct < 1 ? 1 + margenPct : 1 + margenPct / 100;
+    return base * factor;
   }
 }
