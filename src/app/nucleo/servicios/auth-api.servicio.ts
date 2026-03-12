@@ -123,11 +123,12 @@ export class UsuarioApiServicio {
   private sesion = inject(Sesion);
 
   login(email: string, contrasena: string, socialLogin = false): Observable<RespuestaLogin> {
-    return this.httpBase.enviarPost<RespuestaLogin>('/auth/login', {
+    const cuerpo = {
       email,
-      contrasena: contrasena || '',
-      ...(socialLogin && { social_login: true }),
-    }).pipe(
+      contrasena: contrasena ?? '',
+      social_login: socialLogin,
+    };
+    return this.httpBase.enviarPost<RespuestaLogin>('/auth/login', cuerpo).pipe(
       switchMap((respuesta) => {
         if (!respuesta?.exito || !respuesta.datos) return of(respuesta);
         const datos = respuesta.datos;

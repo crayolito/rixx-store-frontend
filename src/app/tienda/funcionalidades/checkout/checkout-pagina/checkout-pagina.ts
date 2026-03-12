@@ -294,6 +294,7 @@ export class CheckoutPagina implements OnInit, OnDestroy {
   /** Crea el pedido después de descontar de billetera. */
   private crearPedidoTrasPagoBilletera(numeroPedido: string): void {
     try {
+      const totalOriginal = this.total();
       const detalles = this.items().map((item: ItemCarrito) => {
         const idPrecio = item.varianteId ? parseInt(item.varianteId, 10) : 0;
         return {
@@ -313,7 +314,7 @@ export class CheckoutPagina implements OnInit, OnDestroy {
         numeroPedido: numeroPedido,
         subtotal: this.subtotal(),
         descuento: 0,
-        total: this.total(),
+        total: totalOriginal,
         idMetodoPago: null,
         notaInterna: `Pago con billetera - Cliente: ${this.datosCliente().nombre} - ${this.datosCliente().email}`,
         detalles: detalles,
@@ -321,6 +322,7 @@ export class CheckoutPagina implements OnInit, OnDestroy {
 
       this.pedidosApi.crearPedido(cuerpo).subscribe({
         next: () => {
+          const totalPedido = totalOriginal;
           this.carritoServicio.limpiarCarrito();
           this.estaProcesando.set(false);
           this.cdr.detectChanges();
@@ -329,12 +331,12 @@ export class CheckoutPagina implements OnInit, OnDestroy {
             replaceUrl: true,
             queryParams: {
               numeroPedido,
-              total: this.total(),
+              total: totalPedido,
               metodoPago: 'billetera',
             },
             state: {
               numeroPedido,
-              total: this.total(),
+              total: totalPedido,
               metodoPago: 'billetera',
             },
           });
@@ -405,6 +407,7 @@ export class CheckoutPagina implements OnInit, OnDestroy {
     try {
       const fecha = new Date();
       const numeroPedido = `PED-${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(fecha.getDate()).padStart(2, '0')}-${String(Date.now()).slice(-6)}`;
+      const totalOriginal = this.total();
 
       const detalles = this.items().map((item: ItemCarrito) => {
         const idPrecio = item.varianteId ? parseInt(item.varianteId, 10) : 0;
@@ -426,7 +429,7 @@ export class CheckoutPagina implements OnInit, OnDestroy {
         numeroPedido: numeroPedido,
         subtotal: this.subtotal(),
         descuento: 0,
-        total: this.total(),
+        total: totalOriginal,
         idMetodoPago: this.metodoPagoSeleccionado(),
         notaInterna: `Cliente: ${this.datosCliente().nombre} - ${this.datosCliente().email}`,
         detalles: detalles,
@@ -434,6 +437,7 @@ export class CheckoutPagina implements OnInit, OnDestroy {
 
       this.pedidosApi.crearPedido(cuerpo).subscribe({
         next: () => {
+          const totalPedido = totalOriginal;
           this.carritoServicio.limpiarCarrito();
           this.estaProcesando.set(false);
           this.cdr.detectChanges();
@@ -442,12 +446,12 @@ export class CheckoutPagina implements OnInit, OnDestroy {
             replaceUrl: true,
             queryParams: {
               numeroPedido,
-              total: this.total(),
+              total: totalPedido,
               metodoPago: this.metodoPagoActual()?.tipo ?? 'otro',
             },
             state: {
               numeroPedido,
-              total: this.total(),
+              total: totalPedido,
               metodoPago: this.metodoPagoActual()?.tipo ?? 'otro',
             },
           });
@@ -775,6 +779,8 @@ export class CheckoutPagina implements OnInit, OnDestroy {
     try {
       const fecha = new Date();
       const numeroPedido = `PED-${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(fecha.getDate()).padStart(2, '0')}-${String(Date.now()).slice(-6)}`;
+      const totalOriginal = this.total();
+      const datosPagoActual = this.datosPago();
 
       const detalles = this.items().map((item: ItemCarrito) => {
         const idPrecio = item.varianteId ? parseInt(item.varianteId, 10) : 0;
@@ -796,7 +802,7 @@ export class CheckoutPagina implements OnInit, OnDestroy {
         numeroPedido: numeroPedido,
         subtotal: this.subtotal(),
         descuento: 0,
-        total: this.total(),
+        total: totalOriginal,
         idMetodoPago: this.metodoPagoSeleccionado(),
         notaInterna: `Cliente: ${this.datosCliente().nombre} - ${this.datosCliente().email}`,
         detalles: detalles,
@@ -804,6 +810,15 @@ export class CheckoutPagina implements OnInit, OnDestroy {
 
       this.pedidosApi.crearPedido(cuerpo).subscribe({
         next: () => {
+          const totalPedido = totalOriginal;
+          const totalBs =
+            datosPagoActual?.metodo === 'qr-boliviano' && typeof datosPagoActual.monto === 'number'
+              ? datosPagoActual.monto
+              : null;
+          const tipoCambioAplicado =
+            typeof datosPagoActual?.tipoCambioAplicado === 'number' ? datosPagoActual.tipoCambioAplicado : null;
+          const monedaOriginal = datosPagoActual?.monedaOriginal ?? 'USD';
+
           this.carritoServicio.limpiarCarrito();
           this.mostrarQR.set(false);
           this.estaProcesando.set(false);
@@ -817,13 +832,19 @@ export class CheckoutPagina implements OnInit, OnDestroy {
             replaceUrl: true,
             queryParams: {
               numeroPedido,
-              total: this.total(),
+              total: totalPedido,
               metodoPago: this.metodoPagoActual()?.tipo ?? 'qr-boliviano',
+              ...(totalBs != null && { totalBs }),
+              ...(tipoCambioAplicado != null && { tipoCambio: tipoCambioAplicado }),
+              ...(monedaOriginal && { monedaOriginal }),
             },
             state: {
               numeroPedido,
-              total: this.total(),
+              total: totalPedido,
               metodoPago: this.metodoPagoActual()?.tipo ?? 'qr-boliviano',
+              ...(totalBs != null && { totalBs }),
+              ...(tipoCambioAplicado != null && { tipoCambio: tipoCambioAplicado }),
+              ...(monedaOriginal && { monedaOriginal }),
             },
           });
         },

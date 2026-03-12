@@ -21,7 +21,16 @@
       <div class="gracias-detalle-fila" *ngIf="d.total != null">
         <span class="gracias-detalle-etiqueta">Total pagado</span>
         <span class="gracias-detalle-valor gracias-detalle-valor--monto">
-          ${{ d.total | number:'1.2-2' }} USD
+          <ng-container *ngIf="d.totalBs != null && d.tipoCambio != null; else soloUsd">
+            Bs {{ d.totalBs | number:'1.2-2' }}
+            <span class="gracias-detalle-texto-secundario">
+              (equivalente a ${{ d.total | number:'1.2-2' }} {{ d.monedaOriginal || 'USD' }}
+              a tasa {{ d.tipoCambio | number:'1.2-2' }} Bs)
+            </span>
+          </ng-container>
+          <ng-template #soloUsd>
+            ${{ d.total | number:'1.2-2' }} USD
+          </ng-template>
         </span>
       </div>
       <div class="gracias-detalle-fila" *ngIf="d.metodoPago">

@@ -464,6 +464,7 @@
 .tienda-header__boton-login-icono {
   width: 20px;
   height: 20px;
+  display: none;
 }
 
 .tienda-header__boton-login-texto {
@@ -516,6 +517,10 @@
     padding: 0;
     border-radius: 999px;
     justify-content: center;
+  }
+
+  .tienda-header__boton-login-icono {
+    display: block;
   }
 
   .tienda-header__boton-login-texto {

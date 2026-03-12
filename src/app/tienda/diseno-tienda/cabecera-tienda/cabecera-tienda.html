@@ -75,7 +75,7 @@
         <div class="tienda-header__usuario-contenedor">
           <button type="button" class="tienda-header__usuario-logueado" (click)="alternarMenuUsuario()"
             [class.menu-abierto]="menuUsuarioAbierto()">
-            <img [src]="usuarioActual()?.fotoPerfil || '/iconos/ico-cliente.svg'" alt="Usuario" class="usuario-icono">
+            <img [src]="usuarioActual()?.fotoPerfil || '/imagenes/foto-perfil1.png'" alt="Usuario" class="usuario-icono">
             <span class="usuario-nombre">{{ nombreCorto() || usuarioActual()?.nombre }}</span>
             <img src="/iconos/ico-flecha-abajo-opciones.svg" alt="" class="tienda-header__usuario-flecha">
           </button>

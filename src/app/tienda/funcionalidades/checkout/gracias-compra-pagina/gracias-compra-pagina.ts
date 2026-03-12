@@ -7,6 +7,9 @@ interface DetalleAgradecimiento {
   numeroPedido: string | null;
   total: number | null;
   metodoPago: string | null;
+  totalBs?: number | null;
+  tipoCambio?: number | null;
+  monedaOriginal?: string | null;
 }
 
 @Component({
@@ -23,11 +26,17 @@ export class GraciasCompraPagina implements OnInit {
   private numeroPedidoInterno = signal<string | null>(null);
   private totalInterno = signal<number | null>(null);
   private metodoPagoInterno = signal<string | null>(null);
+  private totalBsInterno = signal<number | null>(null);
+  private tipoCambioInterno = signal<number | null>(null);
+  private monedaOriginalInterna = signal<string | null>(null);
 
   detalle = computed<DetalleAgradecimiento>(() => ({
     numeroPedido: this.numeroPedidoInterno(),
     total: this.totalInterno(),
     metodoPago: this.metodoPagoInterno(),
+    totalBs: this.totalBsInterno(),
+    tipoCambio: this.tipoCambioInterno(),
+    monedaOriginal: this.monedaOriginalInterna(),
   }));
 
   ngOnInit(): void {
@@ -36,6 +45,9 @@ export class GraciasCompraPagina implements OnInit {
       const numeroPedidoParam = params['numeroPedido'] || null;
       const totalParam = params['total'];
       const metodoParam = params['metodoPago'] || params['metodo'] || null;
+      const totalBsParam = params['totalBs'];
+      const tipoCambioParam = params['tipoCambio'];
+      const monedaOriginalParam = params['monedaOriginal'] || null;
 
       if (numeroPedidoParam) {
         this.numeroPedidoInterno.set(String(numeroPedidoParam));
@@ -51,6 +63,24 @@ export class GraciasCompraPagina implements OnInit {
       if (metodoParam) {
         this.metodoPagoInterno.set(String(metodoParam));
       }
+
+      if (totalBsParam != null && totalBsParam !== '') {
+        const totalBsNumero = Number(totalBsParam);
+        if (!Number.isNaN(totalBsNumero)) {
+          this.totalBsInterno.set(totalBsNumero);
+        }
+      }
+
+      if (tipoCambioParam != null && tipoCambioParam !== '') {
+        const tipoCambioNumero = Number(tipoCambioParam);
+        if (!Number.isNaN(tipoCambioNumero)) {
+          this.tipoCambioInterno.set(tipoCambioNumero);
+        }
+      }
+
+      if (monedaOriginalParam) {
+        this.monedaOriginalInterna.set(String(monedaOriginalParam));
+      }
     });
 
     // PASO 2: Como respaldo, usamos el state de navegación si existe
@@ -61,6 +91,9 @@ export class GraciasCompraPagina implements OnInit {
     const posibleNumero = stateNavegacion?.numeroPedido ?? stateHistorial.numeroPedido;
     const posibleTotal = stateNavegacion?.total ?? stateHistorial.total;
     const posibleMetodo = stateNavegacion?.metodoPago ?? stateHistorial.metodoPago;
+    const posibleTotalBs = stateNavegacion?.totalBs ?? stateHistorial.totalBs;
+    const posibleTipoCambio = stateNavegacion?.tipoCambio ?? stateHistorial.tipoCambio;
+    const posibleMonedaOriginal = stateNavegacion?.monedaOriginal ?? stateHistorial.monedaOriginal;
 
     if (!this.numeroPedidoInterno() && posibleNumero) {
       this.numeroPedidoInterno.set(String(posibleNumero));
@@ -73,6 +106,24 @@ export class GraciasCompraPagina implements OnInit {
     }
     if (!this.metodoPagoInterno() && posibleMetodo) {
       this.metodoPagoInterno.set(String(posibleMetodo));
+    }
+
+    if (this.totalBsInterno() == null && posibleTotalBs != null) {
+      const totalBsNumero = Number(posibleTotalBs);
+      if (!Number.isNaN(totalBsNumero)) {
+        this.totalBsInterno.set(totalBsNumero);
+      }
+    }
+
+    if (this.tipoCambioInterno() == null && posibleTipoCambio != null) {
+      const tipoCambioNumero = Number(posibleTipoCambio);
+      if (!Number.isNaN(tipoCambioNumero)) {
+        this.tipoCambioInterno.set(tipoCambioNumero);
+      }
+    }
+
+    if (!this.monedaOriginalInterna() && posibleMonedaOriginal) {
+      this.monedaOriginalInterna.set(String(posibleMonedaOriginal));
     }
 
     // Evitamos que el usuario vuelva al checkout con el botón atrás del navegador
