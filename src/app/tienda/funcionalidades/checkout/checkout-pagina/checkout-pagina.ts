@@ -483,12 +483,59 @@ export class CheckoutPagina implements OnInit, OnDestroy {
       return;
     }
 
-    const fecha = new Date();
+    this.notificacion.info('Estamos generando tu pago con Binance, esto puede tardar unos segundos...');
+
+    // Si es recarga de billetera, usamos el flujo de preparar-recarga
+    if (this.esRecarga()) {
+      const monto = this.montoRecarga();
+      this.metodosPagoApi
+        .prepararRecargaBinance({
+          idMetodoPago: metodo.id_metodo_pago,
+          monto,
+          moneda: 'USDT',
+        })
+        .subscribe({
+          next: (datosRespuesta) => {
+            if (!datosRespuesta) {
+              throw new Error('Respuesta vacía al preparar recarga Binance');
+            }
+            const tipoCambioBinance = datosRespuesta.tipo_cambio ?? metodo.tipo_cambio ?? null;
+            this.datosPago.set({
+              monto: datosRespuesta.monto,
+              nota: datosRespuesta.codigo,
+              idMovimiento: null,
+              producto: 'Recarga de billetera',
+              metodo: 'binance',
+              moneda: datosRespuesta.moneda,
+              montoOriginal: monto,
+              monedaOriginal: 'USDT',
+              tipoCambioAplicado: tipoCambioBinance ?? undefined,
+            });
+            this.qrImagen.set(this.normalizarQrImagen(datosRespuesta.qrImagen));
+            this.mostrarQR.set(true);
+            this.estadoPago.set('esperando');
+            this.tiempoRestante.set(600);
+            this.iniciarCuentaRegresiva();
+            this.iniciarVerificacionBinance();
+            this.estaProcesando.set(false);
+            this.cdr.detectChanges();
+          },
+          error: (error) => {
+            console.error('Error al preparar recarga Binance:', error);
+            this.estaProcesando.set(false);
+            this.cdr.detectChanges();
+            const mensajeError =
+              error?.error?.mensaje || error?.message || 'No se pudo preparar la recarga con Binance.';
+            this.notificacion.error(mensajeError);
+          },
+        });
+      return;
+    }
+
+    // Caso compra normal: flujo existente de pago Binance
     const primerItem = this.items()[0];
     const idPrecio = primerItem?.varianteId ? parseInt(primerItem.varianteId, 10) : 0;
     const cantidad = primerItem?.cantidad ?? 1;
-
-    this.notificacion.info('Estamos generando tu pago con Binance, esto puede tardar unos segundos...');
 
     this.metodosPagoApi
       .prepararPagoBinance({
@@ -542,14 +589,72 @@ export class CheckoutPagina implements OnInit, OnDestroy {
       return;
     }
 
+    this.notificacion.info('Estamos generando tu QR de pago, esto puede tardar unos segundos...');
+
+    // Si es recarga de billetera, usamos el flujo de preparar-recarga
+    if (this.esRecarga()) {
+      const monto = this.montoRecarga();
+      this.metodosPagoApi
+        .prepararRecargaVeripagos({
+          idMetodoPago: metodo.id_metodo_pago,
+          monto,
+          vigencia: '0/00:15',
+          usoUnico: true,
+        })
+        .subscribe({
+          next: (datos) => {
+            if (!datos) {
+              throw new Error('Respuesta vacía al preparar recarga VeriPagos');
+            }
+            const montoOriginal = datos.monto ?? monto;
+            const montoBs = datos.monto_convertido ?? datos.monto_enviado ?? montoOriginal;
+            const tipoCambioRespuesta = datos.tipo_cambio;
+            const tipoCambioConfigurado = metodo.tipo_cambio;
+            const tipoCambioAplicado =
+              tipoCambioRespuesta ??
+              tipoCambioConfigurado ??
+              (montoOriginal > 0 ? Number((montoBs / montoOriginal).toFixed(4)) : undefined);
+            this.datosPago.set({
+              monto: montoBs,
+              nota: '',
+              idMovimiento: String(datos.movimiento_id),
+              producto: 'Recarga de billetera',
+              metodo: 'qr-boliviano',
+              montoOriginal,
+              monedaOriginal: 'USD',
+              tipoCambioAplicado,
+            });
+            this.qrImagen.set(this.normalizarQrImagen(datos.qr));
+            this.mostrarQR.set(true);
+            this.estadoPago.set('esperando');
+            this.tiempoRestante.set(600);
+            this.iniciarCuentaRegresiva();
+            this.iniciarVerificacionVeripagos();
+            this.estaProcesando.set(false);
+            this.cdr.detectChanges();
+          },
+          error: (error) => {
+            console.error('Error al preparar recarga VeriPagos:', error);
+            this.estaProcesando.set(false);
+            this.cdr.detectChanges();
+            const mensajeError =
+              error?.error?.mensaje || error?.message || 'No se pudo preparar la recarga con Veripagos.';
+            this.notificacion.error(mensajeError);
+          },
+        });
+      return;
+    }
+
+    // Caso compra normal: flujo existente de QR VeriPagos
     const fecha = new Date();
-    const numeroPedido = `PED-${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(fecha.getDate()).padStart(2, '0')}-${String(Date.now()).slice(-6)}`;
+    const numeroPedido = `PED-${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(
+      fecha.getDate(),
+    )
+      .padStart(2, '0')}-${String(Date.now()).slice(-6)}`;
     const primerItem = this.items()[0];
     const detalle = primerItem ? `Orden ${numeroPedido} - ${primerItem.titulo}` : `Orden ${numeroPedido}`;
     const idPrecio = primerItem?.varianteId ? parseInt(primerItem.varianteId, 10) : 0;
     const cantidad = primerItem?.cantidad ?? 1;
-
-    this.notificacion.info('Estamos generando tu QR de pago, esto puede tardar unos segundos...');
 
     this.metodosPagoApi
       .generarQrVeripagos({
@@ -662,6 +767,42 @@ export class CheckoutPagina implements OnInit, OnDestroy {
     if (!datos || !metodo) return;
 
     this.intervaloVerificacion = setInterval(() => {
+      // Para recarga usamos el endpoint específico de recarga
+      if (this.esRecarga()) {
+        this.metodosPagoApi
+          .verificarRecargaBinance({
+            idMetodoPago: metodo.id_metodo_pago,
+            nota: datos.nota,
+            montoRecarga: this.montoRecarga(),
+            moneda: 'USDT',
+          })
+          .subscribe({
+            next: (r) => {
+              if (r.exito && r.pagado) {
+                const saldoNuevo = r.datos?.billetera?.saldo_nuevo;
+                if (saldoNuevo != null) {
+                  this.sesion.actualizarSaldo(saldoNuevo);
+                }
+                this.estadoPago.set('pagado');
+                this.detenerVerificacionPago();
+                this.mostrarQR.set(false);
+                this.estaProcesando.set(false);
+                this.tiempoRestante.set(600);
+                this.datosPago.set(null);
+                this.qrImagen.set(null);
+                this.cdr.detectChanges();
+                this.notificacion.exito('¡Recarga exitosa! Tu saldo de billetera fue actualizado.');
+                this.router.navigate(['/perfil'], { queryParams: { seccion: 'billetera' } });
+              }
+            },
+            error: (error) => {
+              console.error('Error al verificar recarga Binance:', error);
+            },
+          });
+        return;
+      }
+
+      // Caso compra normal: verificación de pago Binance existente
       this.metodosPagoApi
         .verificarPagoBinance({
           idMetodoPago: metodo.id_metodo_pago,
@@ -687,6 +828,47 @@ export class CheckoutPagina implements OnInit, OnDestroy {
     const metodo = this.metodoPagoActual();
     if (!datos || !metodo) return;
 
+    // Para recarga usamos el endpoint específico de recarga
+    if (this.esRecarga()) {
+      this.metodosPagoApi
+        .verificarRecargaBinance({
+          idMetodoPago: metodo.id_metodo_pago,
+          nota: datos.nota,
+          montoRecarga: this.montoRecarga(),
+          moneda: 'USDT',
+        })
+        .subscribe({
+          next: (r) => {
+            if (r.exito && r.pagado) {
+              const saldoNuevo = r.datos?.billetera?.saldo_nuevo;
+              if (saldoNuevo != null) {
+                this.sesion.actualizarSaldo(saldoNuevo);
+              }
+              this.estadoPago.set('pagado');
+              this.detenerVerificacionPago();
+              this.mostrarQR.set(false);
+              this.estaProcesando.set(false);
+              this.tiempoRestante.set(600);
+              this.datosPago.set(null);
+              this.qrImagen.set(null);
+              this.cdr.detectChanges();
+              this.notificacion.exito('¡Recarga exitosa! Tu saldo de billetera fue actualizado.');
+              this.router.navigate(['/perfil'], { queryParams: { seccion: 'billetera' } });
+            } else {
+              this.notificacion.advertencia(
+                'Aún no se registra tu recarga en Binance. Intenta de nuevo en unos segundos.',
+              );
+            }
+          },
+          error: (error) => {
+            console.error('Error al verificar recarga Binance (manual):', error);
+            this.notificacion.error('No se pudo verificar la recarga en este momento. Intenta nuevamente.');
+          },
+        });
+      return;
+    }
+
+    // Caso compra normal: verificación de pago Binance existente
     this.metodosPagoApi
       .verificarPagoBinance({
         idMetodoPago: metodo.id_metodo_pago,
@@ -718,6 +900,43 @@ export class CheckoutPagina implements OnInit, OnDestroy {
     const movimientoId = datos.idMovimiento;
 
     this.intervaloVerificacion = setInterval(() => {
+      // Para recarga usamos el endpoint específico de recarga
+      if (this.esRecarga()) {
+        if (!movimientoId) return;
+        this.metodosPagoApi
+          .verificarRecargaVeripagos({
+            idMetodoPago: metodo.id_metodo_pago,
+            movimientoId: String(movimientoId),
+            montoRecarga: this.montoRecarga(),
+          })
+          .subscribe({
+            next: (r) => {
+              const estado = (r.datos?.estado ?? '').toString().toLowerCase();
+              if (r.exito && r.pagado && estado === 'completado') {
+                const saldoNuevo = r.datos?.billetera?.saldo_nuevo;
+                if (saldoNuevo != null) {
+                  this.sesion.actualizarSaldo(saldoNuevo);
+                }
+                this.estadoPago.set('pagado');
+                this.detenerVerificacionPago();
+                this.mostrarQR.set(false);
+                this.estaProcesando.set(false);
+                this.tiempoRestante.set(600);
+                this.datosPago.set(null);
+                this.qrImagen.set(null);
+                this.cdr.detectChanges();
+                this.notificacion.exito('¡Recarga exitosa! Tu saldo de billetera fue actualizado.');
+                this.router.navigate(['/perfil'], { queryParams: { seccion: 'billetera' } });
+              }
+            },
+            error: (error) => {
+              console.error('Error al verificar recarga VeriPagos:', error);
+            },
+          });
+        return;
+      }
+
+      // Caso compra normal: verificación de QR VeriPagos existente
       this.metodosPagoApi
         .verificarQrVeripagos({
           idMetodoPago: metodo.id_metodo_pago,
@@ -746,6 +965,48 @@ export class CheckoutPagina implements OnInit, OnDestroy {
 
     const movimientoId = datos.idMovimiento;
 
+    // Para recarga usamos el endpoint específico de recarga
+    if (this.esRecarga()) {
+      if (!movimientoId) return;
+      this.metodosPagoApi
+        .verificarRecargaVeripagos({
+          idMetodoPago: metodo.id_metodo_pago,
+          movimientoId: String(movimientoId),
+          montoRecarga: this.montoRecarga(),
+        })
+        .subscribe({
+          next: (r) => {
+            const estado = (r.datos?.estado ?? '').toString().toLowerCase();
+            if (r.exito && r.pagado && estado === 'completado') {
+              const saldoNuevo = r.datos?.billetera?.saldo_nuevo;
+              if (saldoNuevo != null) {
+                this.sesion.actualizarSaldo(saldoNuevo);
+              }
+              this.estadoPago.set('pagado');
+              this.detenerVerificacionPago();
+              this.mostrarQR.set(false);
+              this.estaProcesando.set(false);
+              this.tiempoRestante.set(600);
+              this.datosPago.set(null);
+              this.qrImagen.set(null);
+              this.cdr.detectChanges();
+              this.notificacion.exito('¡Recarga exitosa! Tu saldo de billetera fue actualizado.');
+              this.router.navigate(['/perfil'], { queryParams: { seccion: 'billetera' } });
+            } else {
+              this.notificacion.advertencia(
+                'Aún no se registra tu recarga con QR. Intenta de nuevo en unos segundos.',
+              );
+            }
+          },
+          error: (error) => {
+            console.error('Error al verificar recarga VeriPagos (manual):', error);
+            this.notificacion.error('No se pudo verificar la recarga en este momento. Intenta nuevamente.');
+          },
+        });
+      return;
+    }
+
+    // Caso compra normal: verificación de QR VeriPagos existente
     this.metodosPagoApi
       .verificarQrVeripagos({
         idMetodoPago: metodo.id_metodo_pago,

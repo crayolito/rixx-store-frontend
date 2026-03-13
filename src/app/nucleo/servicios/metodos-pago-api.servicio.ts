@@ -80,6 +80,50 @@ export interface RespuestaVerificarBinance {
   mensaje?: string;
 }
 
+/** Respuesta al preparar una recarga de billetera con Binance Pay. */
+export interface RespuestaPrepararRecargaBinance {
+  exito: boolean;
+  datos?: {
+    metodo: 'binance';
+    id_metodo_pago: number;
+    nombreMetodo: string;
+    descripcion: string;
+    codigo: string;
+    monto: number;
+    moneda: string;
+    tipo_cambio: number | null;
+    monto_convertido: number | null;
+    qrImagen: string;
+  } | null;
+  mensaje?: string;
+}
+
+/** Respuesta al verificar una recarga de billetera con Binance Pay. */
+export interface RespuestaVerificarRecargaBinance {
+  exito: boolean;
+  pagado: boolean;
+  datos?: {
+    transactionId: string;
+    orderId: string;
+    amount: number;
+    currency: string;
+    transactionTime: number;
+    payerName: string;
+    billetera: {
+      id_transaccion: number;
+      id_usuario: number;
+      tipo: string;
+      monto: number;
+      saldo_anterior: number;
+      saldo_nuevo: number;
+      descripcion: string;
+      id_pedido: number | null;
+      fecha_creacion: string;
+    };
+  } | null;
+  mensaje?: string;
+}
+
 export interface RespuestaGenerarQrVeripagos {
   exito: boolean;
   datos?: {
@@ -117,6 +161,50 @@ export interface RespuestaVerificarQrVeripagos {
       documento: string;
       cuenta: string;
     } | null;
+  } | null;
+  mensaje?: string;
+}
+
+/** Respuesta al preparar una recarga de billetera con Veripagos. */
+export interface RespuestaPrepararRecargaVeripagos {
+  exito: boolean;
+  datos?: {
+    movimiento_id: string;
+    qr: string;
+    monto: number;
+    monto_enviado: number;
+    tipo_cambio: number;
+    monto_convertido: number;
+  } | null;
+  mensaje?: string;
+}
+
+/** Respuesta al verificar una recarga de billetera con Veripagos. */
+export interface RespuestaVerificarRecargaVeripagos {
+  exito: boolean;
+  pagado: boolean;
+  datos?: {
+    movimiento_id: string;
+    monto: number;
+    detalle: string;
+    estado: string;
+    remitente: {
+      nombre: string;
+      banco: string;
+      documento: string;
+      cuenta: string;
+    } | null;
+    billetera: {
+      id_transaccion: number;
+      id_usuario: number;
+      tipo: string;
+      monto: number;
+      saldo_anterior: number;
+      saldo_nuevo: number;
+      descripcion: string;
+      id_pedido: number | null;
+      fecha_creacion: string;
+    };
   } | null;
   mensaje?: string;
 }
@@ -191,6 +279,55 @@ export class MetodosPagoApiServicio {
         if (!r?.exito || !r.datos) throw new Error(r?.mensaje ?? 'Error al crear método de pago');
         return r.datos;
       }),
+    );
+  }
+
+  /** Prepara una recarga de billetera con Binance Pay para un monto dado. */
+  prepararRecargaBinance(cuerpo: {
+    idMetodoPago: number;
+    monto: number;
+    moneda?: string;
+    nota?: string;
+  }): Observable<RespuestaPrepararRecargaBinance['datos']> {
+    const body: Record<string, unknown> = {
+      idMetodoPago: cuerpo.idMetodoPago,
+      monto: cuerpo.monto,
+      ...(cuerpo.moneda && { moneda: cuerpo.moneda }),
+      ...(cuerpo.nota && { nota: cuerpo.nota }),
+    };
+    return this.httpBase
+      .enviarPost<RespuestaPrepararRecargaBinance>(
+        '/metodos-pago/binance/preparar-recarga',
+        body,
+        this.headersConAuth(),
+      )
+      .pipe(
+        map((r) => {
+          if (!r?.exito || !r.datos) {
+            throw new Error(r?.mensaje ?? 'Error al preparar recarga con Binance');
+          }
+          return r.datos;
+        }),
+      );
+  }
+
+  /** Verifica el estado de una recarga Binance Pay para una nota y monto dados. */
+  verificarRecargaBinance(cuerpo: {
+    idMetodoPago: number;
+    nota: string;
+    montoRecarga: number;
+    moneda?: string;
+  }): Observable<RespuestaVerificarRecargaBinance> {
+    const body: Record<string, unknown> = {
+      idMetodoPago: cuerpo.idMetodoPago,
+      nota: cuerpo.nota,
+      montoRecarga: cuerpo.montoRecarga,
+      ...(cuerpo.moneda && { moneda: cuerpo.moneda }),
+    };
+    return this.httpBase.enviarPost<RespuestaVerificarRecargaBinance>(
+      '/metodos-pago/binance/verificar-recarga',
+      body,
+      this.headersConAuth(),
     );
   }
 
@@ -277,6 +414,53 @@ export class MetodosPagoApiServicio {
     };
     return this.httpBase.enviarPost<RespuestaVerificarQrVeripagos>(
       '/metodos-pago/veripagos/verificar-qr',
+      body,
+      this.headersConAuth(),
+    );
+  }
+
+  /** Prepara una recarga de billetera con Veripagos. */
+  prepararRecargaVeripagos(cuerpo: {
+    idMetodoPago: number;
+    monto: number;
+    vigencia?: string;
+    usoUnico?: boolean;
+  }): Observable<RespuestaPrepararRecargaVeripagos['datos']> {
+    const body: Record<string, unknown> = {
+      idMetodoPago: cuerpo.idMetodoPago,
+      monto: cuerpo.monto,
+      ...(cuerpo.vigencia && { vigencia: cuerpo.vigencia }),
+      ...(cuerpo.usoUnico !== undefined && { usoUnico: cuerpo.usoUnico }),
+    };
+    return this.httpBase
+      .enviarPost<RespuestaPrepararRecargaVeripagos>(
+        '/metodos-pago/veripagos/preparar-recarga',
+        body,
+        this.headersConAuth(),
+      )
+      .pipe(
+        map((r) => {
+          if (!r?.exito || !r.datos) {
+            throw new Error(r?.mensaje ?? 'Error al preparar recarga con Veripagos');
+          }
+          return r.datos;
+        }),
+      );
+  }
+
+  /** Verifica el estado de una recarga con Veripagos. */
+  verificarRecargaVeripagos(cuerpo: {
+    idMetodoPago: number;
+    movimientoId: string;
+    montoRecarga: number;
+  }): Observable<RespuestaVerificarRecargaVeripagos> {
+    const body: Record<string, unknown> = {
+      idMetodoPago: cuerpo.idMetodoPago,
+      movimientoId: cuerpo.movimientoId,
+      montoRecarga: cuerpo.montoRecarga,
+    };
+    return this.httpBase.enviarPost<RespuestaVerificarRecargaVeripagos>(
+      '/metodos-pago/veripagos/verificar-recarga',
       body,
       this.headersConAuth(),
     );
