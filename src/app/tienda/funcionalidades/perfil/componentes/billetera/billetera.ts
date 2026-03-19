@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { take } from 'rxjs';
 import { PAQUETES_BILLETERA } from '../../../../../compartido/datos/paquetes-billetera.datos';
 import { NotificacionServicio } from '../../../../../compartido/servicios/notificacion';
 import type { PaqueteBilletera } from '../../../../../compartido/datos/paquetes-billetera.datos';
@@ -37,6 +38,21 @@ export class Billetera implements OnInit {
     if (u?.saldo != null) {
       this.saldoActual.set(u.saldo);
     }
+
+    // Sincroniza el saldo con backend para evitar que quede desactualizado
+    this.billeteraApi
+      .obtenerSaldo()
+      .pipe(take(1))
+      .subscribe({
+        next: ({ saldo }) => {
+          this.saldoActual.set(saldo);
+          this.sesion.actualizarSaldo(saldo);
+        },
+        error: () => {
+          // Si falla, mantenemos el saldo cacheado de sesión sin interrumpir la UI
+        },
+      });
+
     // Cargamos el historial de transacciones
     this.cargarHistorial();
   }

@@ -7,6 +7,7 @@ import { NotificacionServicio } from '../../../../../compartido/servicios/notifi
 import { CloudinaryApiServicio } from '../../../../../nucleo/servicios/cloudinary-api.servicio';
 import type {
   CuerpoCrearMetodoPago,
+  CuerpoActualizarMetodoPago,
   MetodoPagoUINormalizado,
 } from '../../../../../nucleo/servicios/metodos-pago-api.servicio';
 import { MetodosPagoApiServicio } from '../../../../../nucleo/servicios/metodos-pago-api.servicio';
@@ -54,7 +55,7 @@ export class MetodosPagoAdminPaginaComponente implements OnInit {
   cargarMetodos(): void {
     this.cargando.set(true);
     this.errorAlCargar.set(false);
-    this.metodosPagoApi.listar(false).subscribe({
+    this.metodosPagoApi.listarAdmin(true).subscribe({
       next: (lista) => {
         this.metodosPago.set(lista);
         this.cargando.set(false);
@@ -151,7 +152,7 @@ export class MetodosPagoAdminPaginaComponente implements OnInit {
           metodo.qrTipo === 'estatico' && metodo.qrImagen?.trim()
             ? metodo.qrImagen.trim()
             : undefined,
-        tipoCambio: metodo.tasaCambio ?? metodo.tasaCambio ?? null,
+        tipoCambio: metodo.tasaCambio ?? metodo.tipo_cambio ?? null,
       };
       this.metodosPagoApi.crear(cuerpo).subscribe({
         next: (creado) => {
@@ -171,15 +172,32 @@ export class MetodosPagoAdminPaginaComponente implements OnInit {
       return;
     }
 
-    this.metodosPago.update((metodos) =>
-      metodos.map((m) =>
-        m.id_metodo_pago === metodo.id_metodo_pago
-          ? { ...metodo, descripcion: metodo.descripcion ?? '', logo: metodo.logo ?? '' }
-          : m,
-      ),
-    );
-    this.cerrarModal();
-    this.notificacion.exito('Cambios guardados.');
+    this.guardando.set(true);
+    const cuerpo: CuerpoActualizarMetodoPago = {
+      descripcion: metodo.descripcion?.trim() || null,
+      logo: metodo.logo?.trim() || null,
+      qrTipo:
+        metodo.qrTipo === 'estatico' || metodo.qrTipo === 'dinamico' ? metodo.qrTipo : undefined,
+      qrImagen: metodo.qrTipo === 'estatico' ? metodo.qrImagen?.trim() || undefined : undefined,
+      tipoCambio: metodo.tasaCambio ?? metodo.tipo_cambio ?? null,
+      apiKey: metodo.apiKey?.trim() || undefined,
+      secretKey: metodo.secretKey?.trim() || undefined,
+    };
+
+    this.metodosPagoApi.actualizar(metodo.id_metodo_pago, cuerpo).subscribe({
+      next: () => {
+        this.guardando.set(false);
+        this.cerrarModal();
+        this.notificacion.exito('Cambios guardados.');
+        this.cargarMetodos();
+      },
+      error: (err) => {
+        this.guardando.set(false);
+        this.notificacion.error(
+          err?.error?.mensaje ?? err?.message ?? 'No se pudo actualizar el método de pago',
+        );
+      },
+    });
   }
 
   actualizarCampo(campo: keyof MetodoPagoEdicion, valor: unknown): void {

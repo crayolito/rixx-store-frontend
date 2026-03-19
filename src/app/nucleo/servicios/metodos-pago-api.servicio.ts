@@ -17,6 +17,7 @@ export interface MetodoPagoApi {
     apiKey?: string;
     secretKey?: string;
     qrTipo?: string;
+    qrImagen?: string;
     [k: string]: unknown;
   };
   comision_porcentaje?: number;
@@ -35,6 +36,11 @@ export interface MetodoPagoUINormalizado {
   activo?: boolean;
   tipo?: string;
   tipo_cambio?: number;
+  // Solo admin: campos desde `configuracion` (si viene en el backend).
+  apiKey?: string;
+  secretKey?: string;
+  qrTipo?: '' | 'estatico' | 'dinamico';
+  qrImagen?: string;
 }
 
 export interface RespuestaListarMetodosPago {
@@ -221,6 +227,16 @@ export interface CuerpoCrearMetodoPago {
   tipoCambio?: number | null;
 }
 
+export interface CuerpoActualizarMetodoPago {
+  descripcion?: string | null;
+  logo?: string | null;
+  apiKey?: string;
+  secretKey?: string;
+  qrTipo?: '' | 'estatico' | 'dinamico';
+  qrImagen?: string;
+  tipoCambio?: number | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class MetodosPagoApiServicio {
   private httpBase = inject(HttpBaseServicio);
@@ -236,9 +252,29 @@ export class MetodosPagoApiServicio {
    * Admin recibe forma completa con configuracion, tipo_cambio, activo.
    */
   listar(soloActivos = true): Observable<MetodoPagoUINormalizado[]> {
+    // Mantiene compatibilidad: `listar` se usa desde checkout (cliente/revendedor),
+    // por lo tanto usa el endpoint público.
+    return this.listarClienteRevendedor(soloActivos);
+  }
+
+  /** Lista métodos para Cliente / Revendedor (endpoint público). */
+  listarClienteRevendedor(soloActivos = true): Observable<MetodoPagoUINormalizado[]> {
     const params = `?soloActivos=${soloActivos}`;
     return this.httpBase
       .obtenerConOpciones<RespuestaListarMetodosPago>(`/metodos-pago${params}`, this.headersConAuth())
+      .pipe(
+        map((r) => {
+          if (!r?.exito || !Array.isArray(r.datos)) return [];
+          return r.datos.map((item) => this.normalizarParaUI(item));
+        }),
+      );
+  }
+
+  /** Lista métodos para Admin (endpoint con configuración completa). */
+  listarAdmin(soloActivos = true): Observable<MetodoPagoUINormalizado[]> {
+    const params = `?soloActivos=${soloActivos}`;
+    return this.httpBase
+      .obtenerConOpciones<RespuestaListarMetodosPago>(`/metodos-pago/admin${params}`, this.headersConAuth())
       .pipe(
         map((r) => {
           if (!r?.exito || !Array.isArray(r.datos)) return [];
@@ -259,6 +295,10 @@ export class MetodosPagoApiServicio {
       activo: item.activo,
       tipo: item.tipo,
       tipo_cambio: item.tipo_cambio,
+      apiKey: item.configuracion?.apiKey,
+      secretKey: item.configuracion?.secretKey,
+      qrTipo: (item.configuracion?.qrTipo as MetodoPagoUINormalizado['qrTipo']) ?? '',
+      qrImagen: item.configuracion?.qrImagen,
     };
   }
 
@@ -280,6 +320,28 @@ export class MetodosPagoApiServicio {
         return r.datos;
       }),
     );
+  }
+
+  /** Actualiza info de un método de pago (solo Administrador). */
+  actualizar(idMetodoPago: number, cuerpo: CuerpoActualizarMetodoPago): Observable<MetodoPagoApi> {
+    const body: Record<string, unknown> = {
+      ...(cuerpo.descripcion != null && cuerpo.descripcion !== '' && { descripcion: cuerpo.descripcion }),
+      ...(cuerpo.logo != null && cuerpo.logo !== '' && { logo: cuerpo.logo }),
+      ...(cuerpo.apiKey != null && cuerpo.apiKey.trim() !== '' && { apiKey: cuerpo.apiKey.trim() }),
+      ...(cuerpo.secretKey != null && cuerpo.secretKey.trim() !== '' && { secretKey: cuerpo.secretKey.trim() }),
+      ...(cuerpo.qrTipo === 'estatico' || cuerpo.qrTipo === 'dinamico' ? { qrTipo: cuerpo.qrTipo } : {}),
+      ...(cuerpo.qrTipo === 'estatico' && cuerpo.qrImagen?.trim() ? { qrImagen: cuerpo.qrImagen.trim() } : {}),
+      ...(cuerpo.tipoCambio != null ? { tipoCambio: cuerpo.tipoCambio } : {}),
+    };
+
+    return this.httpBase
+      .actualizarPut<RespuestaCrearMetodoPago>(`/metodos-pago/${idMetodoPago}`, body, this.headersConAuth())
+      .pipe(
+        map((r) => {
+          if (!r?.exito || !r.datos) throw new Error(r?.mensaje ?? 'Error al actualizar método de pago');
+          return r.datos;
+        }),
+      );
   }
 
   /** Prepara una recarga de billetera con Binance Pay para un monto dado. */

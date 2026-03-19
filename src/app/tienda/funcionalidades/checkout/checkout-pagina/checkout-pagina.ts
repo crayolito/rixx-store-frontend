@@ -1246,7 +1246,7 @@ export class CheckoutPagina implements OnInit, OnDestroy {
     });
 
     this.cargarDatosCliente();
-    this.metodosPagoApi.listar(true).subscribe({
+    this.metodosPagoApi.listarClienteRevendedor(true).subscribe({
       next: (lista) => this.metodosPago.set(lista),
       error: () => this.notificacion.error('No se pudieron cargar los métodos de pago'),
     });
