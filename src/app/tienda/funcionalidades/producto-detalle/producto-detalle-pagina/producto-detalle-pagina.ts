@@ -72,7 +72,7 @@ export class ProductoDetallePagina implements OnInit {
   /** Rol actual del usuario para calcular precios */
   readonly rolUsuario = computed(() => (this.sesion.usuarioActual()?.rol ?? '').toLowerCase());
 
-  /* ─── Computed: variantes desde precios del producto. Inventario null = stock ilimitado. ─── */
+  /* ─── Computed: variantes desde precios del producto (orden del API). Inventario null = stock ilimitado. ─── */
   readonly variantes = computed((): VarianteProducto[] => {
     const p = this.producto();
     if (!p?.precios?.length) return [];
@@ -96,8 +96,8 @@ export class ProductoDetallePagina implements OnInit {
           margenRevendedor,
         };
       });
-    // Con stock primero, agotadas al final
-    return [...mapeadas].sort((a, b) => (a.disponible === b.disponible ? 0 : a.disponible ? -1 : 1));
+    // Mismo orden que envía el backend en precios (solo se filtran inactivos)
+    return mapeadas;
   });
 
   /** Producto sin stock en ninguno de sus precios */
